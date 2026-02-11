@@ -1,0 +1,127 @@
+{
+  "kind": "build_request",
+  "title": "Add profile customization and in-app settings to the chat app",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-7",
+      "text": "Extend user profiles to support profile customization fields (in addition to the existing display name): bio and avatar configuration, and expose these fields through backend APIs for reading and updating the authenticated user's profile.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Add features to my Chat app such as Profile customization and app settings"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend UserProfile model includes at least: display name, bio, and an avatar configuration field (e.g., avatar emoji and/or avatar color) in a way that can be stored per Principal.",
+        "Backend continues to support fetching the caller's profile and saving the caller's profile, now including the new fields.",
+        "Frontend TypeScript types generated/used for UserProfile match the updated backend shape.",
+        "Existing chat functionality (rooms, messaging) continues to work after the profile type change."
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Implement state migration for existing deployed data so previously saved profiles that only contain the legacy name field are upgraded to the new UserProfile structure without data loss.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Add features to my Chat app such as Profile customization and app settings"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A conditional backend migration is added (migration.mo) to transform stored profiles from the legacy structure ({ name }) into the new structure (populating new fields with sensible defaults).",
+        "Upgrading the canister preserves existing users' display names.",
+        "After upgrade, getCallerUserProfile returns the upgraded structure for existing users."
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Add a profile editing UI that allows authenticated users to view and update their profile customization fields (display name, bio, avatar configuration) from within the main app experience.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Add features to my Chat app such as Profile customization and app settings"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Authenticated users have an obvious way to open a 'Profile' editor from the app (e.g., from the header).",
+        "The profile editor pre-fills the current profile values and allows updating them.",
+        "Saving profile changes calls the backend save profile API and updates the UI to reflect the new values (including the header greeting and message sender display where applicable).",
+        "Validation prevents saving an empty display name and shows an English error message when validation fails or the save call fails."
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Add per-user in-app settings stored on the backend, including at minimum: a theme preference (light/dark/system) and a chat refresh preference (message polling interval) that influences frontend polling behavior.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Add features to my Chat app such as Profile customization and app settings"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend provides APIs to get and save the authenticated user's settings.",
+        "Settings include a theme preference with allowed values: light, dark, system.",
+        "Settings include a message polling interval preference (in seconds) that is used by the frontend to control how frequently messages refetch for the selected room.",
+        "If a user has no saved settings, the app uses defaults (system theme, current polling behavior) without errors."
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "Add a Settings UI area (dialog, drawer, or page within the existing single-screen app layout) where authenticated users can change app settings (theme preference and message polling interval) and persist them.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Add features to my Chat app such as Profile customization and app settings"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Authenticated users can open a 'Settings' UI from the app (e.g., from the header).",
+        "Changing theme updates the app theme immediately using the existing ThemeProvider setup and persists the choice via the backend settings API.",
+        "Changing polling interval updates message polling behavior (without requiring a full page refresh) and persists the choice via the backend settings API.",
+        "All settings UI user-facing strings are in English and failures show readable English error messages."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services.",
+    "Only create backend/migration.mo if required for upgrading existing state; migration must be conditional and preserve existing user data.",
+    "Do not edit any frontend files under the immutable paths listed in SYSTEM_CONTEXT (compose components instead).",
+    "Do not add WebSockets or real-time chat transport; polling must remain the mechanism for refresh."
+  ],
+  "nonGoals": [
+    "Adding third-party authentication providers beyond Internet Identity.",
+    "Adding image upload or external storage for avatar photos.",
+    "Introducing new backend technologies or external databases.",
+    "Implementing push notifications or email/SMS notifications."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
+  }
+}

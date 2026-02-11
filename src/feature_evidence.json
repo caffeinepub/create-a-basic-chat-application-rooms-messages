@@ -1,0 +1,90 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-extend-user-profiles-to-support-profile-customization-fields-in-addition-to-the-existing-display-name-bio-and-avatar-configuration-and-expose-these-fields-through-backend-apis-for-reading-and-updating-the-authenticated-user-s-profile",
+      "featureTitle": "Extend user profiles to support profile customization fields (in addition to the existing display name): bio and avatar configuration, and expose these fields through backend APIs for reading and updating the authenticated user's profile.",
+      "files": [
+        "frontend/src/components/chat/MessageThread.tsx",
+        "frontend/src/components/profile/ProfileSetupDialog.tsx",
+        "frontend/src/components/profile/UserAvatar.tsx",
+        "frontend/src/hooks/useUserProfile.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-7"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-profile-editing-ui-that-allows-authenticated-users-to-view-and-update-their-profile-customization-fields-display-name-bio-avatar-configuration-from-within-the-main-app-experience",
+      "featureTitle": "Add a profile editing UI that allows authenticated users to view and update their profile customization fields (display name, bio, avatar configuration) from within the main app experience.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/chat/MessageThread.tsx",
+        "frontend/src/components/profile/ProfileEditorDialog.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-9"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-per-user-in-app-settings-stored-on-the-backend-including-at-minimum-a-theme-preference-light-dark-system-and-a-chat-refresh-preference-message-polling-interval-that-influences-frontend-polling-behavior",
+      "featureTitle": "Add per-user in-app settings stored on the backend, including at minimum: a theme preference (light/dark/system) and a chat refresh preference (message polling interval) that influences frontend polling behavior.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/hooks/useRoomMessages.ts",
+        "frontend/src/hooks/useUserPreferences.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-10"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-settings-ui-area-dialog-drawer-or-page-within-the-existing-single-screen-app-layout-where-authenticated-users-can-change-app-settings-theme-preference-and-message-polling-interval-and-persist-them",
+      "featureTitle": "Add a Settings UI area (dialog, drawer, or page within the existing single-screen app layout) where authenticated users can change app settings (theme preference and message polling interval) and persist them.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/settings/SettingsDialog.tsx",
+        "frontend/src/hooks/useRoomMessages.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-11"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

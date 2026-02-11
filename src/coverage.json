@@ -1,0 +1,110 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-11T23:25:56.927Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 5,
+    "implemented": 4,
+    "items": [
+      {
+        "id": "REQ-10",
+        "summary": "Add per-user in-app settings stored on the backend, including at minimum: a theme preference (light/dark/system) and a chat refresh preference (message polling interval) that influences frontend polling behavior.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useUserPreferences.ts",
+          "frontend/src/hooks/useRoomMessages.ts",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useUserPreferences.ts",
+          "frontend/src/hooks/useRoomMessages.ts",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-11",
+        "summary": "Add a Settings UI area (dialog, drawer, or page within the existing single-screen app layout) where authenticated users can change app settings (theme preference and message polling interval) and persist them.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/settings/SettingsDialog.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/hooks/useRoomMessages.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/settings/SettingsDialog.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/hooks/useRoomMessages.ts"
+        ]
+      },
+      {
+        "id": "REQ-7",
+        "summary": "Extend user profiles to support profile customization fields (in addition to the existing display name): bio and avatar configuration, and expose these fields through backend APIs for reading and updating the authenticated user's profile.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/profile/ProfileSetupDialog.tsx",
+          "frontend/src/hooks/useUserProfile.ts",
+          "frontend/src/components/chat/MessageThread.tsx",
+          "frontend/src/components/profile/UserAvatar.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/profile/ProfileSetupDialog.tsx",
+          "frontend/src/hooks/useUserProfile.ts",
+          "frontend/src/components/chat/MessageThread.tsx",
+          "frontend/src/components/profile/UserAvatar.tsx"
+        ]
+      },
+      {
+        "id": "REQ-8",
+        "summary": "Implement state migration for existing deployed data so previously saved profiles that only contain the legacy name field are upgraded to the new UserProfile structure without data loss.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-9",
+        "summary": "Add a profile editing UI that allows authenticated users to view and update their profile customization fields (display name, bio, avatar configuration) from within the main app experience.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/profile/ProfileEditorDialog.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/chat/MessageThread.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/profile/ProfileEditorDialog.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/chat/MessageThread.tsx"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
+    "build-request.json",
+    "build-template/README.md",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/src/App.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/chat/MessageThread.tsx",
+    "frontend/src/components/profile/ProfileEditorDialog.tsx",
+    "frontend/src/components/profile/ProfileSetupDialog.tsx",
+    "frontend/src/components/profile/UserAvatar.tsx",
+    "frontend/src/components/settings/SettingsDialog.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useRoomMessages.ts",
+    "frontend/src/hooks/useUserPreferences.ts",
+    "frontend/src/hooks/useUserProfile.ts",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

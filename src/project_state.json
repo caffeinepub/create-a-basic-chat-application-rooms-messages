@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 5,
+  "summary": "Build a chat application.",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-add-frontend-chat-ui-with-authentication-via-internet-identity-a-room-list-create-select-room-a-message-thread-view-for-the-selected-room-and-a-message-composer-to-send-new-messages",
+      "title": "Add frontend chat UI with: authentication via Internet Identity, a room list (create/select room), a message thread view for the selected room, and a message composer to send new messages.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-near-real-time-message-updates-using-react-query-polling-no-websockets-periodically-refetch-messages-for-the-currently-selected-room-and-merge-render-without-duplicates",
+      "title": "Implement near-real-time message updates using React Query polling (no WebSockets): periodically refetch messages for the currently selected room and merge/render without duplicates.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-define-and-apply-a-coherent-visual-theme-for-the-app-colors-typography-spacing-component-styling-and-enforce-it-consistently-across-all-pages-and-states-loading-empty-error-avoid-blue-purple-as-primary-theme-colors",
+      "title": "Define and apply a coherent visual theme for the app (colors, typography, spacing, component styling) and enforce it consistently across all pages and states (loading, empty, error). Avoid blue/purple as primary theme colors.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-basic-ux-states-and-validation-disable-sending-empty-messages-show-loading-indicators-for-room-message-fetches-and-show-readable-error-messages-when-backend-calls-fail",
+      "title": "Add basic UX states and validation: disable sending empty messages, show loading indicators for room/message fetches, and show readable error messages when backend calls fail.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-render-generated-static-images-from-frontend-public-assets-generated-in-appropriate-ui-places-e-g-app-header-and-empty-state-without-routing-images-through-the-backend",
+      "title": "Render generated static images (from frontend/public/assets/generated) in appropriate UI places (e.g., app header and empty state) without routing images through the backend.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-user-profiles-to-support-profile-customization-fields-in-addition-to-the-existing-display-name-bio-and-avatar-configuration-and-expose-these-fields-through-backend-apis-for-reading-and-updating-the-authenticated-user-s-profile",
+      "title": "Extend user profiles to support profile customization fields (in addition to the existing display name): bio and avatar configuration, and expose these fields through backend APIs for reading and updating the authenticated user's profile.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-profile-editing-ui-that-allows-authenticated-users-to-view-and-update-their-profile-customization-fields-display-name-bio-avatar-configuration-from-within-the-main-app-experience",
+      "title": "Add a profile editing UI that allows authenticated users to view and update their profile customization fields (display name, bio, avatar configuration) from within the main app experience.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-per-user-in-app-settings-stored-on-the-backend-including-at-minimum-a-theme-preference-light-dark-system-and-a-chat-refresh-preference-message-polling-interval-that-influences-frontend-polling-behavior",
+      "title": "Add per-user in-app settings stored on the backend, including at minimum: a theme preference (light/dark/system) and a chat refresh preference (message polling interval) that influences frontend polling behavior.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-settings-ui-area-dialog-drawer-or-page-within-the-existing-single-screen-app-layout-where-authenticated-users-can-change-app-settings-theme-preference-and-message-polling-interval-and-persist-them",
+      "title": "Add a Settings UI area (dialog, drawer, or page within the existing single-screen app layout) where authenticated users can change app settings (theme preference and message polling interval) and persist them.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Create a chat app",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Implement a Motoko backend for a chat app with persistent storage for chat rooms and messages, supporting: create room, list rooms, post message to a room, and fetch messages for a room with pagination or incremental fetching (e.g., by \"after\" timestamp or message id).",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Add user profile customization features (e.g., display name, avatar, bio) to the chat app.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Add an in-app settings area (app preferences) for the chat app.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Implement state migration for existing deployed data so previously saved profiles that only contain the legacy name field are upgraded to the new UserProfile structure without data loss.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Create a basic chat application (rooms + messages)",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

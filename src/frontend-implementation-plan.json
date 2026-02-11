@@ -1,0 +1,117 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Profile customization and in-app settings (frontend) for chat app",
+  "requirements": [
+    {
+      "id": "REQ-7",
+      "summary": "Update frontend to use extended UserProfile shape (bio + avatar config) for fetching/saving and display.",
+      "acceptanceCriteria": [
+        "Frontend TypeScript types used for UserProfile match the updated backend shape.",
+        "Existing chat functionality (rooms, messaging) continues to work after the profile type change."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/profile/ProfileSetupDialog.tsx",
+          "operation": "modify",
+          "description": "Update initial profile creation to send the full UserProfile shape (name + bio + avatar defaults) when calling saveCallerUserProfile; keep validation and English error messages. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useUserProfile.ts",
+          "operation": "modify",
+          "description": "Ensure profile hooks remain compatible with the updated UserProfile shape and that cache invalidation continues to refresh dependent UI (header greeting, message sender display). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/chat/MessageThread.tsx",
+          "operation": "modify",
+          "description": "Render message sender display using the updated UserProfile fields where available (e.g., name + avatar config) while preserving current fallbacks when profile is missing; ensure messaging UI still works. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/profile/UserAvatar.tsx",
+          "operation": "create",
+          "description": "Add a small reusable avatar renderer that maps UserProfile.avatar configuration to a consistent UI (e.g., background/text color and overlay/initial), used by header and message bubbles. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "summary": "Add an in-app Profile editor UI to view and update display name, bio, and avatar configuration.",
+      "acceptanceCriteria": [
+        "Authenticated users have an obvious way to open a 'Profile' editor from the app (e.g., from the header).",
+        "The profile editor pre-fills the current profile values and allows updating them.",
+        "Saving profile changes calls the backend save profile API and updates the UI to reflect the new values (including the header greeting and message sender display where applicable).",
+        "Validation prevents saving an empty display name and shows an English error message when validation fails or the save call fails."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/profile/ProfileEditorDialog.tsx",
+          "operation": "create",
+          "description": "Create a dialog-based Profile editor (shadcn/ui Dialog) that loads current profile, pre-fills fields (display name, bio, avatar configuration), validates non-empty display name, saves via useSaveCallerUserProfile, and shows English success/failure messaging (sonner). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire a 'Profile' action into the authenticated header (e.g., button/menu) to open ProfileEditorDialog; update header greeting to reflect saved changes and optionally show the configured avatar via UserAvatar. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/chat/MessageThread.tsx",
+          "operation": "modify",
+          "description": "Use UserAvatar (and updated name) in MessageBubble so that saved profile changes are reflected in sender display when cached profiles refresh. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "summary": "Fetch/store per-user settings (theme + polling interval) and apply them to theme and message polling behavior with safe defaults.",
+      "acceptanceCriteria": [
+        "Settings include a theme preference with allowed values: light, dark, system.",
+        "Settings include a message polling interval preference (in seconds) that is used by the frontend to control how frequently messages refetch for the selected room.",
+        "If a user has no saved settings, the app uses defaults (system theme, current polling behavior) without errors."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useUserPreferences.ts",
+          "operation": "create",
+          "description": "Add React Query hooks for getCallerUserPreferences and setCallerUserPreferences with caching, default handling when null, and query invalidation after save. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useRoomMessages.ts",
+          "operation": "modify",
+          "description": "Allow message polling interval to be configurable (derive refetchInterval from user settings when available, otherwise keep current behavior); ensure changes apply without full refresh by reacting to updated settings. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Load authenticated user's preferences, apply theme preference through the existing next-themes ThemeProvider (respecting light/dark/system), and pass polling interval configuration down to message polling (directly or via updated hooks). Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "summary": "Add an in-app Settings UI to change theme and message polling interval and persist them, with immediate effect.",
+      "acceptanceCriteria": [
+        "Authenticated users can open a 'Settings' UI from the app (e.g., from the header).",
+        "Changing theme updates the app theme immediately using the existing ThemeProvider setup and persists the choice via the backend settings API.",
+        "Changing polling interval updates message polling behavior (without requiring a full page refresh) and persists the choice via the backend settings API.",
+        "All settings UI user-facing strings are in English and failures show readable English error messages."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/settings/SettingsDialog.tsx",
+          "operation": "create",
+          "description": "Create a dialog-based Settings UI (shadcn/ui Dialog + form controls) to edit theme (light/dark/system) and polling interval (seconds), persist via settings hook, apply theme immediately via next-themes, and show English error messages on failure. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire a 'Settings' action into the authenticated header to open SettingsDialog; ensure the current settings are passed in/pre-filled and that updates immediately affect theme and polling behavior. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useRoomMessages.ts",
+          "operation": "modify",
+          "description": "Ensure changes to polling interval made in SettingsDialog propagate to active room polling without a full refresh (via hook args/deps and React Query refetchInterval updates). Verify the component's usage instructions before implementing."
+        }
+      ]
+    }
+  ]
+}
