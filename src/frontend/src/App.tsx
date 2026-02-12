@@ -1,5 +1,7 @@
 import { useInternetIdentity } from './hooks/useInternetIdentity';
 import { useGetCallerUserProfile } from './hooks/useUserProfile';
+import { useListServers } from './hooks/useServers';
+import { useIsCallerAdmin } from './hooks/useAdmin';
 import { useState, useEffect } from 'react';
 import LoginButton from './components/auth/LoginButton';
 import ProfileSetupDialog from './components/profile/ProfileSetupDialog';
@@ -8,12 +10,14 @@ import SettingsDialog from './components/settings/SettingsDialog';
 import FriendsDialog from './components/friends/FriendsDialog';
 import RoomList from './components/chat/RoomList';
 import MessageThread from './components/chat/MessageThread';
+import ServerChatView from './components/servers/ServerChatView';
 import UserAvatar from './components/profile/UserAvatar';
 import ProfileName from './components/profile/ProfileName';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Settings, User, Users, Shield, ArrowRightLeft } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { getPrincipalDisplayName, getPrincipalInitials } from './utils/principalDisplay';
@@ -23,7 +27,10 @@ import type { UserProfile } from './backend';
 function AppContent() {
   const { identity, isInitializing } = useInternetIdentity();
   const { data: userProfile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
+  const { data: servers } = useListServers();
+  const { data: isAdmin = false } = useIsCallerAdmin();
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [selectedServerId, setSelectedServerId] = useState<string | null>(null);
   const [showProfileEditor, setShowProfileEditor] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
@@ -31,6 +38,16 @@ function AppContent() {
 
   const isAuthenticated = !!identity;
   const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null;
+
+  // Clear selected server if it no longer exists
+  useEffect(() => {
+    if (selectedServerId && servers) {
+      const serverExists = servers.some(s => s.id === selectedServerId);
+      if (!serverExists) {
+        setSelectedServerId(null);
+      }
+    }
+  }, [selectedServerId, servers]);
 
   // Check for switch intent after authentication
   useEffect(() => {
@@ -138,6 +155,24 @@ function AppContent() {
   const displayProfile = userProfile || fallbackProfile;
   const displayName = userProfile ? <ProfileName profile={userProfile} /> : fallbackProfile.name;
 
+  // Handle room selection (clears server selection)
+  const handleSelectRoom = (roomId: string | null) => {
+    setSelectedRoomId(roomId);
+    setSelectedServerId(null);
+  };
+
+  // Handle server selection (clears room selection)
+  const handleSelectServer = (serverId: string | null) => {
+    setSelectedServerId(serverId);
+    setSelectedRoomId(null);
+  };
+
+  // Find selected server and check ownership
+  const selectedServer = servers?.find(s => s.id === selectedServerId);
+  const isServerOwner = selectedServer && identity 
+    ? selectedServer.owner.toString() === identity.getPrincipal().toString()
+    : false;
+
   return (
     <div className="flex h-screen flex-col bg-background">
       {/* Header */}
@@ -155,9 +190,17 @@ function AppContent() {
             {/* Always show identity display when authenticated */}
             <div className="flex items-center gap-2">
               <UserAvatar profile={displayProfile} size="sm" />
-              <span className="text-sm text-muted-foreground">
-                Hello, <span className="font-medium text-foreground">{displayName}</span>
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  Hello, <span className="font-medium text-foreground">{displayName}</span>
+                </span>
+                {isAdmin && (
+                  <Badge variant="secondary" className="text-xs gap-1">
+                    <Shield className="h-3 w-3" />
+                    Admin
+                  </Badge>
+                )}
+              </div>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -191,67 +234,70 @@ function AppContent() {
         <aside className="w-80 border-r border-border bg-card overflow-hidden flex flex-col">
           <RoomList 
             selectedRoomId={selectedRoomId} 
-            onSelectRoom={setSelectedRoomId} 
+            onSelectRoom={handleSelectRoom}
+            selectedServerId={selectedServerId}
+            onSelectServer={handleSelectServer}
           />
         </aside>
 
-        {/* Message Thread */}
+        {/* Main Content Area */}
         <main className="flex-1 overflow-hidden">
-          <MessageThread roomId={selectedRoomId} pollingInterval={pollingInterval} />
+          {selectedServer ? (
+            <ServerChatView 
+              server={selectedServer} 
+              isOwner={isServerOwner}
+              pollingInterval={pollingInterval}
+            />
+          ) : (
+            <MessageThread 
+              roomId={selectedRoomId} 
+              pollingInterval={pollingInterval}
+            />
+          )}
         </main>
       </div>
 
       {/* Footer */}
       <footer className="border-t border-border bg-card px-6 py-3">
-        <p className="text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} TerrorChat · Built with love using{' '}
-          <a 
-            href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-foreground transition-colors"
-          >
-            caffeine.ai
-          </a>
-        </p>
+        <div className="flex items-center justify-center text-sm text-muted-foreground">
+          <span>© {new Date().getFullYear()} Built with ❤️ using{' '}
+            <a 
+              href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              caffeine.ai
+            </a>
+          </span>
+        </div>
       </footer>
 
-      {/* Profile Setup Dialog */}
-      {showProfileSetup && <ProfileSetupDialog />}
-      
-      {/* Profile Editor Dialog - now opens even when profile is null */}
+      {/* Dialogs */}
+      <ProfileSetupDialog open={showProfileSetup} />
       <ProfileEditorDialog 
         open={showProfileEditor} 
         onOpenChange={setShowProfileEditor}
       />
-
-      {/* Settings Dialog */}
-      {showSettings && (
-        <SettingsDialog 
-          open={showSettings} 
-          onOpenChange={setShowSettings}
-          pollingInterval={pollingInterval}
-          onPollingIntervalChange={setPollingInterval}
-        />
-      )}
-
-      {/* Friends Dialog */}
-      {showFriends && (
-        <FriendsDialog 
-          open={showFriends} 
-          onOpenChange={setShowFriends}
-        />
-      )}
-
-      <Toaster />
+      <SettingsDialog 
+        open={showSettings} 
+        onOpenChange={setShowSettings}
+        pollingInterval={pollingInterval}
+        onPollingIntervalChange={setPollingInterval}
+      />
+      <FriendsDialog 
+        open={showFriends} 
+        onOpenChange={setShowFriends}
+      />
     </div>
   );
 }
 
 export default function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem themes={['light', 'dark', 'black', 'system']}>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <AppContent />
+      <Toaster />
     </ThemeProvider>
   );
 }

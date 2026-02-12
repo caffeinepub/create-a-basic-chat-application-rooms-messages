@@ -11,16 +11,82 @@ import { useTheme } from 'next-themes';
 import { useGetLinkedAltAccounts, useGetPendingAltRequests, useLinkAltAccount, useAcceptAltAccount, useUnlinkAltAccount } from '@/hooks/useAltAccounts';
 import { useGetUserProfile } from '@/hooks/useUserProfile';
 import { useInternetIdentity } from '@/hooks/useInternetIdentity';
+import { useIsCallerAdmin, useClaimAdmin } from '@/hooks/useAdmin';
 import { useQueryClient } from '@tanstack/react-query';
 import { Principal } from '@icp-sdk/core/principal';
 import { setSwitchIntent } from '@/utils/altAccountSwitch';
-import { Users, UserPlus, Check, X, ArrowRightLeft } from 'lucide-react';
+import { Users, UserPlus, Check, X, ArrowRightLeft, Shield } from 'lucide-react';
 
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   pollingInterval: number;
   onPollingIntervalChange: (interval: number) => void;
+}
+
+function LinkedAccountItem({ principal, onSwitch, onUnlink }: { 
+  principal: Principal; 
+  onSwitch: (p: Principal) => void;
+  onUnlink: (p: Principal) => void;
+}) {
+  const { data: profile } = useGetUserProfile(principal);
+  
+  return (
+    <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-accent/50">
+      <span className="text-sm font-mono truncate flex-1">
+        {profile?.name || principal.toString().slice(0, 20) + '...'}
+      </span>
+      <div className="flex gap-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => onSwitch(principal)}
+          className="gap-1 h-7 px-2"
+        >
+          <ArrowRightLeft className="h-3 w-3" />
+          Switch
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => onUnlink(principal)}
+          className="gap-1 h-7 px-2 text-destructive hover:text-destructive"
+        >
+          <X className="h-3 w-3" />
+          Unlink
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function PendingRequestItem({ requester, onAccept }: { 
+  requester: Principal; 
+  onAccept: (p: Principal) => void;
+}) {
+  const { data: profile } = useGetUserProfile(requester);
+  const acceptMutation = useAcceptAltAccount();
+  
+  return (
+    <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-primary/10 border border-primary/20">
+      <span className="text-sm font-mono truncate flex-1">
+        {profile?.name || requester.toString().slice(0, 20) + '...'}
+      </span>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => onAccept(requester)}
+        disabled={acceptMutation.isPending}
+        className="gap-1 h-7 px-2"
+      >
+        <Check className="h-3 w-3" />
+        Accept
+      </Button>
+    </div>
+  );
 }
 
 export default function SettingsDialog({ open, onOpenChange, pollingInterval, onPollingIntervalChange }: SettingsDialogProps) {
@@ -35,9 +101,11 @@ export default function SettingsDialog({ open, onOpenChange, pollingInterval, on
 
   const { data: linkedAccounts = [], isLoading: linkedLoading } = useGetLinkedAltAccounts();
   const { data: pendingRequests, isLoading: pendingLoading } = useGetPendingAltRequests();
+  const { data: isAdmin = false, isLoading: adminLoading } = useIsCallerAdmin();
   const linkMutation = useLinkAltAccount();
   const acceptMutation = useAcceptAltAccount();
   const unlinkMutation = useUnlinkAltAccount();
+  const claimAdminMutation = useClaimAdmin();
 
   useEffect(() => {
     setThemeValue(theme || 'system');
@@ -136,6 +204,20 @@ export default function SettingsDialog({ open, onOpenChange, pollingInterval, on
     }
   };
 
+  const handleClaimAdmin = async () => {
+    try {
+      await claimAdminMutation.mutateAsync();
+      toast.success('Admin access claimed successfully!');
+    } catch (error: any) {
+      console.error('Failed to claim admin:', error);
+      if (error.message?.includes('already exists')) {
+        toast.error('An admin already exists for this application');
+      } else {
+        toast.error(error.message || 'Failed to claim admin access');
+      }
+    }
+  };
+
   const hasAltAccounts = linkedAccounts.length > 0 || (pendingRequests?.incoming.length ?? 0) > 0;
 
   return (
@@ -162,126 +244,154 @@ export default function SettingsDialog({ open, onOpenChange, pollingInterval, on
                   <SelectContent>
                     <SelectItem value="light">Light</SelectItem>
                     <SelectItem value="dark">Dark</SelectItem>
-                    <SelectItem value="black">Black</SelectItem>
-                    <SelectItem value="system">System Default</SelectItem>
+                    <SelectItem value="system">System</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
-                  Choose your preferred color scheme
-                </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="polling">Message Polling Interval (seconds)</Label>
+                <Label htmlFor="polling">Polling Interval (seconds)</Label>
                 <Input
                   id="polling"
                   type="number"
                   min="0"
                   step="0.5"
-                  placeholder="3"
                   value={pollingIntervalSeconds}
                   onChange={(e) => setPollingIntervalSeconds(e.target.value)}
+                  placeholder="3"
                 />
                 <p className="text-xs text-muted-foreground">
-                  How often to check for new messages (0 disables auto-refresh)
+                  How often to check for new messages (0 = disabled)
                 </p>
               </div>
 
               <Separator />
 
-              {/* Alternate Accounts Section */}
-              <div className="space-y-4">
+              {/* Admin Access Section */}
+              <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold">Alternate Accounts</h3>
+                  <Shield className="h-4 w-4 text-primary" />
+                  <Label className="text-base font-semibold">Admin Access</Label>
+                </div>
+                {adminLoading ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    Loading admin status...
+                  </div>
+                ) : isAdmin ? (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Check className="h-4 w-4 text-green-600" />
+                    <span className="text-foreground font-medium">You are an admin</span>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">You are not an admin</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleClaimAdmin}
+                      disabled={claimAdminMutation.isPending}
+                      className="gap-2"
+                    >
+                      {claimAdminMutation.isPending ? (
+                        <>
+                          <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                          Claiming...
+                        </>
+                      ) : (
+                        <>
+                          <Shield className="h-3 w-3" />
+                          Claim admin access
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Alternate Accounts Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-primary" />
+                  <Label className="text-base font-semibold">Alternate Accounts</Label>
                 </div>
 
                 {/* Linked Accounts */}
                 {linkedLoading ? (
-                  <div className="text-sm text-muted-foreground">Loading linked accounts...</div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    Loading linked accounts...
+                  </div>
                 ) : linkedAccounts.length > 0 ? (
                   <div className="space-y-2">
-                    <Label>Linked Accounts</Label>
-                    <div className="space-y-2">
-                      {linkedAccounts.map((principal) => (
-                        <LinkedAccountItem
-                          key={principal.toString()}
-                          principal={principal}
-                          onSwitch={handleSwitchAccount}
-                          onUnlink={setUnlinkTarget}
-                        />
-                      ))}
-                    </div>
+                    <p className="text-sm text-muted-foreground">Linked accounts:</p>
+                    {linkedAccounts.map((principal) => (
+                      <LinkedAccountItem
+                        key={principal.toString()}
+                        principal={principal}
+                        onSwitch={handleSwitchAccount}
+                        onUnlink={setUnlinkTarget}
+                      />
+                    ))}
                   </div>
                 ) : null}
 
-                {/* Pending Incoming Requests */}
-                {pendingLoading ? (
-                  <div className="text-sm text-muted-foreground">Loading pending requests...</div>
-                ) : (pendingRequests?.incoming.length ?? 0) > 0 ? (
+                {/* Pending Requests */}
+                {pendingLoading ? null : (pendingRequests?.incoming.length ?? 0) > 0 ? (
                   <div className="space-y-2">
-                    <Label>Pending Requests</Label>
-                    <div className="space-y-2">
-                      {pendingRequests!.incoming.map((request) => (
-                        <PendingRequestItem
-                          key={request.requester.toString()}
-                          request={request}
-                          onAccept={handleAcceptRequest}
-                          isAccepting={acceptMutation.isPending}
-                        />
-                      ))}
-                    </div>
+                    <p className="text-sm text-muted-foreground">Pending requests:</p>
+                    {pendingRequests!.incoming.map((request) => (
+                      <PendingRequestItem
+                        key={request.requester.toString()}
+                        requester={request.requester}
+                        onAccept={handleAcceptRequest}
+                      />
+                    ))}
                   </div>
                 ) : null}
-
-                {/* Empty State */}
-                {!linkedLoading && !pendingLoading && !hasAltAccounts && (
-                  <p className="text-sm text-muted-foreground">
-                    No linked accounts yet. Link an alternate account to switch between them.
-                  </p>
-                )}
 
                 {/* Link New Account */}
                 <div className="space-y-2">
-                  <Label htmlFor="altPrincipal">Link Alternate Account</Label>
+                  <Label htmlFor="altPrincipal" className="text-sm">Link new account</Label>
                   <div className="flex gap-2">
                     <Input
                       id="altPrincipal"
-                      placeholder="Enter principal ID"
+                      type="text"
                       value={newAltPrincipal}
                       onChange={(e) => setNewAltPrincipal(e.target.value)}
-                      disabled={linkMutation.isPending}
+                      placeholder="Enter Principal ID"
+                      className="font-mono text-xs"
                     />
                     <Button
                       type="button"
-                      size="icon"
+                      variant="outline"
+                      size="sm"
                       onClick={handleLinkAltAccount}
                       disabled={linkMutation.isPending || !newAltPrincipal.trim()}
+                      className="gap-1 whitespace-nowrap"
                     >
                       {linkMutation.isPending ? (
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                       ) : (
-                        <UserPlus className="h-4 w-4" />
+                        <UserPlus className="h-3 w-3" />
                       )}
+                      Link
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Send a link request to another account you own
-                  </p>
                 </div>
+
+                {!hasAltAccounts && !linkedLoading && !pendingLoading && (
+                  <p className="text-xs text-muted-foreground">
+                    No linked accounts yet. Enter a Principal ID above to send a link request.
+                  </p>
+                )}
               </div>
             </div>
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit">
-                Save Settings
-              </Button>
+              <Button type="submit">Save Settings</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -291,97 +401,19 @@ export default function SettingsDialog({ open, onOpenChange, pollingInterval, on
       <AlertDialog open={!!unlinkTarget} onOpenChange={(open) => !open && setUnlinkTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Unlink Alternate Account?</AlertDialogTitle>
+            <AlertDialogTitle>Unlink Alternate Account</AlertDialogTitle>
             <AlertDialogDescription>
-              This will remove the link between your accounts. You can always link them again later.
+              Are you sure you want to unlink this alternate account? You can link it again later if needed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleUnlink} disabled={unlinkMutation.isPending}>
-              {unlinkMutation.isPending ? 'Unlinking...' : 'Unlink'}
+            <AlertDialogAction onClick={handleUnlink} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Unlink
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
-  );
-}
-
-function LinkedAccountItem({ 
-  principal, 
-  onSwitch, 
-  onUnlink 
-}: { 
-  principal: Principal; 
-  onSwitch: (p: Principal) => void; 
-  onUnlink: (p: Principal) => void;
-}) {
-  const { data: profile } = useGetUserProfile(principal);
-  const displayName = profile?.name || principal.toString().slice(0, 10) + '...';
-
-  return (
-    <div className="flex items-center justify-between rounded-lg border border-border bg-card p-3">
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{displayName}</p>
-        <p className="text-xs text-muted-foreground truncate">{principal.toString()}</p>
-      </div>
-      <div className="flex gap-2 ml-2">
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={() => onSwitch(principal)}
-          className="gap-1"
-        >
-          <ArrowRightLeft className="h-3 w-3" />
-          Switch
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          onClick={() => onUnlink(principal)}
-        >
-          <X className="h-3 w-3" />
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function PendingRequestItem({ 
-  request, 
-  onAccept,
-  isAccepting 
-}: { 
-  request: { requester: Principal }; 
-  onAccept: (p: Principal) => void;
-  isAccepting: boolean;
-}) {
-  const { data: profile } = useGetUserProfile(request.requester);
-  const displayName = profile?.name || request.requester.toString().slice(0, 10) + '...';
-
-  return (
-    <div className="flex items-center justify-between rounded-lg border border-border bg-card p-3">
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{displayName}</p>
-        <p className="text-xs text-muted-foreground truncate">{request.requester.toString()}</p>
-      </div>
-      <Button
-        type="button"
-        size="sm"
-        onClick={() => onAccept(request.requester)}
-        disabled={isAccepting}
-        className="gap-1 ml-2"
-      >
-        {isAccepting ? (
-          <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        ) : (
-          <Check className="h-3 w-3" />
-        )}
-        Accept
-      </Button>
-    </div>
   );
 }

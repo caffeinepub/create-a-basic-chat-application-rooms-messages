@@ -4,9 +4,18 @@ import type { UserProfile } from '../../backend';
 interface UserAvatarProps {
   profile: UserProfile;
   size?: 'sm' | 'md' | 'lg';
+  fallbackInitials?: string;
+  fallbackColor?: string;
+  fallbackBgColor?: string;
 }
 
-export default function UserAvatar({ profile, size = 'md' }: UserAvatarProps) {
+export default function UserAvatar({ 
+  profile, 
+  size = 'md',
+  fallbackInitials,
+  fallbackColor,
+  fallbackBgColor
+}: UserAvatarProps) {
   const [imageError, setImageError] = useState(false);
   
   const sizeClasses = {
@@ -15,7 +24,9 @@ export default function UserAvatar({ profile, size = 'md' }: UserAvatarProps) {
     lg: 'h-20 w-20 text-2xl',
   };
 
-  const initial = profile.textOverlays || profile.name.charAt(0).toUpperCase();
+  const initial = fallbackInitials || profile.textOverlays || profile.name.charAt(0).toUpperCase();
+  const color = fallbackColor || profile.color;
+  const backgroundColor = fallbackBgColor || profile.backgroundColor;
 
   // If profile picture exists and hasn't errored, try to render it
   if (profile.profilePicture && !imageError) {
@@ -43,8 +54,8 @@ export default function UserAvatar({ profile, size = 'md' }: UserAvatarProps) {
     <div
       className={`flex-shrink-0 rounded-full flex items-center justify-center font-medium ${sizeClasses[size]}`}
       style={{
-        backgroundColor: profile.backgroundColor,
-        color: profile.color,
+        backgroundColor,
+        color,
       }}
     >
       {initial}

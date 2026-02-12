@@ -1,82 +1,65 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T13:31:17.414Z",
+  "generatedAt": "2026-02-12T16:28:17.392Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
+    "total": 3,
     "implemented": 2,
     "items": [
       {
-        "id": "REQ-64",
-        "summary": "Add backend support for room-scoped voice chat signaling so authenticated room members can establish WebRTC voice connections without WebSockets (polling-based signaling). The signaling layer must support creating a voice session for a room, joining/leaving, and exchanging SDP offers/answers and ICE candidates, with access control enforcing that only members of the room can read/write signaling for that room/session.",
+        "id": "REQ-111",
+        "summary": "Implement an application-level superuser/admin capability in the backend so the requesting user can obtain full permissions and access across the chat app.\n\n- Add a backend mechanism to let the first authenticated user to claim it become the app superuser (admin), and expose a query to check whether the caller is currently an admin.\n- Update backend authorization checks so admins can perform privileged operations across the app (i.e., admins are not blocked by normal ownership/member-only restrictions where applicable), while non-admin behavior remains unchanged.\n- All backend error messages surfaced to the UI must be in English (no traps with unclear text).",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
-        "id": "REQ-65",
-        "summary": "Add a frontend \"Voice\" option in the room experience that allows authenticated users to start and participate in a voice chat for the currently selected room, using WebRTC in the browser and the new backend signaling APIs with React Query polling (no WebSockets).",
+        "id": "REQ-112",
+        "summary": "Add a frontend UI in Settings to let the signed-in user view and obtain admin access, and clearly communicate the current admin status.\n\n- Add an “Admin access” section to the existing Settings dialog.\n- Show the current status (e.g., “You are an admin” / “You are not an admin”).\n- Provide a button to claim admin access (only succeeds if no admin exists yet), with English success/error toasts.\n- If the user is an admin, show a subtle “Admin” indicator in the authenticated header area (English label).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useVoiceSession.ts",
-          "frontend/src/components/voice/VoicePanel.tsx",
-          "frontend/src/components/chat/MessageThread.tsx"
+          "frontend/src/hooks/useAdmin.ts",
+          "frontend/src/backend.d.ts",
+          "frontend/src/components/settings/SettingsDialog.tsx",
+          "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useVoiceSession.ts",
-          "frontend/src/components/voice/VoicePanel.tsx",
-          "frontend/src/components/chat/MessageThread.tsx"
+          "frontend/src/hooks/useAdmin.ts",
+          "frontend/src/components/settings/SettingsDialog.tsx",
+          "frontend/src/App.tsx"
         ]
       },
       {
-        "id": "REQ-66",
-        "summary": "Implement a user profile viewing UI so a user can view another user’s profile details, including profile picture, display name, and bio, from existing places where other users appear (e.g., message sender and friends list).",
+        "id": "REQ-113",
+        "summary": "Add a basic “Search in chat” feature for both room chat and server chat views.\n\n- Provide a search input that filters the currently loaded messages in the active thread (room messages and server announcements) by text content.\n- The filtering must be client-side (no new backend indexing requirement).\n- Use English placeholder/labels (e.g., “Search messages…”), and show an English empty-state when no matches are found.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/profile/ProfileViewerDialog.tsx",
-          "frontend/src/hooks/useUserProfile.ts",
           "frontend/src/components/chat/MessageThread.tsx",
-          "frontend/src/components/friends/FriendsDialog.tsx",
-          "frontend/src/components/chat/InviteToRoomDialog.tsx"
+          "frontend/src/components/servers/ServerAnnouncementThread.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/profile/ProfileViewerDialog.tsx",
-          "frontend/src/hooks/useUserProfile.ts",
           "frontend/src/components/chat/MessageThread.tsx",
-          "frontend/src/components/friends/FriendsDialog.tsx",
-          "frontend/src/components/chat/InviteToRoomDialog.tsx"
+          "frontend/src/components/servers/ServerAnnouncementThread.tsx"
         ]
-      },
-      {
-        "id": "REQ-67",
-        "summary": "Ensure the backend profile-read path reliably supports displaying profiles to other authenticated users, including profile picture retrieval, without traps for valid authenticated callers.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/chat/InviteToRoomDialog.tsx",
+    "frontend/src/App.tsx",
     "frontend/src/components/chat/MessageThread.tsx",
-    "frontend/src/components/friends/FriendsDialog.tsx",
-    "frontend/src/components/profile/ProfileViewerDialog.tsx",
-    "frontend/src/components/voice/VoicePanel.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useUserProfile.ts",
-    "frontend/src/hooks/useVoiceSession.ts",
+    "frontend/src/components/servers/ServerAnnouncementThread.tsx",
+    "frontend/src/components/settings/SettingsDialog.tsx",
+    "frontend/src/hooks/useAdmin.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -25,22 +25,31 @@ export const IceCandidate = IDL.Record({
   'candidate' : IDL.Text,
   'sdpMLineIndex' : IDL.Nat,
 });
+export const ServerId = IDL.Text;
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
-export const ServerId = IDL.Text;
+export const RoomMemberRole = IDL.Variant({
+  'member' : IDL.Null,
+  'admin' : IDL.Null,
+  'moderator' : IDL.Null,
+  'owner' : IDL.Null,
+});
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const Time = IDL.Int;
 export const MessageId = IDL.Nat;
-export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const ChatMessage = IDL.Record({
   'id' : MessageId,
+  'isDeleted' : IDL.Bool,
   'content' : IDL.Text,
+  'video' : IDL.Opt(ExternalBlob),
   'sender' : User,
   'timestamp' : Time,
   'image' : IDL.Opt(ExternalBlob),
   'roomId' : RoomId,
+  'isPinned' : IDL.Bool,
 });
 export const UserProfile = IDL.Record({
   'bio' : IDL.Text,
@@ -62,11 +71,35 @@ export const AltAccountRequest = IDL.Record({
   'altAccount' : User,
   'createdAt' : Time,
 });
-export const Server = IDL.Record({
-  'id' : ServerId,
-  'owner' : User,
+export const Room = IDL.Record({
+  'id' : RoomId,
+  'creator' : User,
   'name' : IDL.Text,
   'createdAt' : Time,
+});
+export const RoomMember = IDL.Record({
+  'role' : RoomMemberRole,
+  'user' : User,
+});
+export const ServerAnnouncement = IDL.Record({
+  'id' : IDL.Nat,
+  'isDeleted' : IDL.Bool,
+  'content' : IDL.Text,
+  'video' : IDL.Opt(ExternalBlob),
+  'author' : User,
+  'timestamp' : Time,
+  'image' : IDL.Opt(ExternalBlob),
+  'isPinned' : IDL.Bool,
+});
+export const Server = IDL.Record({
+  'id' : ServerId,
+  'bio' : IDL.Text,
+  'owner' : User,
+  'icon' : IDL.Opt(ExternalBlob),
+  'name' : IDL.Text,
+  'createdAt' : Time,
+  'banner' : IDL.Opt(ExternalBlob),
+  'accentColor' : IDL.Text,
 });
 export const SdpOffer = IDL.Text;
 export const SdpAnswer = IDL.Text;
@@ -75,14 +108,9 @@ export const VoiceSessionState = IDL.Record({
   'answer' : IDL.Opt(SdpAnswer),
   'iceCandidates' : IDL.Vec(IceCandidate),
 });
-export const Room = IDL.Record({
-  'id' : RoomId,
-  'creator' : User,
-  'name' : IDL.Text,
-  'createdAt' : Time,
-});
 export const NewChatMessage = IDL.Record({
   'content' : IDL.Text,
+  'video' : IDL.Opt(ExternalBlob),
   'image' : IDL.Opt(ExternalBlob),
   'roomId' : RoomId,
 });
@@ -119,7 +147,9 @@ export const idlService = IDL.Service({
   'acceptFriendRequest' : IDL.Func([User], [], []),
   'addIceCandidate' : IDL.Func([RoomId, IceCandidate], [], []),
   'addUserToRoom' : IDL.Func([RoomId, User], [], []),
+  'addUserToServer' : IDL.Func([ServerId, User], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'assignRoomMemberRole' : IDL.Func([RoomId, User, RoomMemberRole], [], []),
   'blockUser' : IDL.Func([User], [], []),
   'createRoom' : IDL.Func([IDL.Text], [RoomId], []),
   'createServer' : IDL.Func(
@@ -127,19 +157,30 @@ export const idlService = IDL.Service({
       [
         IDL.Record({
           'id' : ServerId,
+          'bio' : IDL.Text,
           'owner' : User,
+          'icon' : IDL.Opt(ExternalBlob),
           'name' : IDL.Text,
           'createdAt' : Time,
+          'banner' : IDL.Opt(ExternalBlob),
+          'accentColor' : IDL.Text,
         }),
       ],
       [],
     ),
+  'deleteMessage' : IDL.Func([RoomId, MessageId], [], []),
+  'deleteRoom' : IDL.Func([RoomId], [IDL.Bool], []),
+  'deleteServer' : IDL.Func([ServerId], [IDL.Bool], []),
+  'deleteServerAnnouncement' : IDL.Func([ServerId, IDL.Nat], [], []),
+  'editMessage' : IDL.Func([RoomId, MessageId, IDL.Text], [], []),
+  'editServerAnnouncement' : IDL.Func([ServerId, IDL.Nat, IDL.Text], [], []),
   'endVoiceSession' : IDL.Func([RoomId], [], []),
   'fetchMessages' : IDL.Func(
       [RoomId, MessageId, IDL.Nat],
       [IDL.Vec(ChatMessage)],
       ['query'],
     ),
+  'getActiveMembers' : IDL.Func([ServerId], [IDL.Vec(User)], ['query']),
   'getCallerFriends' : IDL.Func([], [IDL.Vec(User)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
@@ -154,6 +195,22 @@ export const idlService = IDL.Service({
       ],
       ['query'],
     ),
+  'getRoom' : IDL.Func([RoomId], [IDL.Opt(Room)], ['query']),
+  'getRoomMembers' : IDL.Func([RoomId], [IDL.Vec(RoomMember)], ['query']),
+  'getRoomMembersWithPresence' : IDL.Func(
+      [RoomId],
+      [IDL.Vec(IDL.Tuple(User, IDL.Bool))],
+      ['query'],
+    ),
+  'getServerAccentColor' : IDL.Func([ServerId], [IDL.Text], ['query']),
+  'getServerAnnouncements' : IDL.Func(
+      [ServerId, IDL.Nat, IDL.Nat],
+      [IDL.Vec(ServerAnnouncement)],
+      ['query'],
+    ),
+  'getServerBanner' : IDL.Func([ServerId], [IDL.Opt(ExternalBlob)], ['query']),
+  'getServerBio' : IDL.Func([ServerId], [IDL.Text], ['query']),
+  'getServerIcon' : IDL.Func([ServerId], [IDL.Opt(ExternalBlob)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
@@ -166,17 +223,31 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'kickRoomMember' : IDL.Func([RoomId, User], [], []),
   'linkAltAccount' : IDL.Func([IDL.Principal], [], []),
   'listRooms' : IDL.Func([], [IDL.Vec(Room)], ['query']),
   'postMessage' : IDL.Func([NewChatMessage], [MessageId], []),
+  'postServerAnnouncement' : IDL.Func(
+      [ServerId, IDL.Text, IDL.Opt(ExternalBlob), IDL.Opt(ExternalBlob)],
+      [],
+      [],
+    ),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'searchUsersByName' : IDL.Func([IDL.Text], [IDL.Vec(UserProfile)], ['query']),
   'sendFriendRequest' : IDL.Func([User], [], []),
   'sendSdpAnswer' : IDL.Func([RoomId, SdpAnswer], [], []),
   'sendSdpOffer' : IDL.Func([RoomId, SdpOffer], [], []),
+  'setServerAccentColor' : IDL.Func([ServerId, IDL.Text], [], []),
+  'setServerBanner' : IDL.Func([ServerId, IDL.Opt(ExternalBlob)], [], []),
+  'setServerBio' : IDL.Func([ServerId, IDL.Text], [], []),
+  'setServerIcon' : IDL.Func([ServerId, IDL.Opt(ExternalBlob)], [], []),
   'startVoiceSession' : IDL.Func([RoomId], [], []),
+  'togglePin' : IDL.Func([RoomId, MessageId, IDL.Bool], [], []),
+  'toggleServerPin' : IDL.Func([ServerId, IDL.Nat, IDL.Bool], [], []),
   'unblockUser' : IDL.Func([User], [], []),
   'unlinkAltAccount' : IDL.Func([IDL.Principal], [], []),
+  'updatePresence' : IDL.Func([IDL.Bool], [], []),
+  'updateRoomPresence' : IDL.Func([RoomId], [], []),
 });
 
 export const idlInitArgs = [];
@@ -199,22 +270,31 @@ export const idlFactory = ({ IDL }) => {
     'candidate' : IDL.Text,
     'sdpMLineIndex' : IDL.Nat,
   });
+  const ServerId = IDL.Text;
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
-  const ServerId = IDL.Text;
+  const RoomMemberRole = IDL.Variant({
+    'member' : IDL.Null,
+    'admin' : IDL.Null,
+    'moderator' : IDL.Null,
+    'owner' : IDL.Null,
+  });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const Time = IDL.Int;
   const MessageId = IDL.Nat;
-  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const ChatMessage = IDL.Record({
     'id' : MessageId,
+    'isDeleted' : IDL.Bool,
     'content' : IDL.Text,
+    'video' : IDL.Opt(ExternalBlob),
     'sender' : User,
     'timestamp' : Time,
     'image' : IDL.Opt(ExternalBlob),
     'roomId' : RoomId,
+    'isPinned' : IDL.Bool,
   });
   const UserProfile = IDL.Record({
     'bio' : IDL.Text,
@@ -236,11 +316,32 @@ export const idlFactory = ({ IDL }) => {
     'altAccount' : User,
     'createdAt' : Time,
   });
-  const Server = IDL.Record({
-    'id' : ServerId,
-    'owner' : User,
+  const Room = IDL.Record({
+    'id' : RoomId,
+    'creator' : User,
     'name' : IDL.Text,
     'createdAt' : Time,
+  });
+  const RoomMember = IDL.Record({ 'role' : RoomMemberRole, 'user' : User });
+  const ServerAnnouncement = IDL.Record({
+    'id' : IDL.Nat,
+    'isDeleted' : IDL.Bool,
+    'content' : IDL.Text,
+    'video' : IDL.Opt(ExternalBlob),
+    'author' : User,
+    'timestamp' : Time,
+    'image' : IDL.Opt(ExternalBlob),
+    'isPinned' : IDL.Bool,
+  });
+  const Server = IDL.Record({
+    'id' : ServerId,
+    'bio' : IDL.Text,
+    'owner' : User,
+    'icon' : IDL.Opt(ExternalBlob),
+    'name' : IDL.Text,
+    'createdAt' : Time,
+    'banner' : IDL.Opt(ExternalBlob),
+    'accentColor' : IDL.Text,
   });
   const SdpOffer = IDL.Text;
   const SdpAnswer = IDL.Text;
@@ -249,14 +350,9 @@ export const idlFactory = ({ IDL }) => {
     'answer' : IDL.Opt(SdpAnswer),
     'iceCandidates' : IDL.Vec(IceCandidate),
   });
-  const Room = IDL.Record({
-    'id' : RoomId,
-    'creator' : User,
-    'name' : IDL.Text,
-    'createdAt' : Time,
-  });
   const NewChatMessage = IDL.Record({
     'content' : IDL.Text,
+    'video' : IDL.Opt(ExternalBlob),
     'image' : IDL.Opt(ExternalBlob),
     'roomId' : RoomId,
   });
@@ -293,7 +389,9 @@ export const idlFactory = ({ IDL }) => {
     'acceptFriendRequest' : IDL.Func([User], [], []),
     'addIceCandidate' : IDL.Func([RoomId, IceCandidate], [], []),
     'addUserToRoom' : IDL.Func([RoomId, User], [], []),
+    'addUserToServer' : IDL.Func([ServerId, User], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'assignRoomMemberRole' : IDL.Func([RoomId, User, RoomMemberRole], [], []),
     'blockUser' : IDL.Func([User], [], []),
     'createRoom' : IDL.Func([IDL.Text], [RoomId], []),
     'createServer' : IDL.Func(
@@ -301,19 +399,30 @@ export const idlFactory = ({ IDL }) => {
         [
           IDL.Record({
             'id' : ServerId,
+            'bio' : IDL.Text,
             'owner' : User,
+            'icon' : IDL.Opt(ExternalBlob),
             'name' : IDL.Text,
             'createdAt' : Time,
+            'banner' : IDL.Opt(ExternalBlob),
+            'accentColor' : IDL.Text,
           }),
         ],
         [],
       ),
+    'deleteMessage' : IDL.Func([RoomId, MessageId], [], []),
+    'deleteRoom' : IDL.Func([RoomId], [IDL.Bool], []),
+    'deleteServer' : IDL.Func([ServerId], [IDL.Bool], []),
+    'deleteServerAnnouncement' : IDL.Func([ServerId, IDL.Nat], [], []),
+    'editMessage' : IDL.Func([RoomId, MessageId, IDL.Text], [], []),
+    'editServerAnnouncement' : IDL.Func([ServerId, IDL.Nat, IDL.Text], [], []),
     'endVoiceSession' : IDL.Func([RoomId], [], []),
     'fetchMessages' : IDL.Func(
         [RoomId, MessageId, IDL.Nat],
         [IDL.Vec(ChatMessage)],
         ['query'],
       ),
+    'getActiveMembers' : IDL.Func([ServerId], [IDL.Vec(User)], ['query']),
     'getCallerFriends' : IDL.Func([], [IDL.Vec(User)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
@@ -328,6 +437,26 @@ export const idlFactory = ({ IDL }) => {
         ],
         ['query'],
       ),
+    'getRoom' : IDL.Func([RoomId], [IDL.Opt(Room)], ['query']),
+    'getRoomMembers' : IDL.Func([RoomId], [IDL.Vec(RoomMember)], ['query']),
+    'getRoomMembersWithPresence' : IDL.Func(
+        [RoomId],
+        [IDL.Vec(IDL.Tuple(User, IDL.Bool))],
+        ['query'],
+      ),
+    'getServerAccentColor' : IDL.Func([ServerId], [IDL.Text], ['query']),
+    'getServerAnnouncements' : IDL.Func(
+        [ServerId, IDL.Nat, IDL.Nat],
+        [IDL.Vec(ServerAnnouncement)],
+        ['query'],
+      ),
+    'getServerBanner' : IDL.Func(
+        [ServerId],
+        [IDL.Opt(ExternalBlob)],
+        ['query'],
+      ),
+    'getServerBio' : IDL.Func([ServerId], [IDL.Text], ['query']),
+    'getServerIcon' : IDL.Func([ServerId], [IDL.Opt(ExternalBlob)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
@@ -340,9 +469,15 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'kickRoomMember' : IDL.Func([RoomId, User], [], []),
     'linkAltAccount' : IDL.Func([IDL.Principal], [], []),
     'listRooms' : IDL.Func([], [IDL.Vec(Room)], ['query']),
     'postMessage' : IDL.Func([NewChatMessage], [MessageId], []),
+    'postServerAnnouncement' : IDL.Func(
+        [ServerId, IDL.Text, IDL.Opt(ExternalBlob), IDL.Opt(ExternalBlob)],
+        [],
+        [],
+      ),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'searchUsersByName' : IDL.Func(
         [IDL.Text],
@@ -352,9 +487,17 @@ export const idlFactory = ({ IDL }) => {
     'sendFriendRequest' : IDL.Func([User], [], []),
     'sendSdpAnswer' : IDL.Func([RoomId, SdpAnswer], [], []),
     'sendSdpOffer' : IDL.Func([RoomId, SdpOffer], [], []),
+    'setServerAccentColor' : IDL.Func([ServerId, IDL.Text], [], []),
+    'setServerBanner' : IDL.Func([ServerId, IDL.Opt(ExternalBlob)], [], []),
+    'setServerBio' : IDL.Func([ServerId, IDL.Text], [], []),
+    'setServerIcon' : IDL.Func([ServerId, IDL.Opt(ExternalBlob)], [], []),
     'startVoiceSession' : IDL.Func([RoomId], [], []),
+    'togglePin' : IDL.Func([RoomId, MessageId, IDL.Bool], [], []),
+    'toggleServerPin' : IDL.Func([ServerId, IDL.Nat, IDL.Bool], [], []),
     'unblockUser' : IDL.Func([User], [], []),
     'unlinkAltAccount' : IDL.Func([IDL.Principal], [], []),
+    'updatePresence' : IDL.Func([IDL.Bool], [], []),
+    'updateRoomPresence' : IDL.Func([RoomId], [], []),
   });
 };
 

@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import UserAvatar from './UserAvatar';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, User, Palette, Image as ImageIcon } from 'lucide-react';
 import type { UserProfile } from '../../backend';
 import { ExternalBlob } from '../../backend';
 
@@ -25,6 +26,10 @@ const AVATAR_COLORS = [
   { bg: '#EA580C', text: '#FFFFFF', label: 'Orange' },
   { bg: '#0891B2', text: '#FFFFFF', label: 'Cyan' },
   { bg: '#DB2777', text: '#FFFFFF', label: 'Pink' },
+  { bg: '#65A30D', text: '#FFFFFF', label: 'Lime' },
+  { bg: '#7C3AED', text: '#FFFFFF', label: 'Violet' },
+  { bg: '#0D9488', text: '#FFFFFF', label: 'Teal' },
+  { bg: '#C026D3', text: '#FFFFFF', label: 'Fuchsia' },
 ];
 
 export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEditorDialogProps) {
@@ -92,7 +97,7 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size must be less than 5MB');
+      toast.error('Image must be smaller than 5MB');
       return;
     }
 
@@ -103,30 +108,32 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
       const blob = ExternalBlob.fromBytes(uint8Array).withUploadProgress((percentage) => {
         setUploadProgress(percentage);
       });
-      
+
       setProfilePicture(blob);
       
-      // Clean up old preview URL
+      // Create preview URL
+      const blobUrl = URL.createObjectURL(file);
       if (previewUrl && previewUrl.startsWith('blob:')) {
         URL.revokeObjectURL(previewUrl);
       }
-      
-      // Create new preview URL
-      const blobUrl = URL.createObjectURL(file);
       setPreviewUrl(blobUrl);
-      setUploadProgress(0);
+      
+      toast.success('Image selected successfully');
     } catch (error) {
       console.error('Failed to process image:', error);
-      toast.error('Failed to process image. Please try again.');
+      toast.error('Failed to process image');
+    } finally {
+      setUploadProgress(0);
     }
   };
 
   const handleRemovePicture = () => {
-    setProfilePicture(undefined);
     if (previewUrl && previewUrl.startsWith('blob:')) {
       URL.revokeObjectURL(previewUrl);
     }
+    setProfilePicture(undefined);
     setPreviewUrl(null);
+    toast.success('Profile picture removed');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -145,7 +152,7 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
       color: selectedColor.text,
       backgroundColor: selectedColor.bg,
       textOverlays: trimmedName.charAt(0).toUpperCase(),
-      profilePicture: profilePicture, // Will be undefined if cleared
+      profilePicture: profilePicture,
     };
 
     try {
@@ -158,132 +165,205 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
     }
   };
 
+  // Preview profile for live updates
   const previewProfile: UserProfile = {
-    name: name || 'Preview',
+    name: name || 'Your Name',
     bio: bio,
     avatarType: 'default',
     color: selectedColor.text,
     backgroundColor: selectedColor.bg,
-    textOverlays: (name || 'P').charAt(0).toUpperCase(),
+    textOverlays: (name || 'Y').charAt(0).toUpperCase(),
     profilePicture: profilePicture,
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{currentProfile ? 'Edit Profile' : 'Create Profile'}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Customize Your Profile
+          </DialogTitle>
           <DialogDescription>
-            {currentProfile 
-              ? 'Update your display name, bio, and avatar appearance.'
-              : 'Set up your profile to get started.'}
+            Personalize your account with a unique name, bio, avatar color, and profile picture.
           </DialogDescription>
         </DialogHeader>
+        
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4 py-4">
-            <div className="flex justify-center">
-              <UserAvatar profile={previewProfile} size="lg" />
-            </div>
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="basic">
+                <User className="h-4 w-4 mr-2" />
+                Basic Info
+              </TabsTrigger>
+              <TabsTrigger value="appearance">
+                <Palette className="h-4 w-4 mr-2" />
+                Appearance
+              </TabsTrigger>
+              <TabsTrigger value="picture">
+                <ImageIcon className="h-4 w-4 mr-2" />
+                Picture
+              </TabsTrigger>
+            </TabsList>
 
-            <div className="space-y-2">
-              <Label>Profile Picture</Label>
-              <div className="flex flex-col gap-2">
+            <TabsContent value="basic" className="space-y-4 py-4">
+              <div className="flex justify-center mb-4">
+                <UserAvatar profile={previewProfile} size="lg" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="name">Display Name *</Label>
+                <Input
+                  id="name"
+                  placeholder="Enter your display name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  disabled={saveProfile.isPending}
+                  maxLength={50}
+                />
+                <p className="text-xs text-muted-foreground">
+                  This is how others will see you in TerrorChat
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea
+                  id="bio"
+                  placeholder="Tell others about yourself..."
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  disabled={saveProfile.isPending}
+                  rows={4}
+                  maxLength={500}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {bio.length}/500 characters
+                </p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="appearance" className="space-y-4 py-4">
+              <div className="flex justify-center mb-4">
+                <UserAvatar profile={previewProfile} size="lg" />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Avatar Color</Label>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Choose a color for your avatar background
+                </p>
+                <div className="grid grid-cols-4 gap-3">
+                  {AVATAR_COLORS.map((color) => (
+                    <button
+                      key={color.bg}
+                      type="button"
+                      onClick={() => setSelectedColor(color)}
+                      disabled={saveProfile.isPending}
+                      className={`
+                        relative h-16 rounded-lg transition-all
+                        ${selectedColor.bg === color.bg 
+                          ? 'ring-2 ring-primary ring-offset-2 scale-105' 
+                          : 'hover:scale-105'
+                        }
+                      `}
+                      style={{ backgroundColor: color.bg }}
+                      aria-label={`Select ${color.label} color`}
+                    >
+                      <span className="absolute inset-0 flex items-center justify-center text-sm font-medium" style={{ color: color.text }}>
+                        {color.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="picture" className="space-y-4 py-4">
+              <div className="flex justify-center mb-4">
+                <UserAvatar profile={previewProfile} size="lg" />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Profile Picture</Label>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Upload a custom profile picture (optional)
+                </p>
+
                 {previewUrl ? (
-                  <div className="relative">
-                    <img 
-                      src={previewUrl} 
-                      alt="Profile preview" 
-                      className="w-full h-32 object-cover rounded-lg border border-border"
-                    />
+                  <div className="space-y-3">
+                    <div className="relative w-full aspect-square max-w-xs mx-auto rounded-lg overflow-hidden border-2 border-border">
+                      <img 
+                        src={previewUrl} 
+                        alt="Profile preview" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                     <Button
                       type="button"
                       variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2"
                       onClick={handleRemovePicture}
+                      disabled={saveProfile.isPending}
+                      className="w-full"
                     >
-                      <X className="h-4 w-4" />
+                      <X className="mr-2 h-4 w-4" />
+                      Remove Picture
                     </Button>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors">
-                    <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                    <span className="text-sm text-muted-foreground">Click to upload image</span>
-                    <input
+                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                    <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                    <Label htmlFor="picture-upload" className="cursor-pointer">
+                      <span className="text-sm text-primary hover:underline">
+                        Click to upload
+                      </span>
+                      <span className="text-sm text-muted-foreground"> or drag and drop</span>
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      PNG, JPG, GIF up to 5MB
+                    </p>
+                    <Input
+                      id="picture-upload"
                       type="file"
                       accept="image/*"
-                      className="hidden"
                       onChange={handleFileSelect}
                       disabled={saveProfile.isPending}
-                    />
-                  </label>
-                )}
-                {uploadProgress > 0 && uploadProgress < 100 && (
-                  <div className="w-full bg-secondary rounded-full h-2">
-                    <div 
-                      className="bg-primary h-2 rounded-full transition-all"
-                      style={{ width: `${uploadProgress}%` }}
+                      className="hidden"
                     />
                   </div>
                 )}
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="name">Display Name</Label>
-              <Input
-                id="name"
-                placeholder="Enter your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={saveProfile.isPending}
-              />
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                placeholder="Tell us about yourself..."
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                disabled={saveProfile.isPending}
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Avatar Color (fallback)</Label>
-              <div className="grid grid-cols-4 gap-2">
-                {AVATAR_COLORS.map((color) => (
-                  <button
-                    key={color.bg}
-                    type="button"
-                    onClick={() => setSelectedColor(color)}
-                    className={`h-12 rounded-lg border-2 transition-all ${
-                      selectedColor.bg === color.bg
-                        ? 'border-foreground scale-105'
-                        : 'border-border hover:border-muted-foreground'
-                    }`}
-                    style={{ backgroundColor: color.bg }}
-                    title={color.label}
-                  >
-                    <span className="sr-only">{color.label}</span>
-                  </button>
-                ))}
+                {uploadProgress > 0 && uploadProgress < 100 && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Uploading...</span>
+                      <span className="text-foreground font-medium">{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+                      <div 
+                        className="bg-primary h-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
+            </TabsContent>
+          </Tabs>
+
+          <DialogFooter className="mt-6">
+            <Button 
+              type="button" 
+              variant="outline" 
               onClick={() => onOpenChange(false)}
               disabled={saveProfile.isPending}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={saveProfile.isPending || !name.trim()}>
+            <Button 
+              type="submit" 
+              disabled={saveProfile.isPending || !name.trim()}
+            >
               {saveProfile.isPending ? (
                 <>
                   <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />

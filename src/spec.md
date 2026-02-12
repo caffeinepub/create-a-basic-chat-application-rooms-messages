@@ -1,12 +1,14 @@
 # Specification
 
 ## Summary
-**Goal:** Add room-scoped WebRTC voice chat (polling-based signaling) and enable viewing other users’ profiles including profile pictures.
+**Goal:** Add an application-level superuser/admin capability for the requesting account and introduce basic chat message search to improve usability.
 
 **Planned changes:**
-- Add backend canister methods for room-scoped voice signaling: start/create session, join/leave/end, post SDP/ICE messages, and fetch messages incrementally for polling, with authentication + room-membership access control.
-- Add a room-level frontend “Voice” UI that uses WebRTC in the browser and React Query polling to connect, including Join/Leave and Mute/Unmute, plus clear English error states and retry.
-- Add a frontend user profile view reachable from message sender identity and Friends list entries, showing profile picture (or fallback), display name, and bio with sensible fallbacks and stable error handling.
-- Ensure backend profile reads for other authenticated users reliably return profiles (or null) and allow frontend rendering of profile picture blobs via direct URLs without trapping.
+- Backend: Add a “claim first admin” mechanism for the first authenticated user, plus an admin-status query endpoint.
+- Backend: Update authorization checks so admins can bypass applicable ownership/member-only restrictions while preserving existing behavior for non-admin users.
+- Backend: Ensure all new/updated authorization and claim-admin errors surfaced to the UI are clear English messages.
+- Frontend: Add an “Admin access” section in Settings showing current admin status and a “Claim admin access” action with English success/error toasts.
+- Frontend: Show a subtle “Admin” indicator in the authenticated header when the signed-in user is an admin.
+- Frontend: Add a client-side “Search messages…” input to room chat and server announcements views to filter currently loaded messages, with an English empty-state when no matches are found.
 
-**User-visible outcome:** Users can start/join voice chat within a room using a Voice control, mute/unmute and leave, and they can click on a sender or friend to view that user’s profile (picture, display name, bio) with robust fallbacks and error messages.
+**User-visible outcome:** A signed-in user can view and (if no admin exists yet) claim admin access from Settings, see an “Admin” indicator when applicable, and search within the currently loaded messages in both room chat and server announcement threads.

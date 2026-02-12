@@ -2,9 +2,10 @@ import { useState, useRef } from 'react';
 import { usePostMessage } from '../../hooks/useRoomMessages';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Image as ImageIcon, X } from 'lucide-react';
+import { Send, Image as ImageIcon, Video as VideoIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ExternalBlob } from '../../backend';
+import EmojiPicker from './EmojiPicker';
 
 interface MessageComposerProps {
   roomId: string;
@@ -12,161 +13,227 @@ interface MessageComposerProps {
 
 export default function MessageComposer({ roomId }: MessageComposerProps) {
   const [content, setContent] = useState('');
-  const [imageAttachment, setImageAttachment] = useState<ExternalBlob | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const postMessage = usePostMessage();
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
+      toast.error('Please select an image file (including GIF)');
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size must be less than 5MB');
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image must be smaller than 10MB');
       return;
     }
 
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-      
-      const blob = ExternalBlob.fromBytes(uint8Array).withUploadProgress((percentage) => {
-        setUploadProgress(percentage);
-      });
-      
-      setImageAttachment(blob);
-      
-      // Create preview URL
-      const blobUrl = URL.createObjectURL(file);
-      setImagePreview(blobUrl);
-      setUploadProgress(0);
-    } catch (error) {
-      console.error('Failed to process image:', error);
-      toast.error('Failed to process image. Please try again.');
-    }
-
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    setImageFile(file);
+    setVideoFile(null);
+    setVideoPreview(null);
+    
+    const reader = new FileReader();
+    reader.onload = (e) => setImagePreview(e.target?.result as string);
+    reader.readAsDataURL(file);
   };
 
-  const handleRemoveImage = () => {
-    setImageAttachment(null);
-    if (imagePreview) {
-      URL.revokeObjectURL(imagePreview);
-      setImagePreview(null);
+  const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('video/')) {
+      toast.error('Please select a video file');
+      return;
     }
+
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error('Video must be smaller than 50MB');
+      return;
+    }
+
+    setVideoFile(file);
+    setImageFile(null);
+    setImagePreview(null);
+    
+    const reader = new FileReader();
+    reader.onload = (e) => setVideoPreview(e.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const clearAttachment = () => {
+    setImageFile(null);
+    setVideoFile(null);
+    setImagePreview(null);
+    setVideoPreview(null);
+    if (imageInputRef.current) imageInputRef.current.value = '';
+    if (videoInputRef.current) videoInputRef.current.value = '';
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      setContent((prev) => prev + emoji);
+      return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = content;
+    const before = text.substring(0, start);
+    const after = text.substring(end);
+    const newContent = before + emoji + after;
+    
+    setContent(newContent);
+    
+    // Set cursor position after emoji
+    setTimeout(() => {
+      textarea.focus();
+      const newPosition = start + emoji.length;
+      textarea.setSelectionRange(newPosition, newPosition);
+    }, 0);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const trimmedContent = content.trim();
-    
-    // Validate: must have either text or image
-    if (!trimmedContent && !imageAttachment) {
-      toast.error('Message cannot be empty');
+    if (!trimmedContent && !imageFile && !videoFile) {
+      toast.error('Please enter a message or attach an image/video');
       return;
     }
 
     try {
-      await postMessage.mutateAsync({ 
-        roomId, 
+      let imageBlob: ExternalBlob | undefined;
+      let videoBlob: ExternalBlob | undefined;
+
+      if (imageFile) {
+        const arrayBuffer = await imageFile.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuffer);
+        imageBlob = ExternalBlob.fromBytes(bytes).withUploadProgress((percentage) => {
+          setUploadProgress(percentage);
+        });
+      }
+
+      if (videoFile) {
+        const arrayBuffer = await videoFile.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuffer);
+        videoBlob = ExternalBlob.fromBytes(bytes).withUploadProgress((percentage) => {
+          setUploadProgress(percentage);
+        });
+      }
+
+      await postMessage.mutateAsync({
+        roomId,
         content: trimmedContent,
-        image: imageAttachment || undefined,
+        image: imageBlob,
+        video: videoBlob,
       });
+
       setContent('');
-      handleRemoveImage();
-    } catch (error) {
+      clearAttachment();
+      setUploadProgress(null);
+    } catch (error: any) {
       console.error('Failed to send message:', error);
-      toast.error('Failed to send message. Please try again.');
+      setUploadProgress(null);
+      toast.error(error.message || 'Failed to send message');
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
-    }
-  };
+  const isDisabled = postMessage.isPending || uploadProgress !== null;
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 border-t border-border bg-card">
-      {imagePreview && (
+    <form onSubmit={handleSubmit} className="border-t border-border bg-card p-4">
+      {(imagePreview || videoPreview) && (
         <div className="mb-2 relative inline-block">
-          <img 
-            src={imagePreview} 
-            alt="Preview" 
-            className="max-h-32 rounded-lg border border-border"
-          />
+          {imagePreview && (
+            <img src={imagePreview} alt="Preview" className="max-h-32 rounded border border-border" />
+          )}
+          {videoPreview && (
+            <video src={videoPreview} className="max-h-32 rounded border border-border" controls />
+          )}
           <Button
             type="button"
             variant="destructive"
             size="icon"
-            className="absolute -top-2 -right-2 h-6 w-6"
-            onClick={handleRemoveImage}
+            className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+            onClick={clearAttachment}
           >
             <X className="h-3 w-3" />
           </Button>
         </div>
       )}
-      {uploadProgress > 0 && uploadProgress < 100 && (
-        <div className="mb-2 w-full bg-secondary rounded-full h-2">
-          <div 
-            className="bg-primary h-2 rounded-full transition-all"
-            style={{ width: `${uploadProgress}%` }}
-          />
-        </div>
-      )}
       <div className="flex gap-2">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleFileSelect}
-          disabled={postMessage.isPending}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="flex-shrink-0"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={postMessage.isPending}
-        >
-          <ImageIcon className="h-5 w-5" />
-        </Button>
         <Textarea
-          placeholder="Type a message... (Press Enter to send, Shift+Enter for new line)"
+          ref={textareaRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={postMessage.isPending}
-          className="min-h-[60px] max-h-[200px] resize-none"
-          rows={2}
+          placeholder="Type a message..."
+          disabled={isDisabled}
+          className="min-h-[60px] resize-none"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit(e);
+            }
+          }}
         />
-        <Button 
-          type="submit" 
-          size="icon"
-          disabled={postMessage.isPending || (!content.trim() && !imageAttachment)}
-          className="h-[60px] w-[60px] flex-shrink-0"
-        >
-          {postMessage.isPending ? (
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-          ) : (
-            <Send className="h-5 w-5" />
-          )}
-        </Button>
+        <div className="flex flex-col gap-2">
+          <EmojiPicker onSelect={handleEmojiSelect} disabled={isDisabled} />
+          
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*,.gif"
+            onChange={handleImageSelect}
+            disabled={isDisabled}
+            className="hidden"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={isDisabled}
+            onClick={() => imageInputRef.current?.click()}
+            title="Attach image (including GIF)"
+          >
+            <ImageIcon className="h-4 w-4" />
+          </Button>
+          
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/*"
+            onChange={handleVideoSelect}
+            disabled={isDisabled}
+            className="hidden"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            disabled={isDisabled}
+            onClick={() => videoInputRef.current?.click()}
+          >
+            <VideoIcon className="h-4 w-4" />
+          </Button>
+          
+          <Button type="submit" size="icon" disabled={isDisabled}>
+            {uploadProgress !== null ? (
+              <span className="text-xs">{uploadProgress}%</span>
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
       </div>
     </form>
   );

@@ -1,101 +1,90 @@
 {
   "kind": "build_request",
-  "title": "Add voice chat option and user profile viewing (with profile pictures)",
+  "title": "Add superuser (admin) access for the requesting account and a small set of basic usability features",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-64",
-      "text": "Add backend support for room-scoped voice chat signaling so authenticated room members can establish WebRTC voice connections without WebSockets (polling-based signaling). The signaling layer must support creating a voice session for a room, joining/leaving, and exchanging SDP offers/answers and ICE candidates, with access control enforcing that only members of the room can read/write signaling for that room/session.",
+      "id": "REQ-111",
+      "text": "Implement an application-level superuser/admin capability in the backend so the requesting user can obtain full permissions and access across the chat app.\n\n- Add a backend mechanism to let the first authenticated user to claim it become the app superuser (admin), and expose a query to check whether the caller is currently an admin.\n- Update backend authorization checks so admins can perform privileged operations across the app (i.e., admins are not blocked by normal ownership/member-only restrictions where applicable), while non-admin behavior remains unchanged.\n- All backend error messages surfaced to the UI must be in English (no traps with unclear text).",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-8"
+          "msg-4"
         ],
         "quotes": [
-          "add voice chat option"
+          "give my account all of the permissions and all the access to my chat app"
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes canister methods to: (1) create or start a voice session for a room, (2) join a voice session, (3) leave/end a voice session, (4) post signaling messages (offer/answer/ice), and (5) fetch signaling messages incrementally (e.g., afterId + limit).",
-        "All voice signaling methods trap with a clear error if the caller is not authenticated as a user.",
-        "All voice signaling methods enforce that the caller is a member of the referenced room before allowing read/write.",
-        "Signaling fetch supports incremental polling without returning duplicate signaling messages when used with an afterId cursor.",
-        "No existing chat message/room/profile APIs regress."
+        "Backend exposes a clear way for the caller to claim admin status if no admin exists yet, and a way to query whether the caller is an admin.",
+        "After claiming admin, the same principal can successfully perform actions that are normally restricted by ownership or role checks (as implemented in this codebase), without breaking existing permissions for non-admin users.",
+        "If a non-admin attempts to claim admin after an admin already exists, the backend returns a clear English error.",
+        "All new/updated authorization failures return clear English errors (avoid cryptic traps)."
       ]
     },
     {
-      "id": "REQ-65",
-      "text": "Add a frontend \"Voice\" option in the room experience that allows authenticated users to start and participate in a voice chat for the currently selected room, using WebRTC in the browser and the new backend signaling APIs with React Query polling (no WebSockets).",
+      "id": "REQ-112",
+      "text": "Add a frontend UI in Settings to let the signed-in user view and obtain admin access, and clearly communicate the current admin status.\n\n- Add an “Admin access” section to the existing Settings dialog.\n- Show the current status (e.g., “You are an admin” / “You are not an admin”).\n- Provide a button to claim admin access (only succeeds if no admin exists yet), with English success/error toasts.\n- If the user is an admin, show a subtle “Admin” indicator in the authenticated header area (English label).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-8"
+          "msg-4"
         ],
         "quotes": [
-          "add voice chat option"
+          "give my account all of the permissions and all the access to my chat app"
         ]
       },
       "acceptanceCriteria": [
-        "When a room is selected, the UI provides a clearly labeled control (English text) to open the Voice UI (e.g., a \"Voice\" button/tab/panel).",
-        "Starting voice chat requests microphone permission and, if granted, connects using WebRTC via the backend signaling channel and polling.",
-        "The Voice UI includes at minimum: Join/Leave controls and Mute/Unmute for the local microphone.",
-        "If microphone permission is denied or unavailable, the UI shows an English error message and does not crash.",
-        "If backend signaling calls fail, the UI shows an English error message and allows retrying.",
-        "Voice signaling polling interval is configurable using the app’s existing polling preference patterns (do not introduce WebSockets)."
+        "Settings dialog displays an “Admin access” section with current admin status for the signed-in principal.",
+        "Clicking “Claim admin access” triggers the backend claim call and shows an English toast on success or a clear English error toast on failure.",
+        "When the caller is an admin, the app header displays an “Admin” indicator; when not an admin, it does not.",
+        "No changes are made to immutable frontend paths listed in SYSTEM_CONTEXT."
       ]
     },
     {
-      "id": "REQ-66",
-      "text": "Implement a user profile viewing UI so a user can view another user’s profile details, including profile picture, display name, and bio, from existing places where other users appear (e.g., message sender and friends list).",
+      "id": "REQ-113",
+      "text": "Add a basic “Search in chat” feature for both room chat and server chat views.\n\n- Provide a search input that filters the currently loaded messages in the active thread (room messages and server announcements) by text content.\n- The filtering must be client-side (no new backend indexing requirement).\n- Use English placeholder/labels (e.g., “Search messages…”), and show an English empty-state when no matches are found.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-8"
+          "msg-4"
         ],
         "quotes": [
-          "add a feature that displays your profile to other users including profile picture"
+          "aswell as adding other basic features to the app"
         ]
       },
       "acceptanceCriteria": [
-        "Clicking a message sender identity (e.g., avatar and/or name) opens a profile view UI for that sender principal.",
-        "Clicking a friend entry in the Friends UI opens the same profile view UI for that friend principal.",
-        "The profile view displays: profile picture (if set), display name, and bio; if any field is missing, show a sensible fallback (English labels where applicable).",
-        "If the viewed user has no profile picture, the UI renders a fallback avatar consistent with the existing avatar behavior.",
-        "If fetching the viewed user’s profile fails, the UI shows an English error state and still displays a stable fallback identity derived from principal (no infinite skeleton/loading)."
-      ]
-    },
-    {
-      "id": "REQ-67",
-      "text": "Ensure the backend profile-read path reliably supports displaying profiles to other authenticated users, including profile picture retrieval, without traps for valid authenticated callers.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-8"
-        ],
-        "quotes": [
-          "add a feature that displays your profile to other users including profile picture"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Fetching another user’s profile via the existing profile API works for authenticated users who have standard user permissions and returns null when the target user has no profile.",
-        "Profile picture blobs returned in profiles can be rendered in the frontend via direct URLs without requiring routing through the backend.",
-        "Any authorization failure produces a clear error message; valid authenticated callers do not experience traps in normal use when requesting other users’ profiles."
+        "In a room chat thread, entering a search term filters the displayed messages to those whose text content matches (case-insensitive match is acceptable).",
+        "In a server chat thread, entering a search term filters the displayed announcements similarly.",
+        "When a search yields no results, the UI shows a clear English message indicating no matches.",
+        "Clearing the search term restores the full currently loaded message list."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; add migration.mo only if an upgrade of stable state is required.",
-    "Do not use WebSockets or any real-time socket framework; implement voice signaling using polling-compatible backend APIs and React Query polling.",
-    "Do not edit frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
-    "Use English for all user-facing text."
+    "Backend must remain a single Motoko actor (all logic in backend/main.mo); add backend/migration.mo only if a stable-state upgrade is required.",
+    "Do not edit frontend files under frontend/src/components/ui or any paths listed in frontend.immutablePaths in SYSTEM_CONTEXT.",
+    "Do not add WebSockets or real-time technologies beyond the existing polling approach.",
+    "Use English for all new user-facing text."
   ],
   "nonGoals": [
-    "Implementing text chat real-time transport via WebSockets or any real-time chat system beyond the existing polling approach.",
-    "Implementing multi-server voice routing or external TURN/STUN infrastructure management beyond browser-default/WebRTC norms.",
-    "Third-party voice providers or external services integrations."
+    "Implementing unspecified “basic features” beyond the admin access and message search described above.",
+    "Adding third-party authentication providers (only Internet Identity is supported).",
+    "Adding third-party APIs for GIF/search or any external database/service integration.",
+    "Changing branding/domain/footer text unless explicitly requested in a future message."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

@@ -1,17 +1,24 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 45,
+  "projectStateVersion": 69,
   "summary": "Build a chat application branded as TerrorChat for terrorchat.org (replacing freechat.com, tchat.org, and any other prior domains/references).",
   "architectural_notes": [
     "Branding/domain should be configurable or centralized (e.g., constants/env) to avoid hardcoded .com references; update to .org.",
     "Branding/footer text and domain should be centralized/configurable to support changing from tchat.org to terrorchat.org without scattered hardcoding.",
     "Decide and standardize the authentication approach for TerrorChat (e.g., Internet Identity vs a custom login/sign-in system) and ensure it supports persistent user accounts.",
     "Chatroom box styling (foreground/front + selected state) should be driven by theme tokens/CSS variables so colors automatically switch with the selected theme.",
-    "Servers feature: add a hard limit of 100 servers (enforce consistently across UI and backend/server-creation logic)."
+    "Servers feature: add a hard limit of 100 servers (enforce consistently across UI and backend/server-creation logic).",
+    "Chatrooms should not have a hard limit (infinite/unbounded), unlike servers which have an explicit max limit requirement.",
+    "Define whether TerrorChat will continue using Internet Identity or move to a traditional sign-up/login account system; if keeping Internet Identity, design an in-app onboarding flow that treats first sign-in as “account creation” plus profile customization.",
+    "Define server roles/permissions model (owner/admin/mod/member) and enforce it consistently in backend APIs and UI.",
+    "Implement server membership moderation (kick/ban) with ban records including optional expiry time; ensure access control and auditability.",
+    "Define server metadata model for customization (e.g., bio/description and other settings) and enforce role-based edit permissions consistently across backend APIs and UI."
   ],
   "known_issues": [
     "Profile feature has an unspecified issue reported by user (\"Chat app Profile issue\") that needs investigation and fix.",
-    "Profile changes are not saving reliably, and the user's profile picture and display name are not consistently shown across the UI (should always display)."
+    "Profile changes are not saving reliably, and the user's profile picture and display name are not consistently shown across the UI (should always display).",
+    "Deployment error encountered during deploy/build process (details need investigation).",
+    "App update generation/build intermittently fails (\"Sorry, we couldn't generate your application\" / \"AI was unable to fulfill your request\"); needs investigation to restore reliable build/deploy."
   ],
   "isFixRequest": false,
   "existing_features": [
@@ -422,6 +429,214 @@
         "REQ-66"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-sidebar-ui-to-display-the-authenticated-user-s-created-servers-list-and-add-a-delete-option-for-each-server",
+      "title": "Update the sidebar UI to display the authenticated user’s created servers list, and add a delete option for each server.",
+      "reqIds": [
+        "REQ-70"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-delete-chatroom-option-in-the-room-list-ui-and-wire-it-to-the-backend-delete-room-api-with-safe-ux-handling-if-the-deleted-room-is-currently-selected",
+      "title": "Add a delete chatroom option in the room list UI and wire it to the backend delete-room API, with safe UX handling if the deleted room is currently selected.",
+      "reqIds": [
+        "REQ-71"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-react-query-hooks-for-server-deletion-and-room-deletion-using-the-existing-authenticated-actor-pattern-including-proper-cache-invalidation",
+      "title": "Add React Query hooks for server deletion and room deletion using the existing authenticated actor pattern, including proper cache invalidation.",
+      "reqIds": [
+        "REQ-72"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-there-is-no-enforced-limit-on-chatroom-creation-infinite-chatrooms-in-both-backend-and-frontend-behavior",
+      "title": "Ensure there is no enforced limit on chatroom creation (infinite chatrooms) in both backend and frontend behavior.",
+      "reqIds": [
+        "REQ-73"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-server-selection-navigation-experience-so-users-can-open-access-a-server-from-the-displayed-servers-list-not-just-view-it-as-a-static-list-selecting-a-server-must-switch-the-main-content-area-from-the-current-room-chat-to-a-server-view-for-the-selected-server",
+      "title": "Add a server selection/navigation experience so users can open/access a server from the displayed Servers list (not just view it as a static list). Selecting a server must switch the main content area from the current room chat to a server view for the selected server.",
+      "reqIds": [
+        "REQ-74"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-frontend-ui-to-upload-choose-clear-a-server-profile-picture-icon-for-the-selected-server-owner-only-persist-it-via-the-new-backend-apis-and-render-it-next-to-the-server-name-in-the-sidebar-list-and-inside-the-server-view",
+      "title": "Add frontend UI to upload/choose/clear a server profile picture/icon for the selected server (owner-only), persist it via the new backend APIs, and render it next to the server name in the sidebar list and inside the server view.",
+      "reqIds": [
+        "REQ-77"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-react-query-hooks-using-the-existing-authenticated-actor-pattern-for-renaming-a-server-renaming-a-room-listing-server-members-adding-a-server-member-setting-a-member-role-admin-moderator-member-kicking-a-member-banning-a-member-with-duration-permanent-option-unbanning-a-member-and-listing-bans-ensure-proper-cache-invalidation-for-server-lists-and-any-server-detail-views",
+      "title": "Add React Query hooks (using the existing authenticated actor pattern) for: renaming a server, renaming a room, listing server members, adding a server member, setting a member role (Admin/Moderator/Member), kicking a member, banning a member with duration/permanent option, unbanning a member, and listing bans. Ensure proper cache invalidation for server lists and any server detail views.",
+      "reqIds": [
+        "REQ-81"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-ui-options-to-rename-servers-and-rooms-and-add-a-server-moderation-ui-to-manage-roles-and-kick-ban-members-server-rename-in-the-server-view-show-an-editable-server-name-control-for-the-server-owner-room-rename-in-the-room-list-add-a-rename-action-per-room-only-visible-if-the-signed-in-user-is-the-room-creator-server-moderation-in-the-server-view-add-a-members-section-that-lists-members-and-their-role-allows-the-owner-to-set-admin-moderator-roles-and-provides-kick-and-ban-actions-ban-ui-must-allow-selecting-a-duration-including-a-permanent-option-all-user-facing-text-must-be-english-and-include-clear-error-success-toasts",
+      "title": "Add UI options to rename servers and rooms, and add a Server moderation UI to manage roles and kick/ban members.\n\n- Server rename: in the server view, show an editable server name control for the server owner.\n- Room rename: in the room list, add a rename action per room (only visible if the signed-in user is the room creator).\n- Server moderation: in the server view, add a “Members” section that lists members and their role, allows the owner to set Admin/Moderator roles, and provides Kick and Ban actions. Ban UI must allow selecting a duration (including a permanent option). All user-facing text must be English and include clear error/success toasts.",
+      "reqIds": [
+        "REQ-82"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-when-a-server-is-created-treat-that-server-as-having-a-default-server-wide-chat-a-single-big-chatroom-that-can-be-opened-when-selecting-the-server-and-allow-server-members-to-post-and-read-messages-in-that-server-wide-chat",
+      "title": "When a server is created, treat that server as having a default server-wide chat (a single “big chatroom”) that can be opened when selecting the server, and allow server members to post and read messages in that server-wide chat.",
+      "reqIds": [
+        "REQ-83"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-chat-message-attachments-to-support-both-images-and-videos-for-the-server-wide-chat-and-keep-existing-image-support-working-videos-must-be-uploaded-from-the-user-device-stored-on-the-backend-and-rendered-inline-so-other-users-can-view-them",
+      "title": "Extend chat message attachments to support both images and videos for the server-wide chat (and keep existing image support working). Videos must be uploaded from the user device, stored on the backend, and rendered inline so other users can view them.",
+      "reqIds": [
+        "REQ-84"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-right-side-member-list-panel-in-the-server-chat-view-that-displays-users-by-profile-picture-pfp-and-username-along-with-an-activity-status-indicator-sorted-with-active-users-above-inactive-users",
+      "title": "Add a right-side member list panel in the server chat view that displays users by profile picture (pfp) and username, along with an activity status indicator, sorted with active users above inactive users.",
+      "reqIds": [
+        "REQ-85"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-server-selection-navigation-experience-so-that-selecting-a-server-opens-a-combined-server-chat-members-layout-center-chat-right-side-members-list-replacing-the-current-behavior-that-shows-only-the-server-details-view-by-default",
+      "title": "Update the server selection/navigation experience so that selecting a server opens a combined server chat + members layout (center chat, right-side members list), replacing the current behavior that shows only the Server Details view by default.",
+      "reqIds": [
+        "REQ-87"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-react-query-hooks-using-the-existing-authenticated-actor-pattern-for-reading-updating-clearing-the-server-bio-and-any-new-server-customization-fields-introduced-e-g-banner-accent-color-including-correct-cache-invalidation-for-servers-and-any-server-detail-queries-used-by-the-ui",
+      "title": "Add React Query hooks (using the existing authenticated actor pattern) for reading/updating/clearing the server bio and any new server customization fields introduced (e.g., banner, accent color), including correct cache invalidation for `['servers']` and any server-detail queries used by the UI.",
+      "reqIds": [
+        "REQ-92"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-server-details-ui-currently-frontend-src-components-servers-serverview-tsx-rendered-inside-serverchatview-to-display-the-server-bio-and-any-new-customization-fields-and-for-owners-only-provide-controls-to-edit-and-save-them-with-clear-english-labels-validation-and-success-error-toasts",
+      "title": "Update the server details UI (currently `frontend/src/components/servers/ServerView.tsx` rendered inside `ServerChatView`) to display the server bio and any new customization fields, and (for owners only) provide controls to edit and save them with clear English labels, validation, and success/error toasts.",
+      "reqIds": [
+        "REQ-93"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-emoji-picker-to-the-message-composer-s-so-users-can-insert-standard-unicode-emojis-into-the-message-text-implement-it-for-both-the-room-chat-composer-frontend-src-components-chat-messagecomposer-tsx-and-the-server-chat-composer-embedded-in-frontend-src-components-servers-serverchatview-tsx",
+      "title": "Add an emoji picker to the message composer(s) so users can insert standard Unicode emojis into the message text. Implement it for both the room chat composer (`frontend/src/components/chat/MessageComposer.tsx`) and the server chat composer embedded in `frontend/src/components/servers/ServerChatView.tsx`.",
+      "reqIds": [
+        "REQ-94"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-gif-sending-experience-in-chat-at-minimum-ensure-animated-gif-files-are-supported-end-to-end-as-image-attachments-upload-store-and-render-animated-in-message-if-a-gif-selection-ui-is-provided-it-must-not-depend-on-third-party-gif-apis-use-either-device-upload-only-or-a-small-curated-set-of-static-gif-assets-served-from-the-frontend",
+      "title": "Add a GIF sending experience in chat. At minimum, ensure animated GIF files are supported end-to-end as image attachments (upload, store, and render animated in-message). If a GIF selection UI is provided, it must not depend on third-party GIF APIs; use either device upload only or a small curated set of static GIF assets served from the frontend.",
+      "reqIds": [
+        "REQ-95"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-react-query-hooks-for-the-new-room-message-delete-and-pin-unpin-operations-using-the-existing-authenticated-actor-pattern-and-ensure-correct-cache-invalidation-for-messages-roomid-so-the-ui-refreshes-after-each-mutation",
+      "title": "Add React Query hooks for the new room-message delete and pin/unpin operations, using the existing authenticated actor pattern, and ensure correct cache invalidation for `['messages', roomId]` so the UI refreshes after each mutation.",
+      "reqIds": [
+        "REQ-98"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-react-query-hooks-for-the-new-server-chat-message-delete-and-pin-unpin-operations-using-the-existing-authenticated-actor-pattern-and-ensure-correct-cache-invalidation-for-serverannouncements-serverid-so-the-ui-refreshes-after-each-mutation",
+      "title": "Add React Query hooks for the new server-chat message delete and pin/unpin operations, using the existing authenticated actor pattern, and ensure correct cache invalidation for `['serverAnnouncements', serverId]` so the UI refreshes after each mutation.",
+      "reqIds": [
+        "REQ-99"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-chat-ui-to-let-a-signed-in-user-delete-and-pin-unpin-only-their-own-messages-in-both-room-chat-and-server-chat-add-a-clear-pinned-visual-indicator-and-render-pinned-messages-in-a-dedicated-pinned-section-at-the-top-of-the-message-list-while-still-showing-messages-in-chronological-order-below-all-user-facing-labels-confirmations-and-toasts-must-be-english",
+      "title": "Update the chat UI to let a signed-in user delete and pin/unpin only their own messages in both room chat and server chat. Add a clear pinned visual indicator, and render pinned messages in a dedicated pinned section at the top of the message list (while still showing messages in chronological order below). All user-facing labels, confirmations, and toasts must be English.",
+      "reqIds": [
+        "REQ-100"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-react-query-hooks-for-room-member-presence-1-polling-query-to-fetch-room-members-active-inactive-status-for-the-selected-room-and-2-mutation-or-helper-to-periodically-heartbeat-update-presence-while-the-user-is-viewing-a-room-chat-follow-the-existing-authenticated-actor-pattern-and-ensure-stable-caching-query-keys-per-room",
+      "title": "Add React Query hooks for room member presence: (1) polling query to fetch room members + active/inactive status for the selected room, and (2) mutation or helper to periodically heartbeat/update presence while the user is viewing a room chat. Follow the existing authenticated actor pattern and ensure stable caching/query keys per room.",
+      "reqIds": [
+        "REQ-102"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-right-side-member-list-panel-to-the-room-chat-view-chatrooms-that-displays-room-members-with-avatar-display-name-and-an-activity-indicator-sorted-with-active-users-above-inactive-users-the-panel-must-appear-on-the-right-side-of-the-screen-when-viewing-a-room-chat-and-it-must-not-affect-the-existing-server-member-list-behavior",
+      "title": "Add a right-side member list panel to the room chat view (chatrooms) that displays room members with avatar + display name and an activity indicator, sorted with active users above inactive users. The panel must appear on the right side of the screen when viewing a room chat, and it must not affect the existing server member list behavior.",
+      "reqIds": [
+        "REQ-103"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-room-chatroom-member-list-ui-to-show-room-roles-and-allow-the-room-owner-to-assign-a-role-admin-moderator-member-to-other-room-members-using-the-new-backend-apis",
+      "title": "Update the room (chatroom) member list UI to show room roles and allow the room Owner to assign a role (Admin/Moderator/Member) to other room members using the new backend APIs.",
+      "reqIds": [
+        "REQ-106"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-react-query-mutation-hooks-for-editing-messages-using-the-existing-authenticated-actor-pattern-and-ensure-correct-cache-invalidation-so-the-ui-refreshes-after-edits-for-both-room-chat-messages-roomid-and-server-chat-serverannouncements-serverid",
+      "title": "Add React Query mutation hooks for editing messages using the existing authenticated actor pattern, and ensure correct cache invalidation so the UI refreshes after edits for both room chat (`['messages', roomId]`) and server chat (`['serverAnnouncements', serverId]`).",
+      "reqIds": [
+        "REQ-109"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-message-uis-to-allow-editing-only-the-signed-in-user-s-own-messages-in-both-room-chat-frontend-src-components-chat-messagethread-tsx-and-server-chat-frontend-src-components-servers-serverannouncementthread-tsx-add-an-edit-action-provide-an-inline-editing-state-textarea-input-with-save-cancel-validate-that-edited-content-is-not-empty-and-show-english-success-error-toasts",
+      "title": "Update the message UIs to allow editing only the signed-in user’s own messages in both room chat (`frontend/src/components/chat/MessageThread.tsx`) and server chat (`frontend/src/components/servers/ServerAnnouncementThread.tsx`): add an Edit action, provide an inline editing state (textarea/input) with Save/Cancel, validate that edited content is not empty, and show English success/error toasts.",
+      "reqIds": [
+        "REQ-110"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-frontend-ui-in-settings-to-let-the-signed-in-user-view-and-obtain-admin-access-and-clearly-communicate-the-current-admin-status-add-an-admin-access-section-to-the-existing-settings-dialog-show-the-current-status-e-g-you-are-an-admin-you-are-not-an-admin-provide-a-button-to-claim-admin-access-only-succeeds-if-no-admin-exists-yet-with-english-success-error-toasts-if-the-user-is-an-admin-show-a-subtle-admin-indicator-in-the-authenticated-header-area-english-label",
+      "title": "Add a frontend UI in Settings to let the signed-in user view and obtain admin access, and clearly communicate the current admin status.\n\n- Add an “Admin access” section to the existing Settings dialog.\n- Show the current status (e.g., “You are an admin” / “You are not an admin”).\n- Provide a button to claim admin access (only succeeds if no admin exists yet), with English success/error toasts.\n- If the user is an admin, show a subtle “Admin” indicator in the authenticated header area (English label).",
+      "reqIds": [
+        "REQ-112"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-basic-search-in-chat-feature-for-both-room-chat-and-server-chat-views-provide-a-search-input-that-filters-the-currently-loaded-messages-in-the-active-thread-room-messages-and-server-announcements-by-text-content-the-filtering-must-be-client-side-no-new-backend-indexing-requirement-use-english-placeholder-labels-e-g-search-messages-and-show-an-english-empty-state-when-no-matches-are-found",
+      "title": "Add a basic “Search in chat” feature for both room chat and server chat views.\n\n- Provide a search input that filters the currently loaded messages in the active thread (room messages and server announcements) by text content.\n- The filtering must be client-side (no new backend indexing requirement).\n- Use English placeholder/labels (e.g., “Search messages…”), and show an English empty-state when no matches are found.",
+      "reqIds": [
+        "REQ-113"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -594,6 +809,286 @@
       "summary": "Ensure the backend profile-read path reliably supports displaying profiles to other authenticated users, including profile picture retrieval, without traps for valid authenticated callers.",
       "reqIds": [
         "REQ-67"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-35",
+      "summary": "Add UI to display/list created servers and provide an option to delete servers.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-36",
+      "summary": "Add ability to delete chatrooms; chatrooms should have no limit (infinite).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-37",
+      "summary": "Add backend APIs to delete a server owned by the authenticated user, and ensure server listing reflects deletions.",
+      "reqIds": [
+        "REQ-68"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-38",
+      "summary": "Add backend APIs to delete a chatroom and all room-scoped data (membership + messages), and ensure room listing reflects deletions.",
+      "reqIds": [
+        "REQ-69"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-39",
+      "summary": "Add ability to access/open a server from the displayed servers list (server navigation/selection UX).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-40",
+      "summary": "Add server profile picture/icon support and display it next to the server name in server listings and within the server view.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-42",
+      "summary": "Extend the backend Server data model to support an optional server profile picture/icon, stored using the existing blob-storage types used for user profile pictures, and ensure this field is returned anywhere Server objects are returned.",
+      "reqIds": [
+        "REQ-75"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-43",
+      "summary": "Add backend APIs that allow an authenticated server owner to set/update/clear the server profile picture/icon, enforcing that only the owning principal can modify that server.",
+      "reqIds": [
+        "REQ-76"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-44",
+      "summary": "Add an account creation/sign-up flow for users who don’t have an account yet, and include an initial account/profile customization step during/after creation.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-45",
+      "summary": "Add options to rename/edit server names and room names (server/room settings).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-46",
+      "summary": "Add server roles/permissions management: allow server owners/admins to assign Admin/Moderator roles to members.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-47",
+      "summary": "Add server moderation actions: allow admins/mods to kick members and ban members with configurable duration (temporary/permanent bans).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-48",
+      "summary": "Add backend support for renaming servers and rooms, with access control (only the server owner can rename a server; only the room creator can rename a room). Expose these operations via new canister APIs and ensure updated names are returned anywhere servers/rooms are listed or fetched.",
+      "reqIds": [
+        "REQ-78"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-49",
+      "summary": "Add backend support for server membership and roles so that a server can have members with one of: Owner, Admin, Moderator, Member. Provide APIs to list server members (with their role), add a member to a server, and update a member’s role. Enforce that only the server owner can promote/demote Admins/Moderators, and that only server roles with sufficient permissions can perform moderation actions.",
+      "reqIds": [
+        "REQ-79"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-50",
+      "summary": "Add backend moderation APIs for kicking and banning server members. Bans must support configurable duration (temporary until a specified timestamp) and permanent bans. Enforce permission checks (Owner/Admin/Moderator depending on policy) and prevent moderation actions against the server owner. Ensure banned users cannot be re-added to the server while the ban is active.",
+      "reqIds": [
+        "REQ-80"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-51",
+      "summary": "When a Server is created, provide a server-wide chatroom experience (a \"big chatroom\") where members can chat and share media, including support for sending images and videos visible to others.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-52",
+      "summary": "Add a right-side user list panel in the chat/server view that displays users with profile picture + username and shows a user activity status; sort users with active users above inactive users.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-56",
+      "summary": "Implement backend presence tracking and APIs needed by the right-side member list so the frontend can determine which server members are “active” vs “inactive” using polling (no WebSockets).",
+      "reqIds": [
+        "REQ-86"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-57",
+      "summary": "Add ability to delete and pin your own comments/messages inside your own server.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-58",
+      "summary": "Add a server bio field (server description) editable by the server owner/admin and visible in the server view.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-59",
+      "summary": "Add more server customization options (additional editable server settings beyond name and icon).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-60",
+      "summary": "Support GIFs and emojis in chat (emoji picker + GIF selection/search) for server-wide chat (and/or rooms).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-61",
+      "summary": "Extend the backend Server data model to include a server bio/description field and any required supporting fields for additional customization (at minimum: `bio : Text`; optional customization fields must be explicitly represented in the Server record), and return these fields anywhere Server objects are returned (e.g., server list and server detail views).",
+      "reqIds": [
+        "REQ-88"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-62",
+      "summary": "Add backend canister APIs that allow an authorized server owner to update and clear the server bio, with access control enforced (non-owners must not be able to modify the bio). User-facing error strings must be English.",
+      "reqIds": [
+        "REQ-89"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-63",
+      "summary": "Implement additional server customization options beyond name and icon, limited to settings that can be stored and returned by the backend (e.g., an optional server banner image stored as a blob, and/or an optional server accent color string). Add owner-only backend APIs to set/clear each new customization field and ensure updated values are returned wherever Server data is fetched.",
+      "reqIds": [
+        "REQ-90"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-64",
+      "summary": "If existing stable server state exists on upgrade, add/adjust conditional migration logic so previously stored servers are upgraded safely to include defaults for the new server bio/customization fields, without data loss for existing server properties (id, owner, name, createdAt, icon).",
+      "reqIds": [
+        "REQ-91"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-65",
+      "summary": "Extend the backend room-message model and APIs so an authenticated user can (a) delete their own room messages and (b) pin/unpin their own room messages. Enforce that users can only delete/pin messages where `sender == caller`, and return clear English errors when unauthorized or when the message/room is not found.",
+      "reqIds": [
+        "REQ-96"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-66",
+      "summary": "Extend the backend server chat (server announcements) model and APIs so an authenticated user can (a) delete their own server chat messages and (b) pin/unpin their own server chat messages. Enforce that users can only delete/pin messages where `author == caller`, and return clear English errors when unauthorized or when the message/server is not found.",
+      "reqIds": [
+        "REQ-97"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-67",
+      "summary": "In chatrooms, display a right-side user list panel that sorts active users above inactive users (activity status indicator + ordering).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-68",
+      "summary": "Allow server role names/labels (e.g., Admin/Moderator) to be customizable (owner-defined role display names) while preserving role permissions behavior.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-69",
+      "summary": "Implement backend room presence tracking and APIs so the frontend can determine which room members are currently active vs inactive using polling (no WebSockets). Add a lightweight heartbeat/update call for the current room, and a query that returns room members with activity status for a given room, enforcing that only room members can read/update presence for that room.",
+      "reqIds": [
+        "REQ-101"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-70",
+      "summary": "Add owner-managed roles for both servers and chatrooms: allow the owner to assign Admin/Moderator (or equivalent) roles to other users, support custom role display names chosen by the owner, and enforce role-based permissions consistently in backend APIs and UI.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-71",
+      "summary": "Add chatroom (room) member roles to the backend so a room creator (Owner) can assign elevated roles (Admin and Moderator) to other room members, and the backend can return each room member’s role.",
+      "reqIds": [
+        "REQ-104"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-72",
+      "summary": "Enforce room-role permissions in existing backend room management operations, using the new room roles (Owner/Admin/Moderator/Member) to determine who can perform privileged actions.",
+      "reqIds": [
+        "REQ-105"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-73",
+      "summary": "Add a feature that lets users edit their own messages (in chatrooms and/or server chat).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-74",
+      "summary": "Add backend support to edit a signed-in user’s own room chat messages: expose a canister API that updates an existing room message’s `content` (text) when and only when the authenticated caller is the original `sender`, and return clear English errors when the room/message is not found or when the caller is not authorized.",
+      "reqIds": [
+        "REQ-107"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-75",
+      "summary": "Add backend support to edit a signed-in user’s own server chat messages (server announcements): expose a canister API that updates an existing server announcement’s `content` (text) when and only when the authenticated caller is the original `author`, and return clear English errors when the server/message is not found or when the caller is not authorized.",
+      "reqIds": [
+        "REQ-108"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-76",
+      "summary": "Grant the requesting user full/owner-level permissions and access across the app (admin/superuser privileges) so they can manage all chat app resources and settings.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-77",
+      "summary": "Add additional basic features to the app (details unspecified; requires clarification on which features are desired).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-78",
+      "summary": "Implement an application-level superuser/admin capability in the backend so the requesting user can obtain full permissions and access across the chat app.\n\n- Add a backend mechanism to let the first authenticated user to claim it become the app superuser (admin), and expose a query to check whether the caller is currently an admin.\n- Update backend authorization checks so admins can perform privileged operations across the app (i.e., admins are not blocked by normal ownership/member-only restrictions where applicable), while non-admin behavior remains unchanged.\n- All backend error messages surfaced to the UI must be in English (no traps with unclear text).",
+      "reqIds": [
+        "REQ-111"
       ],
       "status": "pending"
     }

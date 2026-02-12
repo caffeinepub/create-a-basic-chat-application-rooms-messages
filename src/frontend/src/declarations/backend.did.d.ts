@@ -21,17 +21,21 @@ export type AltLinkStatus = { 'revoked' : null } |
   { 'accepted' : null };
 export interface ChatMessage {
   'id' : MessageId,
+  'isDeleted' : boolean,
   'content' : string,
+  'video' : [] | [ExternalBlob],
   'sender' : User,
   'timestamp' : Time,
   'image' : [] | [ExternalBlob],
   'roomId' : RoomId,
+  'isPinned' : boolean,
 }
 export type ExternalBlob = Uint8Array;
 export interface IceCandidate { 'candidate' : string, 'sdpMLineIndex' : bigint }
 export type MessageId = bigint;
 export interface NewChatMessage {
   'content' : string,
+  'video' : [] | [ExternalBlob],
   'image' : [] | [ExternalBlob],
   'roomId' : RoomId,
 }
@@ -42,13 +46,32 @@ export interface Room {
   'createdAt' : Time,
 }
 export type RoomId = string;
+export interface RoomMember { 'role' : RoomMemberRole, 'user' : User }
+export type RoomMemberRole = { 'member' : null } |
+  { 'admin' : null } |
+  { 'moderator' : null } |
+  { 'owner' : null };
 export type SdpAnswer = string;
 export type SdpOffer = string;
 export interface Server {
   'id' : ServerId,
+  'bio' : string,
   'owner' : User,
+  'icon' : [] | [ExternalBlob],
   'name' : string,
   'createdAt' : Time,
+  'banner' : [] | [ExternalBlob],
+  'accentColor' : string,
+}
+export interface ServerAnnouncement {
+  'id' : bigint,
+  'isDeleted' : boolean,
+  'content' : string,
+  'video' : [] | [ExternalBlob],
+  'author' : User,
+  'timestamp' : Time,
+  'image' : [] | [ExternalBlob],
+  'isPinned' : boolean,
 }
 export type ServerId = string;
 export type Time = bigint;
@@ -102,18 +125,39 @@ export interface _SERVICE {
   'acceptFriendRequest' : ActorMethod<[User], undefined>,
   'addIceCandidate' : ActorMethod<[RoomId, IceCandidate], undefined>,
   'addUserToRoom' : ActorMethod<[RoomId, User], undefined>,
+  'addUserToServer' : ActorMethod<[ServerId, User], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'assignRoomMemberRole' : ActorMethod<
+    [RoomId, User, RoomMemberRole],
+    undefined
+  >,
   'blockUser' : ActorMethod<[User], undefined>,
   'createRoom' : ActorMethod<[string], RoomId>,
   'createServer' : ActorMethod<
     [string],
-    { 'id' : ServerId, 'owner' : User, 'name' : string, 'createdAt' : Time }
+    {
+      'id' : ServerId,
+      'bio' : string,
+      'owner' : User,
+      'icon' : [] | [ExternalBlob],
+      'name' : string,
+      'createdAt' : Time,
+      'banner' : [] | [ExternalBlob],
+      'accentColor' : string,
+    }
   >,
+  'deleteMessage' : ActorMethod<[RoomId, MessageId], undefined>,
+  'deleteRoom' : ActorMethod<[RoomId], boolean>,
+  'deleteServer' : ActorMethod<[ServerId], boolean>,
+  'deleteServerAnnouncement' : ActorMethod<[ServerId, bigint], undefined>,
+  'editMessage' : ActorMethod<[RoomId, MessageId, string], undefined>,
+  'editServerAnnouncement' : ActorMethod<[ServerId, bigint, string], undefined>,
   'endVoiceSession' : ActorMethod<[RoomId], undefined>,
   'fetchMessages' : ActorMethod<
     [RoomId, MessageId, bigint],
     Array<ChatMessage>
   >,
+  'getActiveMembers' : ActorMethod<[ServerId], Array<User>>,
   'getCallerFriends' : ActorMethod<[], Array<User>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
@@ -125,21 +169,45 @@ export interface _SERVICE {
       'outgoing' : Array<AltAccountRequest>,
     }
   >,
+  'getRoom' : ActorMethod<[RoomId], [] | [Room]>,
+  'getRoomMembers' : ActorMethod<[RoomId], Array<RoomMember>>,
+  'getRoomMembersWithPresence' : ActorMethod<[RoomId], Array<[User, boolean]>>,
+  'getServerAccentColor' : ActorMethod<[ServerId], string>,
+  'getServerAnnouncements' : ActorMethod<
+    [ServerId, bigint, bigint],
+    Array<ServerAnnouncement>
+  >,
+  'getServerBanner' : ActorMethod<[ServerId], [] | [ExternalBlob]>,
+  'getServerBio' : ActorMethod<[ServerId], string>,
+  'getServerIcon' : ActorMethod<[ServerId], [] | [ExternalBlob]>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'getUserServers' : ActorMethod<[User], Array<Server>>,
   'getVoiceSessionState' : ActorMethod<[RoomId], [] | [VoiceSessionState]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'kickRoomMember' : ActorMethod<[RoomId, User], undefined>,
   'linkAltAccount' : ActorMethod<[Principal], undefined>,
   'listRooms' : ActorMethod<[], Array<Room>>,
   'postMessage' : ActorMethod<[NewChatMessage], MessageId>,
+  'postServerAnnouncement' : ActorMethod<
+    [ServerId, string, [] | [ExternalBlob], [] | [ExternalBlob]],
+    undefined
+  >,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'searchUsersByName' : ActorMethod<[string], Array<UserProfile>>,
   'sendFriendRequest' : ActorMethod<[User], undefined>,
   'sendSdpAnswer' : ActorMethod<[RoomId, SdpAnswer], undefined>,
   'sendSdpOffer' : ActorMethod<[RoomId, SdpOffer], undefined>,
+  'setServerAccentColor' : ActorMethod<[ServerId, string], undefined>,
+  'setServerBanner' : ActorMethod<[ServerId, [] | [ExternalBlob]], undefined>,
+  'setServerBio' : ActorMethod<[ServerId, string], undefined>,
+  'setServerIcon' : ActorMethod<[ServerId, [] | [ExternalBlob]], undefined>,
   'startVoiceSession' : ActorMethod<[RoomId], undefined>,
+  'togglePin' : ActorMethod<[RoomId, MessageId, boolean], undefined>,
+  'toggleServerPin' : ActorMethod<[ServerId, bigint, boolean], undefined>,
   'unblockUser' : ActorMethod<[User], undefined>,
   'unlinkAltAccount' : ActorMethod<[Principal], undefined>,
+  'updatePresence' : ActorMethod<[boolean], undefined>,
+  'updateRoomPresence' : ActorMethod<[RoomId], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

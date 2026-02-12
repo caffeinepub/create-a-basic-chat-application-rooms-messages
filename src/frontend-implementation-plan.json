@@ -1,72 +1,59 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Voice chat UI (polling-based WebRTC signaling) and user profile viewing with profile pictures",
+  "title": "Admin access UI and client-side message search",
   "requirements": [
     {
-      "id": "REQ-65",
-      "summary": "Add an in-room Voice UI that uses WebRTC + backend signaling via React Query polling (no WebSockets), with join/leave and mute controls plus robust error handling.",
+      "id": "REQ-112",
+      "summary": "Add Settings UI to view/claim admin access and show an Admin indicator in the authenticated header.",
       "acceptanceCriteria": [
-        "When a room is selected, the UI provides a clearly labeled control (English text) to open the Voice UI (e.g., a \"Voice\" button/tab/panel).",
-        "Starting voice chat requests microphone permission and, if granted, connects using WebRTC via the backend signaling channel and polling.",
-        "The Voice UI includes at minimum: Join/Leave controls and Mute/Unmute for the local microphone.",
-        "If microphone permission is denied or unavailable, the UI shows an English error message and does not crash.",
-        "If backend signaling calls fail, the UI shows an English error message and allows retrying.",
-        "Voice signaling polling interval is configurable using the app’s existing polling preference patterns (do not introduce WebSockets)."
+        "Settings dialog displays an “Admin access” section with current admin status for the signed-in principal.",
+        "Clicking “Claim admin access” triggers the backend claim call and shows an English toast on success or a clear English error toast on failure.",
+        "When the caller is an admin, the app header displays an “Admin” indicator; when not an admin, it does not.",
+        "No changes are made to immutable frontend paths listed in SYSTEM_CONTEXT."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useVoiceSession.ts",
+          "path": "frontend/src/hooks/useAdmin.ts",
           "operation": "create",
-          "description": "Create React Query hooks for voice session lifecycle and polling-based signaling state fetch using existing backend capabilities (start/end session, fetch state, send offer/answer, post ICE). Ensure polling interval is provided by caller so it can reuse the app’s existing polling preference pattern. Verify the component's usage instructions before implementing."
+          "description": "Create react-query hooks for admin status and admin-claiming (query: isCallerAdmin; mutation: claim admin). Use the authorization component’s frontend guidance for handling authorization errors gracefully; verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/voice/VoicePanel.tsx",
-          "operation": "create",
-          "description": "Create an in-room Voice panel that manages browser WebRTC setup (RTCPeerConnection + getUserMedia), Join/Leave, and Mute/Unmute controls, and coordinates signaling through the polling hooks. Include clear English error states for mic permission denial/unavailability and for backend signaling failures with retry. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/chat/MessageThread.tsx",
+          "path": "frontend/src/backend.d.ts",
           "operation": "modify",
-          "description": "Wire the Voice UI into the existing room experience by adding a clearly labeled \"Voice\" control in the room header and rendering the VoicePanel for the currently selected room. Pass the existing pollingInterval prop into VoicePanel/hooks so voice signaling polling follows the Settings polling preference and does not introduce WebSockets. Verify the component's usage instructions before implementing."
+          "description": "Update the typed backend interface to include the new backend capability used by the Settings UI for claiming admin access (and ensure isCallerAdmin is used consistently). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/settings/SettingsDialog.tsx",
+          "operation": "modify",
+          "description": "Add an “Admin access” section to the existing Settings dialog: show current status (“You are an admin” / “You are not an admin”) using the admin-status hook, and add a “Claim admin access” button wired to the claim mutation with English success/error toasts. Use existing shadcn-ui primitives already imported in this file; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire admin status into the authenticated header area: when admin, show a subtle English “Admin” indicator (e.g., small label/badge near the identity display). Ensure it is hidden for non-admins. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-66",
-      "summary": "Enable viewing another user’s profile (picture, display name, bio) from message senders and friends list, with fallbacks and error states.",
+      "id": "REQ-113",
+      "summary": "Add client-side “Search in chat” filtering for room messages and server announcements.",
       "acceptanceCriteria": [
-        "Clicking a message sender identity (e.g., avatar and/or name) opens a profile view UI for that sender principal.",
-        "Clicking a friend entry in the Friends UI opens the same profile view UI for that friend principal.",
-        "The profile view displays: profile picture (if set), display name, and bio; if any field is missing, show a sensible fallback (English labels where applicable).",
-        "If the viewed user has no profile picture, the UI renders a fallback avatar consistent with the existing avatar behavior.",
-        "If fetching the viewed user’s profile fails, the UI shows an English error state and still displays a stable fallback identity derived from principal (no infinite skeleton/loading)."
+        "In a room chat thread, entering a search term filters the displayed messages to those whose text content matches (case-insensitive match is acceptable).",
+        "In a server chat thread, entering a search term filters the displayed announcements similarly.",
+        "When a search yields no results, the UI shows a clear English message indicating no matches.",
+        "Clearing the search term restores the full currently loaded message list."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/profile/ProfileViewerDialog.tsx",
-          "operation": "create",
-          "description": "Create a reusable profile viewer dialog that takes a target principal and renders: UserAvatar (profile picture via blob-storage ExternalBlob direct URL when available), display name, bio, and stable principal-derived fallback identity. Show an English error state when profile fetch fails while still rendering fallbacks. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useUserProfile.ts",
-          "operation": "modify",
-          "description": "Adjust the user-profile fetching hook behavior so UI can distinguish: (a) profile exists, (b) no profile (null), and (c) fetch failure/authorization error, enabling a dedicated English error state without infinite loading. Keep caching behavior reasonable for repeated opens of the profile viewer. Verify the component's usage instructions before implementing."
-        },
-        {
           "path": "frontend/src/components/chat/MessageThread.tsx",
           "operation": "modify",
-          "description": "Make the message sender identity (avatar and/or name) interactive to open the shared ProfileViewerDialog for the sender principal, while preserving existing fallback rendering. Ensure English labels/text in the viewer and stable fallback identity even if fetch fails. Verify the component's usage instructions before implementing."
+          "description": "Add a “Search messages…” input that filters the currently loaded room messages client-side (case-insensitive match against message.content), applied to both pinned and unpinned lists. Add an English empty-state message when no matches are found, and ensure clearing restores the full list. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/friends/FriendsDialog.tsx",
+          "path": "frontend/src/components/servers/ServerAnnouncementThread.tsx",
           "operation": "modify",
-          "description": "Make each friend entry open the same ProfileViewerDialog for that friend principal. Ensure the dialog shows profile picture (via blob-storage ExternalBlob direct URL when present) or existing avatar fallback, and shows an English error state on fetch failure. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/chat/InviteToRoomDialog.tsx",
-          "operation": "modify",
-          "description": "Ensure user identity elements rendered in the invite list (avatar/name) can also open the shared ProfileViewerDialog for consistency across places where other users appear. Preserve existing add-to-room behavior and fallbacks. Verify the component's usage instructions before implementing."
+          "description": "Add a “Search messages…” input that filters the currently loaded server announcements client-side (case-insensitive match against announcement.content), applied to both pinned and unpinned lists. Add an English empty-state message when no matches are found, and ensure clearing restores the full list. Verify the component's usage instructions before implementing."
         }
       ]
     }
