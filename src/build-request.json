@@ -1,36 +1,98 @@
 {
   "kind": "build_request",
-  "title": "Add additional theme options in Settings (include Black theme)",
+  "title": "Add voice chat option and user profile viewing (with profile pictures)",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-46",
-      "text": "Extend the Settings theme selector to include additional theme options, including a \"Black\" theme, and make selecting the new theme apply the correct CSS variable palette across the app.",
-      "target": "frontend",
+      "id": "REQ-64",
+      "text": "Add backend support for room-scoped voice chat signaling so authenticated room members can establish WebRTC voice connections without WebSockets (polling-based signaling). The signaling layer must support creating a voice session for a room, joining/leaving, and exchanging SDP offers/answers and ICE candidates, with access control enforcing that only members of the room can read/write signaling for that room/session.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-8"
         ],
         "quotes": [
-          "Add more themes in the settings including a black theme"
+          "add voice chat option"
         ]
       },
       "acceptanceCriteria": [
-        "In Settings, the Theme dropdown includes a new option labeled \"Black\" (English text).",
-        "Selecting \"Black\" calls the existing theme application mechanism (next-themes) using a stable theme value (e.g., \"black\").",
-        "A corresponding `.black` theme class is defined in `frontend/src/index.css` that sets `--background` to a true/near-true black and updates related variables (`--foreground`, `--card`, `--border`, `--muted`, etc.) so text and UI controls remain readable and consistent.",
-        "When the Black theme is selected, the app UI (header, sidebar, dialogs, message thread, and inputs) visibly switches to the Black palette without breaking contrast or readability.",
-        "Existing theme options (Light, Dark, System Default) continue to work as before."
+        "Backend exposes canister methods to: (1) create or start a voice session for a room, (2) join a voice session, (3) leave/end a voice session, (4) post signaling messages (offer/answer/ice), and (5) fetch signaling messages incrementally (e.g., afterId + limit).",
+        "All voice signaling methods trap with a clear error if the caller is not authenticated as a user.",
+        "All voice signaling methods enforce that the caller is a member of the referenced room before allowing read/write.",
+        "Signaling fetch supports incremental polling without returning duplicate signaling messages when used with an afterId cursor.",
+        "No existing chat message/room/profile APIs regress."
+      ]
+    },
+    {
+      "id": "REQ-65",
+      "text": "Add a frontend \"Voice\" option in the room experience that allows authenticated users to start and participate in a voice chat for the currently selected room, using WebRTC in the browser and the new backend signaling APIs with React Query polling (no WebSockets).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "add voice chat option"
+        ]
+      },
+      "acceptanceCriteria": [
+        "When a room is selected, the UI provides a clearly labeled control (English text) to open the Voice UI (e.g., a \"Voice\" button/tab/panel).",
+        "Starting voice chat requests microphone permission and, if granted, connects using WebRTC via the backend signaling channel and polling.",
+        "The Voice UI includes at minimum: Join/Leave controls and Mute/Unmute for the local microphone.",
+        "If microphone permission is denied or unavailable, the UI shows an English error message and does not crash.",
+        "If backend signaling calls fail, the UI shows an English error message and allows retrying.",
+        "Voice signaling polling interval is configurable using the app’s existing polling preference patterns (do not introduce WebSockets)."
+      ]
+    },
+    {
+      "id": "REQ-66",
+      "text": "Implement a user profile viewing UI so a user can view another user’s profile details, including profile picture, display name, and bio, from existing places where other users appear (e.g., message sender and friends list).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "add a feature that displays your profile to other users including profile picture"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Clicking a message sender identity (e.g., avatar and/or name) opens a profile view UI for that sender principal.",
+        "Clicking a friend entry in the Friends UI opens the same profile view UI for that friend principal.",
+        "The profile view displays: profile picture (if set), display name, and bio; if any field is missing, show a sensible fallback (English labels where applicable).",
+        "If the viewed user has no profile picture, the UI renders a fallback avatar consistent with the existing avatar behavior.",
+        "If fetching the viewed user’s profile fails, the UI shows an English error state and still displays a stable fallback identity derived from principal (no infinite skeleton/loading)."
+      ]
+    },
+    {
+      "id": "REQ-67",
+      "text": "Ensure the backend profile-read path reliably supports displaying profiles to other authenticated users, including profile picture retrieval, without traps for valid authenticated callers.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-8"
+        ],
+        "quotes": [
+          "add a feature that displays your profile to other users including profile picture"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Fetching another user’s profile via the existing profile API works for authenticated users who have standard user permissions and returns null when the target user has no profile.",
+        "Profile picture blobs returned in profiles can be rendered in the frontend via direct URLs without requiring routing through the backend.",
+        "Any authorization failure produces a clear error message; valid authenticated callers do not experience traps in normal use when requesting other users’ profiles."
       ]
     }
   ],
   "constraints": [
-    "Use English for all user-facing text.",
-    "Do not edit files under frontend/src/components/ui or other immutable frontend paths listed in SYSTEM_CONTEXT."
+    "Backend must remain a single Motoko actor in backend/main.mo; add migration.mo only if an upgrade of stable state is required.",
+    "Do not use WebSockets or any real-time socket framework; implement voice signaling using polling-compatible backend APIs and React Query polling.",
+    "Do not edit frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
+    "Use English for all user-facing text."
   ],
   "nonGoals": [
-    "Implementing WebSocket or real-time theme synchronization across clients.",
-    "Adding third-party theming libraries beyond the existing next-themes/Tailwind setup."
+    "Implementing text chat real-time transport via WebSockets or any real-time chat system beyond the existing polling approach.",
+    "Implementing multi-server voice routing or external TURN/STUN infrastructure management beyond browser-default/WebRTC norms.",
+    "Third-party voice providers or external services integrations."
   ],
   "imageRequirements": {
     "required": [],

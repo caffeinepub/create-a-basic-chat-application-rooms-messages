@@ -38,6 +38,17 @@
         --sidebar-accent-foreground: 0.35 0.02 30;
         --sidebar-border: 0.88 0.02 40;
         --sidebar-ring: 0.55 0.15 35;
+        
+        /* Room tile tokens - Light theme: soft peach/coral palette */
+        --room-tile-bg: 0.97 0.02 45;
+        --room-tile-border: 0.85 0.03 40;
+        --room-tile-fg: 0.40 0.03 35;
+        --room-tile-icon: 0.55 0.08 40;
+        --room-tile-hover-bg: 0.93 0.04 50;
+        --room-tile-selected-bg: 0.88 0.08 50;
+        --room-tile-selected-border: 0.60 0.16 38;
+        --room-tile-selected-fg: 0.25 0.02 30;
+        --room-tile-selected-icon: 0.55 0.15 35;
     }
 
     .dark {
@@ -74,6 +85,17 @@
         --sidebar-accent-foreground: 0.95 0.01 40;
         --sidebar-border: 0.30 0.02 35;
         --sidebar-ring: 0.65 0.15 40;
+        
+        /* Room tile tokens - Dark theme: warm amber/orange palette */
+        --room-tile-bg: 0.26 0.03 35;
+        --room-tile-border: 0.32 0.04 38;
+        --room-tile-fg: 0.75 0.02 40;
+        --room-tile-icon: 0.65 0.10 45;
+        --room-tile-hover-bg: 0.32 0.05 40;
+        --room-tile-selected-bg: 0.40 0.10 42;
+        --room-tile-selected-border: 0.68 0.18 40;
+        --room-tile-selected-fg: 0.95 0.01 40;
+        --room-tile-selected-icon: 0.75 0.18 42;
     }
 
     .black {
@@ -110,6 +132,17 @@
         --sidebar-accent-foreground: 0.95 0.01 40;
         --sidebar-border: 0.20 0.01 35;
         --sidebar-ring: 0.65 0.15 40;
+        
+        /* Room tile tokens - Black theme: vibrant terracotta/gold palette for OLED contrast */
+        --room-tile-bg: 0.12 0.02 35;
+        --room-tile-border: 0.22 0.03 38;
+        --room-tile-fg: 0.80 0.02 40;
+        --room-tile-icon: 0.70 0.12 45;
+        --room-tile-hover-bg: 0.18 0.04 40;
+        --room-tile-selected-bg: 0.28 0.08 42;
+        --room-tile-selected-border: 0.72 0.20 42;
+        --room-tile-selected-fg: 0.98 0.01 40;
+        --room-tile-selected-icon: 0.78 0.20 44;
     }
 
     * {

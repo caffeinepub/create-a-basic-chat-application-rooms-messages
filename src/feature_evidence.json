@@ -2,12 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-extend-the-settings-theme-selector-to-include-additional-theme-options-including-a-black-theme-and-make-selecting-the-new-theme-apply-the-correct-css-variable-palette-across-the-app",
-      "featureTitle": "Extend the Settings theme selector to include additional theme options, including a \"Black\" theme, and make selecting the new theme apply the correct CSS variable palette across the app.",
+      "featureId": "feature-add-a-frontend-voice-option-in-the-room-experience-that-allows-authenticated-users-to-start-and-participate-in-a-voice-chat-for-the-currently-selected-room-using-webrtc-in-the-browser-and-the-new-backend-signaling-apis-with-react-query-polling-no-websockets",
+      "featureTitle": "Add a frontend \"Voice\" option in the room experience that allows authenticated users to start and participate in a voice chat for the currently selected room, using WebRTC in the browser and the new backend signaling APIs with React Query polling (no WebSockets).",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/settings/SettingsDialog.tsx",
-        "frontend/src/index.css"
+        "frontend/src/components/chat/MessageThread.tsx",
+        "frontend/src/components/voice/VoicePanel.tsx",
+        "frontend/src/hooks/useVoiceSession.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -19,7 +19,31 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-46"
+        "REQ-65"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-a-user-profile-viewing-ui-so-a-user-can-view-another-user-s-profile-details-including-profile-picture-display-name-and-bio-from-existing-places-where-other-users-appear-e-g-message-sender-and-friends-list",
+      "featureTitle": "Implement a user profile viewing UI so a user can view another user’s profile details, including profile picture, display name, and bio, from existing places where other users appear (e.g., message sender and friends list).",
+      "files": [
+        "frontend/src/components/chat/InviteToRoomDialog.tsx",
+        "frontend/src/components/chat/MessageThread.tsx",
+        "frontend/src/components/friends/FriendsDialog.tsx",
+        "frontend/src/components/profile/ProfileViewerDialog.tsx",
+        "frontend/src/hooks/useUserProfile.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-66"
       ],
       "confidence": "high"
     }

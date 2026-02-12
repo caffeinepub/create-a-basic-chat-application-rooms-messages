@@ -1,40 +1,82 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T10:41:32.824Z",
+  "generatedAt": "2026-02-12T13:31:17.414Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 4,
+    "implemented": 2,
     "items": [
       {
-        "id": "REQ-46",
-        "summary": "Extend the Settings theme selector to include additional theme options, including a \"Black\" theme, and make selecting the new theme apply the correct CSS variable palette across the app.",
+        "id": "REQ-64",
+        "summary": "Add backend support for room-scoped voice chat signaling so authenticated room members can establish WebRTC voice connections without WebSockets (polling-based signaling). The signaling layer must support creating a voice session for a room, joining/leaving, and exchanging SDP offers/answers and ICE candidates, with access control enforcing that only members of the room can read/write signaling for that room/session.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-65",
+        "summary": "Add a frontend \"Voice\" option in the room experience that allows authenticated users to start and participate in a voice chat for the currently selected room, using WebRTC in the browser and the new backend signaling APIs with React Query polling (no WebSockets).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/settings/SettingsDialog.tsx",
-          "frontend/src/index.css",
-          "frontend/src/App.tsx"
+          "frontend/src/hooks/useVoiceSession.ts",
+          "frontend/src/components/voice/VoicePanel.tsx",
+          "frontend/src/components/chat/MessageThread.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/settings/SettingsDialog.tsx",
-          "frontend/src/index.css",
-          "frontend/src/App.tsx"
+          "frontend/src/hooks/useVoiceSession.ts",
+          "frontend/src/components/voice/VoicePanel.tsx",
+          "frontend/src/components/chat/MessageThread.tsx"
         ]
+      },
+      {
+        "id": "REQ-66",
+        "summary": "Implement a user profile viewing UI so a user can view another user’s profile details, including profile picture, display name, and bio, from existing places where other users appear (e.g., message sender and friends list).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/profile/ProfileViewerDialog.tsx",
+          "frontend/src/hooks/useUserProfile.ts",
+          "frontend/src/components/chat/MessageThread.tsx",
+          "frontend/src/components/friends/FriendsDialog.tsx",
+          "frontend/src/components/chat/InviteToRoomDialog.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/profile/ProfileViewerDialog.tsx",
+          "frontend/src/hooks/useUserProfile.ts",
+          "frontend/src/components/chat/MessageThread.tsx",
+          "frontend/src/components/friends/FriendsDialog.tsx",
+          "frontend/src/components/chat/InviteToRoomDialog.tsx"
+        ]
+      },
+      {
+        "id": "REQ-67",
+        "summary": "Ensure the backend profile-read path reliably supports displaying profiles to other authenticated users, including profile picture retrieval, without traps for valid authenticated callers.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
-    "frontend/src/components/settings/SettingsDialog.tsx",
-    "frontend/src/index.css",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/chat/InviteToRoomDialog.tsx",
+    "frontend/src/components/chat/MessageThread.tsx",
+    "frontend/src/components/friends/FriendsDialog.tsx",
+    "frontend/src/components/profile/ProfileViewerDialog.tsx",
+    "frontend/src/components/voice/VoicePanel.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useUserProfile.ts",
+    "frontend/src/hooks/useVoiceSession.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

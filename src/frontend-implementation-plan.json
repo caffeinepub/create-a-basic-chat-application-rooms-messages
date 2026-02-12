@@ -1,33 +1,72 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add additional theme options in Settings (include Black theme)",
+  "title": "Voice chat UI (polling-based WebRTC signaling) and user profile viewing with profile pictures",
   "requirements": [
     {
-      "id": "REQ-46",
-      "summary": "Add a Black theme option to Settings and implement a matching CSS variable palette so the entire app updates via next-themes class switching.",
+      "id": "REQ-65",
+      "summary": "Add an in-room Voice UI that uses WebRTC + backend signaling via React Query polling (no WebSockets), with join/leave and mute controls plus robust error handling.",
       "acceptanceCriteria": [
-        "In Settings, the Theme dropdown includes a new option labeled \"Black\" (English text).",
-        "Selecting \"Black\" calls the existing theme application mechanism (next-themes) using a stable theme value (e.g., \"black\").",
-        "A corresponding `.black` theme class is defined in `frontend/src/index.css` that sets `--background` to a true/near-true black and updates related variables (`--foreground`, `--card`, `--border`, `--muted`, etc.) so text and UI controls remain readable and consistent.",
-        "When the Black theme is selected, the app UI (header, sidebar, dialogs, message thread, and inputs) visibly switches to the Black palette without breaking contrast or readability.",
-        "Existing theme options (Light, Dark, System Default) continue to work as before."
+        "When a room is selected, the UI provides a clearly labeled control (English text) to open the Voice UI (e.g., a \"Voice\" button/tab/panel).",
+        "Starting voice chat requests microphone permission and, if granted, connects using WebRTC via the backend signaling channel and polling.",
+        "The Voice UI includes at minimum: Join/Leave controls and Mute/Unmute for the local microphone.",
+        "If microphone permission is denied or unavailable, the UI shows an English error message and does not crash.",
+        "If backend signaling calls fail, the UI shows an English error message and allows retrying.",
+        "Voice signaling polling interval is configurable using the app’s existing polling preference patterns (do not introduce WebSockets)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/settings/SettingsDialog.tsx",
-          "operation": "modify",
-          "description": "Extend the Theme selector to include a new SelectItem labeled \"Black\" with a stable value \"black\", ensuring the existing next-themes setTheme flow applies it and existing Light/Dark/System options remain unchanged."
+          "path": "frontend/src/hooks/useVoiceSession.ts",
+          "operation": "create",
+          "description": "Create React Query hooks for voice session lifecycle and polling-based signaling state fetch using existing backend capabilities (start/end session, fetch state, send offer/answer, post ICE). Ensure polling interval is provided by caller so it can reuse the app’s existing polling preference pattern. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Define a new `.black` theme class in the @layer base section that sets a near-true black `--background` and adjusts the full variable palette (`--foreground`, `--card`, `--popover`, `--muted`, `--border`, `--input`, `--ring`, and `--sidebar*`) to preserve readability/contrast across header, sidebar, dialogs, threads, and inputs."
+          "path": "frontend/src/components/voice/VoicePanel.tsx",
+          "operation": "create",
+          "description": "Create an in-room Voice panel that manages browser WebRTC setup (RTCPeerConnection + getUserMedia), Join/Leave, and Mute/Unmute controls, and coordinates signaling through the polling hooks. Include clear English error states for mic permission denial/unavailability and for backend signaling failures with retry. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/components/chat/MessageThread.tsx",
           "operation": "modify",
-          "description": "Update the ThemeProvider configuration (next-themes) to explicitly support the new \"black\" theme value (while keeping defaultTheme=\"system\" and enableSystem behavior intact), so applying \"black\" results in the `.black` class being used consistently."
+          "description": "Wire the Voice UI into the existing room experience by adding a clearly labeled \"Voice\" control in the room header and rendering the VoicePanel for the currently selected room. Pass the existing pollingInterval prop into VoicePanel/hooks so voice signaling polling follows the Settings polling preference and does not introduce WebSockets. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-66",
+      "summary": "Enable viewing another user’s profile (picture, display name, bio) from message senders and friends list, with fallbacks and error states.",
+      "acceptanceCriteria": [
+        "Clicking a message sender identity (e.g., avatar and/or name) opens a profile view UI for that sender principal.",
+        "Clicking a friend entry in the Friends UI opens the same profile view UI for that friend principal.",
+        "The profile view displays: profile picture (if set), display name, and bio; if any field is missing, show a sensible fallback (English labels where applicable).",
+        "If the viewed user has no profile picture, the UI renders a fallback avatar consistent with the existing avatar behavior.",
+        "If fetching the viewed user’s profile fails, the UI shows an English error state and still displays a stable fallback identity derived from principal (no infinite skeleton/loading)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/profile/ProfileViewerDialog.tsx",
+          "operation": "create",
+          "description": "Create a reusable profile viewer dialog that takes a target principal and renders: UserAvatar (profile picture via blob-storage ExternalBlob direct URL when available), display name, bio, and stable principal-derived fallback identity. Show an English error state when profile fetch fails while still rendering fallbacks. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useUserProfile.ts",
+          "operation": "modify",
+          "description": "Adjust the user-profile fetching hook behavior so UI can distinguish: (a) profile exists, (b) no profile (null), and (c) fetch failure/authorization error, enabling a dedicated English error state without infinite loading. Keep caching behavior reasonable for repeated opens of the profile viewer. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/chat/MessageThread.tsx",
+          "operation": "modify",
+          "description": "Make the message sender identity (avatar and/or name) interactive to open the shared ProfileViewerDialog for the sender principal, while preserving existing fallback rendering. Ensure English labels/text in the viewer and stable fallback identity even if fetch fails. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/friends/FriendsDialog.tsx",
+          "operation": "modify",
+          "description": "Make each friend entry open the same ProfileViewerDialog for that friend principal. Ensure the dialog shows profile picture (via blob-storage ExternalBlob direct URL when present) or existing avatar fallback, and shows an English error state on fetch failure. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/chat/InviteToRoomDialog.tsx",
+          "operation": "modify",
+          "description": "Ensure user identity elements rendered in the invite list (avatar/name) can also open the shared ProfileViewerDialog for consistency across places where other users appear. Preserve existing add-to-room behavior and fallbacks. Verify the component's usage instructions before implementing."
         }
       ]
     }

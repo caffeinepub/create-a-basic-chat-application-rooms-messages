@@ -12,6 +12,7 @@ import { useSearchUsers, useGetCallerFriends, useSendFriendRequest } from '../..
 import { useGetUserProfile } from '../../hooks/useUserProfile';
 import UserAvatar from '../profile/UserAvatar';
 import ProfileName from '../profile/ProfileName';
+import ProfileViewerDialog from '../profile/ProfileViewerDialog';
 import type { User, UserProfile } from '../../backend';
 
 interface FriendsDialogProps {
@@ -21,6 +22,7 @@ interface FriendsDialogProps {
 
 function FriendCard({ userId }: { userId: User }) {
   const { data: profile, isLoading, isFetched } = useGetUserProfile(userId);
+  const [showProfileViewer, setShowProfileViewer] = useState(false);
 
   // Show skeleton only while loading
   if (isLoading) {
@@ -38,36 +40,60 @@ function FriendCard({ userId }: { userId: User }) {
   if (!profile && isFetched) {
     const principalSnippet = userId.toString().slice(0, 8) + '...';
     return (
-      <Card className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-            <span className="text-sm font-medium text-muted-foreground">?</span>
+      <>
+        <Card
+          className="p-4 cursor-pointer hover:bg-accent transition-colors"
+          onClick={() => setShowProfileViewer(true)}
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+              <span className="text-sm font-medium text-muted-foreground">?</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-foreground truncate">Unknown user</p>
+              <p className="text-xs text-muted-foreground truncate">{principalSnippet}</p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-foreground truncate">Unknown user</p>
-            <p className="text-xs text-muted-foreground truncate">{principalSnippet}</p>
-          </div>
-        </div>
-      </Card>
+        </Card>
+        {showProfileViewer && (
+          <ProfileViewerDialog
+            open={showProfileViewer}
+            onOpenChange={setShowProfileViewer}
+            targetPrincipal={userId}
+          />
+        )}
+      </>
     );
   }
 
   // Show profile when available
   if (profile) {
     return (
-      <Card className="p-4">
-        <div className="flex items-center gap-3">
-          <UserAvatar profile={profile} size="md" />
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-foreground truncate">
-              <ProfileName profile={profile} />
-            </p>
-            {profile.bio && (
-              <p className="text-xs text-muted-foreground truncate">{profile.bio}</p>
-            )}
+      <>
+        <Card
+          className="p-4 cursor-pointer hover:bg-accent transition-colors"
+          onClick={() => setShowProfileViewer(true)}
+        >
+          <div className="flex items-center gap-3">
+            <UserAvatar profile={profile} size="md" />
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-foreground truncate">
+                <ProfileName profile={profile} />
+              </p>
+              {profile.bio && (
+                <p className="text-xs text-muted-foreground truncate">{profile.bio}</p>
+              )}
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+        {showProfileViewer && (
+          <ProfileViewerDialog
+            open={showProfileViewer}
+            onOpenChange={setShowProfileViewer}
+            targetPrincipal={userId}
+          />
+        )}
+      </>
     );
   }
 
@@ -145,7 +171,7 @@ export default function FriendsDialog({ open, onOpenChange }: FriendsDialogProps
         <DialogHeader>
           <DialogTitle>Friends</DialogTitle>
           <DialogDescription>
-            Search for users and manage your friends list.
+            Search for users and manage your friends list. Click on a friend to view their profile.
           </DialogDescription>
         </DialogHeader>
 

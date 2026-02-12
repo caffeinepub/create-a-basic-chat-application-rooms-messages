@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useListRooms, useCreateRoom } from '../../hooks/useChatRooms';
+import { useListServers, useCreateServer } from '../../hooks/useServers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
-import { Plus, MessageSquare } from 'lucide-react';
+import { Plus, MessageSquare, Server } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -15,8 +16,14 @@ interface RoomListProps {
 
 export default function RoomList({ selectedRoomId, onSelectRoom }: RoomListProps) {
   const [newRoomName, setNewRoomName] = useState('');
+  const [newServerName, setNewServerName] = useState('');
   const { data: rooms, isLoading, isError } = useListRooms();
+  const { data: servers, isLoading: serversLoading } = useListServers();
   const createRoom = useCreateRoom();
+  const createServer = useCreateServer();
+
+  const serverCount = servers?.length || 0;
+  const hasReachedServerLimit = serverCount >= 100;
 
   const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +42,35 @@ export default function RoomList({ selectedRoomId, onSelectRoom }: RoomListProps
     } catch (error) {
       console.error('Failed to create room:', error);
       toast.error('Failed to create room. Please try again.');
+    }
+  };
+
+  const handleCreateServer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const trimmedName = newServerName.trim();
+    if (!trimmedName) {
+      toast.error('Please enter a server name');
+      return;
+    }
+
+    if (hasReachedServerLimit) {
+      toast.error('You have reached the 100 server limit.');
+      return;
+    }
+
+    try {
+      await createServer.mutateAsync(trimmedName);
+      setNewServerName('');
+      toast.success('Server created successfully!');
+    } catch (error: any) {
+      console.error('Failed to create server:', error);
+      const errorMessage = error?.message || 'Failed to create server. Please try again.';
+      if (errorMessage.includes('Maximum of 100 servers')) {
+        toast.error('You have reached the 100 server limit.');
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -69,6 +105,45 @@ export default function RoomList({ selectedRoomId, onSelectRoom }: RoomListProps
         </form>
       </div>
 
+      {/* Create Server Form */}
+      <div className="border-b border-border p-4">
+        <form onSubmit={handleCreateServer} className="space-y-2">
+          <Input
+            placeholder="New server name..."
+            value={newServerName}
+            onChange={(e) => setNewServerName(e.target.value)}
+            disabled={createServer.isPending || hasReachedServerLimit}
+          />
+          <Button 
+            type="submit" 
+            className="w-full gap-2"
+            disabled={createServer.isPending || !newServerName.trim() || hasReachedServerLimit}
+          >
+            {createServer.isPending ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Creating...
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4" />
+                Create Server
+              </>
+            )}
+          </Button>
+          {hasReachedServerLimit && (
+            <p className="text-xs text-destructive text-center">
+              You have reached the 100 server limit.
+            </p>
+          )}
+          {!hasReachedServerLimit && !serversLoading && (
+            <p className="text-xs text-muted-foreground text-center">
+              {serverCount} / 100 servers
+            </p>
+          )}
+        </form>
+      </div>
+
       {/* Room List */}
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-2">
@@ -90,15 +165,35 @@ export default function RoomList({ selectedRoomId, onSelectRoom }: RoomListProps
                 onClick={() => onSelectRoom(room.id)}
                 className={`w-full text-left p-4 rounded-lg border transition-colors ${
                   selectedRoomId === room.id
-                    ? 'bg-accent border-primary'
-                    : 'bg-card border-border hover:bg-accent/50'
+                    ? 'bg-room-tile-selected border-room-tile-selected-border'
+                    : 'bg-room-tile border-room-tile-border hover:bg-room-tile-hover'
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <MessageSquare className="h-5 w-5 mt-0.5 text-muted-foreground" />
+                  <MessageSquare 
+                    className={`h-5 w-5 mt-0.5 ${
+                      selectedRoomId === room.id
+                        ? 'text-room-tile-selected-icon'
+                        : 'text-room-tile-icon'
+                    }`}
+                  />
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-foreground truncate">{room.name}</h3>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <h3 
+                      className={`font-medium truncate ${
+                        selectedRoomId === room.id
+                          ? 'text-room-tile-selected-foreground'
+                          : 'text-room-tile-foreground'
+                      }`}
+                    >
+                      {room.name}
+                    </h3>
+                    <p 
+                      className={`text-xs mt-1 ${
+                        selectedRoomId === room.id
+                          ? 'text-room-tile-selected-foreground/70'
+                          : 'text-room-tile-foreground/60'
+                      }`}
+                    >
                       Created {new Date(Number(room.createdAt) / 1000000).toLocaleDateString()}
                     </p>
                   </div>

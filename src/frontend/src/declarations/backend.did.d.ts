@@ -10,6 +10,15 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface AltAccountRequest {
+  'status' : AltLinkStatus,
+  'requester' : User,
+  'altAccount' : User,
+  'createdAt' : Time,
+}
+export type AltLinkStatus = { 'revoked' : null } |
+  { 'pending' : null } |
+  { 'accepted' : null };
 export interface ChatMessage {
   'id' : MessageId,
   'content' : string,
@@ -19,6 +28,7 @@ export interface ChatMessage {
   'roomId' : RoomId,
 }
 export type ExternalBlob = Uint8Array;
+export interface IceCandidate { 'candidate' : string, 'sdpMLineIndex' : bigint }
 export type MessageId = bigint;
 export interface NewChatMessage {
   'content' : string,
@@ -32,6 +42,15 @@ export interface Room {
   'createdAt' : Time,
 }
 export type RoomId = string;
+export type SdpAnswer = string;
+export type SdpOffer = string;
+export interface Server {
+  'id' : ServerId,
+  'owner' : User,
+  'name' : string,
+  'createdAt' : Time,
+}
+export type ServerId = string;
 export type Time = bigint;
 export type User = Principal;
 export interface UserProfile {
@@ -46,6 +65,11 @@ export interface UserProfile {
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export interface VoiceSessionState {
+  'offer' : [] | [SdpOffer],
+  'answer' : [] | [SdpAnswer],
+  'iceCandidates' : Array<IceCandidate>,
+}
 export interface _CaffeineStorageCreateCertificateResult {
   'method' : string,
   'blob_hash' : string,
@@ -74,11 +98,18 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'acceptAltAccount' : ActorMethod<[Principal], undefined>,
   'acceptFriendRequest' : ActorMethod<[User], undefined>,
+  'addIceCandidate' : ActorMethod<[RoomId, IceCandidate], undefined>,
   'addUserToRoom' : ActorMethod<[RoomId, User], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'blockUser' : ActorMethod<[User], undefined>,
   'createRoom' : ActorMethod<[string], RoomId>,
+  'createServer' : ActorMethod<
+    [string],
+    { 'id' : ServerId, 'owner' : User, 'name' : string, 'createdAt' : Time }
+  >,
+  'endVoiceSession' : ActorMethod<[RoomId], undefined>,
   'fetchMessages' : ActorMethod<
     [RoomId, MessageId, bigint],
     Array<ChatMessage>
@@ -86,14 +117,29 @@ export interface _SERVICE {
   'getCallerFriends' : ActorMethod<[], Array<User>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getLinkedAltAccounts' : ActorMethod<[], Array<Principal>>,
+  'getPendingAltRequests' : ActorMethod<
+    [],
+    {
+      'incoming' : Array<AltAccountRequest>,
+      'outgoing' : Array<AltAccountRequest>,
+    }
+  >,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'getUserServers' : ActorMethod<[User], Array<Server>>,
+  'getVoiceSessionState' : ActorMethod<[RoomId], [] | [VoiceSessionState]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'linkAltAccount' : ActorMethod<[Principal], undefined>,
   'listRooms' : ActorMethod<[], Array<Room>>,
   'postMessage' : ActorMethod<[NewChatMessage], MessageId>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'searchUsersByName' : ActorMethod<[string], Array<UserProfile>>,
   'sendFriendRequest' : ActorMethod<[User], undefined>,
+  'sendSdpAnswer' : ActorMethod<[RoomId, SdpAnswer], undefined>,
+  'sendSdpOffer' : ActorMethod<[RoomId, SdpOffer], undefined>,
+  'startVoiceSession' : ActorMethod<[RoomId], undefined>,
   'unblockUser' : ActorMethod<[User], undefined>,
+  'unlinkAltAccount' : ActorMethod<[Principal], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

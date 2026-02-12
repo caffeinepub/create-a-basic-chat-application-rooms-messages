@@ -21,13 +21,18 @@ export const _CaffeineStorageRefillResult = IDL.Record({
 });
 export const User = IDL.Principal;
 export const RoomId = IDL.Text;
+export const IceCandidate = IDL.Record({
+  'candidate' : IDL.Text,
+  'sdpMLineIndex' : IDL.Nat,
+});
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
-export const MessageId = IDL.Nat;
+export const ServerId = IDL.Text;
 export const Time = IDL.Int;
+export const MessageId = IDL.Nat;
 export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const ChatMessage = IDL.Record({
   'id' : MessageId,
@@ -45,6 +50,30 @@ export const UserProfile = IDL.Record({
   'color' : IDL.Text,
   'textOverlays' : IDL.Text,
   'profilePicture' : IDL.Opt(ExternalBlob),
+});
+export const AltLinkStatus = IDL.Variant({
+  'revoked' : IDL.Null,
+  'pending' : IDL.Null,
+  'accepted' : IDL.Null,
+});
+export const AltAccountRequest = IDL.Record({
+  'status' : AltLinkStatus,
+  'requester' : User,
+  'altAccount' : User,
+  'createdAt' : Time,
+});
+export const Server = IDL.Record({
+  'id' : ServerId,
+  'owner' : User,
+  'name' : IDL.Text,
+  'createdAt' : Time,
+});
+export const SdpOffer = IDL.Text;
+export const SdpAnswer = IDL.Text;
+export const VoiceSessionState = IDL.Record({
+  'offer' : IDL.Opt(SdpOffer),
+  'answer' : IDL.Opt(SdpAnswer),
+  'iceCandidates' : IDL.Vec(IceCandidate),
 });
 export const Room = IDL.Record({
   'id' : RoomId,
@@ -86,11 +115,26 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'acceptAltAccount' : IDL.Func([IDL.Principal], [], []),
   'acceptFriendRequest' : IDL.Func([User], [], []),
+  'addIceCandidate' : IDL.Func([RoomId, IceCandidate], [], []),
   'addUserToRoom' : IDL.Func([RoomId, User], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'blockUser' : IDL.Func([User], [], []),
   'createRoom' : IDL.Func([IDL.Text], [RoomId], []),
+  'createServer' : IDL.Func(
+      [IDL.Text],
+      [
+        IDL.Record({
+          'id' : ServerId,
+          'owner' : User,
+          'name' : IDL.Text,
+          'createdAt' : Time,
+        }),
+      ],
+      [],
+    ),
+  'endVoiceSession' : IDL.Func([RoomId], [], []),
   'fetchMessages' : IDL.Func(
       [RoomId, MessageId, IDL.Nat],
       [IDL.Vec(ChatMessage)],
@@ -99,18 +143,40 @@ export const idlService = IDL.Service({
   'getCallerFriends' : IDL.Func([], [IDL.Vec(User)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getLinkedAltAccounts' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
+  'getPendingAltRequests' : IDL.Func(
+      [],
+      [
+        IDL.Record({
+          'incoming' : IDL.Vec(AltAccountRequest),
+          'outgoing' : IDL.Vec(AltAccountRequest),
+        }),
+      ],
+      ['query'],
+    ),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
+  'getUserServers' : IDL.Func([User], [IDL.Vec(Server)], ['query']),
+  'getVoiceSessionState' : IDL.Func(
+      [RoomId],
+      [IDL.Opt(VoiceSessionState)],
+      ['query'],
+    ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'linkAltAccount' : IDL.Func([IDL.Principal], [], []),
   'listRooms' : IDL.Func([], [IDL.Vec(Room)], ['query']),
   'postMessage' : IDL.Func([NewChatMessage], [MessageId], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'searchUsersByName' : IDL.Func([IDL.Text], [IDL.Vec(UserProfile)], ['query']),
   'sendFriendRequest' : IDL.Func([User], [], []),
+  'sendSdpAnswer' : IDL.Func([RoomId, SdpAnswer], [], []),
+  'sendSdpOffer' : IDL.Func([RoomId, SdpOffer], [], []),
+  'startVoiceSession' : IDL.Func([RoomId], [], []),
   'unblockUser' : IDL.Func([User], [], []),
+  'unlinkAltAccount' : IDL.Func([IDL.Principal], [], []),
 });
 
 export const idlInitArgs = [];
@@ -129,13 +195,18 @@ export const idlFactory = ({ IDL }) => {
   });
   const User = IDL.Principal;
   const RoomId = IDL.Text;
+  const IceCandidate = IDL.Record({
+    'candidate' : IDL.Text,
+    'sdpMLineIndex' : IDL.Nat,
+  });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
-  const MessageId = IDL.Nat;
+  const ServerId = IDL.Text;
   const Time = IDL.Int;
+  const MessageId = IDL.Nat;
   const ExternalBlob = IDL.Vec(IDL.Nat8);
   const ChatMessage = IDL.Record({
     'id' : MessageId,
@@ -153,6 +224,30 @@ export const idlFactory = ({ IDL }) => {
     'color' : IDL.Text,
     'textOverlays' : IDL.Text,
     'profilePicture' : IDL.Opt(ExternalBlob),
+  });
+  const AltLinkStatus = IDL.Variant({
+    'revoked' : IDL.Null,
+    'pending' : IDL.Null,
+    'accepted' : IDL.Null,
+  });
+  const AltAccountRequest = IDL.Record({
+    'status' : AltLinkStatus,
+    'requester' : User,
+    'altAccount' : User,
+    'createdAt' : Time,
+  });
+  const Server = IDL.Record({
+    'id' : ServerId,
+    'owner' : User,
+    'name' : IDL.Text,
+    'createdAt' : Time,
+  });
+  const SdpOffer = IDL.Text;
+  const SdpAnswer = IDL.Text;
+  const VoiceSessionState = IDL.Record({
+    'offer' : IDL.Opt(SdpOffer),
+    'answer' : IDL.Opt(SdpAnswer),
+    'iceCandidates' : IDL.Vec(IceCandidate),
   });
   const Room = IDL.Record({
     'id' : RoomId,
@@ -194,11 +289,26 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'acceptAltAccount' : IDL.Func([IDL.Principal], [], []),
     'acceptFriendRequest' : IDL.Func([User], [], []),
+    'addIceCandidate' : IDL.Func([RoomId, IceCandidate], [], []),
     'addUserToRoom' : IDL.Func([RoomId, User], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'blockUser' : IDL.Func([User], [], []),
     'createRoom' : IDL.Func([IDL.Text], [RoomId], []),
+    'createServer' : IDL.Func(
+        [IDL.Text],
+        [
+          IDL.Record({
+            'id' : ServerId,
+            'owner' : User,
+            'name' : IDL.Text,
+            'createdAt' : Time,
+          }),
+        ],
+        [],
+      ),
+    'endVoiceSession' : IDL.Func([RoomId], [], []),
     'fetchMessages' : IDL.Func(
         [RoomId, MessageId, IDL.Nat],
         [IDL.Vec(ChatMessage)],
@@ -207,12 +317,30 @@ export const idlFactory = ({ IDL }) => {
     'getCallerFriends' : IDL.Func([], [IDL.Vec(User)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getLinkedAltAccounts' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
+    'getPendingAltRequests' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'incoming' : IDL.Vec(AltAccountRequest),
+            'outgoing' : IDL.Vec(AltAccountRequest),
+          }),
+        ],
+        ['query'],
+      ),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
+    'getUserServers' : IDL.Func([User], [IDL.Vec(Server)], ['query']),
+    'getVoiceSessionState' : IDL.Func(
+        [RoomId],
+        [IDL.Opt(VoiceSessionState)],
+        ['query'],
+      ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'linkAltAccount' : IDL.Func([IDL.Principal], [], []),
     'listRooms' : IDL.Func([], [IDL.Vec(Room)], ['query']),
     'postMessage' : IDL.Func([NewChatMessage], [MessageId], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
@@ -222,7 +350,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'sendFriendRequest' : IDL.Func([User], [], []),
+    'sendSdpAnswer' : IDL.Func([RoomId, SdpAnswer], [], []),
+    'sendSdpOffer' : IDL.Func([RoomId, SdpOffer], [], []),
+    'startVoiceSession' : IDL.Func([RoomId], [], []),
     'unblockUser' : IDL.Func([User], [], []),
+    'unlinkAltAccount' : IDL.Func([IDL.Principal], [], []),
   });
 };
 

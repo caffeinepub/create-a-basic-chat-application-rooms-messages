@@ -1,12 +1,17 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 27,
-  "summary": "Build a chat application branded for Tchat.org (replacing freechat.com and any .com references and web domain).",
+  "projectStateVersion": 45,
+  "summary": "Build a chat application branded as TerrorChat for terrorchat.org (replacing freechat.com, tchat.org, and any other prior domains/references).",
   "architectural_notes": [
-    "Branding/domain should be configurable or centralized (e.g., constants/env) to avoid hardcoded .com references; update to .org."
+    "Branding/domain should be configurable or centralized (e.g., constants/env) to avoid hardcoded .com references; update to .org.",
+    "Branding/footer text and domain should be centralized/configurable to support changing from tchat.org to terrorchat.org without scattered hardcoding.",
+    "Decide and standardize the authentication approach for TerrorChat (e.g., Internet Identity vs a custom login/sign-in system) and ensure it supports persistent user accounts.",
+    "Chatroom box styling (foreground/front + selected state) should be driven by theme tokens/CSS variables so colors automatically switch with the selected theme.",
+    "Servers feature: add a hard limit of 100 servers (enforce consistently across UI and backend/server-creation logic)."
   ],
   "known_issues": [
-    "Profile feature has an unspecified issue reported by user (\"Chat app Profile issue\") that needs investigation and fix."
+    "Profile feature has an unspecified issue reported by user (\"Chat app Profile issue\") that needs investigation and fix.",
+    "Profile changes are not saving reliably, and the user's profile picture and display name are not consistently shown across the UI (should always display)."
   ],
   "isFixRequest": false,
   "existing_features": [
@@ -289,6 +294,134 @@
         "REQ-46"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-app-footer-text-in-frontend-src-app-tsx-by-replacing-the-current-year-built-with-using-caffeine-ai-including-the-caffeine-ai-link-with-the-exact-text-2026-terrorchat-org-licensed-by-ai",
+      "title": "Update the app footer text in frontend/src/App.tsx by replacing the current “© {year} · Built with ❤️ using caffeine.ai” (including the caffeine.ai link) with the exact text “@ 2026 terrorchat.org licensed by ai”.",
+      "reqIds": [
+        "REQ-47"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-no-room-selected-empty-state-in-the-chat-message-thread-so-it-uses-a-transparent-background-png-branded-as-terrorchat-white-tc-letters-no-background-instead-of-the-current-image",
+      "title": "Update the 'No Room Selected' empty-state in the chat message thread so it uses a transparent-background PNG branded as 'TerrorChat' (white 'TC' letters, no background) instead of the current image.",
+      "reqIds": [
+        "REQ-48"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-rename-the-application-branding-to-terrorchat-across-the-frontend-ui-and-static-metadata-replacing-any-remaining-tchat-app-name-references-including-the-unauthenticated-welcome-screen-header-title-logo-alt-text-and-the-html-document-title-use-english-for-all-user-facing-text",
+      "title": "Rename the application branding to \"TerrorChat\" across the frontend UI and static metadata, replacing any remaining \"Tchat\" app-name references (including the unauthenticated welcome screen, header title, logo alt text, and the HTML document title). Use English for all user-facing text.",
+      "reqIds": [
+        "REQ-49"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-more-explicit-proper-sign-in-login-experience-using-the-existing-internet-identity-authentication-flow-and-make-account-persistence-clear-to-users-i-e-that-their-internet-identity-session-account-is-remembered-on-the-device-and-can-be-used-again-after-reload-update-user-facing-auth-copy-to-use-sign-in-sign-out-wording-and-provide-clear-guidance-about-how-the-account-is-saved-and-how-to-access-it-again",
+      "title": "Implement a more explicit \"proper\" sign-in/login experience using the existing Internet Identity authentication flow, and make account persistence clear to users (i.e., that their Internet Identity session/account is remembered on the device and can be used again after reload). Update user-facing auth copy to use \"Sign in\" / \"Sign out\" wording and provide clear guidance about how the account is saved and how to access it again.",
+      "reqIds": [
+        "REQ-50"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-profile-saving-reliability-so-that-changes-made-in-the-profile-editor-display-name-bio-avatar-colors-and-profile-picture-are-consistently-persisted-and-reflected-after-closing-reopening-the-editor-and-after-a-full-page-reload",
+      "title": "Fix profile saving reliability so that changes made in the Profile Editor (display name, bio, avatar colors, and profile picture) are consistently persisted and reflected after closing/reopening the editor and after a full page reload.",
+      "reqIds": [
+        "REQ-51"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-authenticated-app-header-always-shows-a-user-identity-display-avatar-name-even-when-the-caller-profile-is-missing-still-loading-or-fails-to-fetch-use-a-stable-fallback-name-derived-from-the-caller-principal-truncated-and-a-fallback-avatar-when-no-profile-is-available",
+      "title": "Ensure the authenticated app header always shows a user identity display (avatar + name), even when the caller profile is missing, still loading, or fails to fetch; use a stable fallback name derived from the caller principal (truncated) and a fallback avatar when no profile is available.",
+      "reqIds": [
+        "REQ-52"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-react-query-hooks-to-call-the-new-backend-alt-account-apis-list-linked-accounts-list-pending-requests-create-request-accept-request-unlink-using-the-existing-actor-pattern",
+      "title": "Add React Query hooks to call the new backend alt-account APIs (list linked accounts, list pending requests, create request, accept request, unlink) using the existing actor pattern.",
+      "reqIds": [
+        "REQ-55"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-the-existing-settings-dialog-ui-frontend-src-components-settings-settingsdialog-tsx-to-include-an-alternate-accounts-section-that-1-shows-linked-accounts-when-they-exist-2-shows-pending-link-requests-for-the-signed-in-user-and-3-provides-controls-to-link-a-new-alt-account-by-entering-a-principal-string-and-sending-a-link-request",
+      "title": "Extend the existing Settings dialog UI (frontend/src/components/settings/SettingsDialog.tsx) to include an \"Alternate accounts\" section that: (1) shows linked accounts when they exist, (2) shows pending link requests for the signed-in user, and (3) provides controls to link a new alt account by entering a Principal string and sending a link request.",
+      "reqIds": [
+        "REQ-56"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-account-switching-ux-from-settings-when-a-user-selects-switch-on-a-linked-alt-account-the-app-signs-out-clears-the-current-internet-identity-session-and-then-prompts-the-user-to-sign-in-again-guiding-them-to-choose-the-target-linked-account-in-internet-identity-after-sign-in-the-app-should-detect-whether-the-signed-in-principal-matches-the-intended-target-and-show-an-english-success-or-mismatch-message",
+      "title": "Implement account switching UX from Settings: when a user selects \"Switch\" on a linked alt account, the app signs out (clears the current Internet Identity session) and then prompts the user to sign in again, guiding them to choose the target linked account in Internet Identity; after sign-in, the app should detect whether the signed-in principal matches the intended target and show an English success or mismatch message.",
+      "reqIds": [
+        "REQ-57"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-terrorchat-logo-image-used-next-to-the-terrorchat-title-with-the-user-uploaded-image-image-png-ensuring-the-resulting-asset-has-a-transparent-background-no-background-and-is-served-as-a-static-frontend-asset",
+      "title": "Replace the TerrorChat logo image used next to the \"TerrorChat\" title with the user-uploaded image (image.png), ensuring the resulting asset has a transparent background (no background) and is served as a static frontend asset.",
+      "reqIds": [
+        "REQ-58"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-dedicated-theme-tokens-css-variables-for-the-chatroom-list-boxes-room-tiles-so-they-can-have-different-foreground-front-colors-for-default-hover-and-selected-states-independent-from-the-generic-card-accent-tokens",
+      "title": "Add dedicated theme tokens (CSS variables) for the chatroom list boxes (room tiles) so they can have different foreground/front colors for default, hover, and selected states, independent from the generic card/accent tokens.",
+      "reqIds": [
+        "REQ-59"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-expose-the-new-chatroom-box-color-tokens-as-tailwind-color-utilities-or-equivalent-styling-approach-consistent-with-the-codebase-and-update-the-room-list-ui-to-use-them-for-normal-hover-selected-styling",
+      "title": "Expose the new chatroom box color tokens as Tailwind color utilities (or equivalent styling approach consistent with the codebase) and update the room list UI to use them for normal/hover/selected styling.",
+      "reqIds": [
+        "REQ-60"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-react-query-hooks-for-listing-servers-and-creating-a-server-using-the-existing-authenticated-actor-pattern-including-proper-cache-invalidation-after-server-creation",
+      "title": "Add React Query hooks for listing servers and creating a server using the existing authenticated actor pattern, including proper cache invalidation after server creation.",
+      "reqIds": [
+        "REQ-62"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-left-side-list-ui-currently-frontend-src-components-chat-roomlist-tsx-to-include-a-create-server-option-next-to-the-existing-create-room-option-and-enforce-the-100-server-limit-ux-disable-or-block-creation-with-an-english-message-when-the-limit-is-reached",
+      "title": "Update the left-side list UI (currently `frontend/src/components/chat/RoomList.tsx`) to include a \"Create Server\" option next to the existing \"Create Room\" option, and enforce the 100-server limit UX (disable or block creation with an English message when the limit is reached).",
+      "reqIds": [
+        "REQ-63"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-frontend-voice-option-in-the-room-experience-that-allows-authenticated-users-to-start-and-participate-in-a-voice-chat-for-the-currently-selected-room-using-webrtc-in-the-browser-and-the-new-backend-signaling-apis-with-react-query-polling-no-websockets",
+      "title": "Add a frontend \"Voice\" option in the room experience that allows authenticated users to start and participate in a voice chat for the currently selected room, using WebRTC in the browser and the new backend signaling APIs with React Query polling (no WebSockets).",
+      "reqIds": [
+        "REQ-65"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-user-profile-viewing-ui-so-a-user-can-view-another-user-s-profile-details-including-profile-picture-display-name-and-bio-from-existing-places-where-other-users-appear-e-g-message-sender-and-friends-list",
+      "title": "Implement a user profile viewing UI so a user can view another user’s profile details, including profile picture, display name, and bio, from existing places where other users appear (e.g., message sender and friends list).",
+      "reqIds": [
+        "REQ-66"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -379,10 +512,94 @@
       "summary": "Add additional theme options in Settings, including a black theme.",
       "reqIds": [],
       "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Update the app footer text to replace “© 2026 · Built with ❤️ using caffeine.ai” with the exact text “@ 2026 terrorchat.org licensed by ai”.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Publish/deploy the chat app as a public domain website and provide the public link to the user.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Replace the \"No room selected\" empty-state image with a transparent-background PNG that matches TerrorChat branding: text \"TerrorChat\" and white \"TC\" letters (no background).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Add proper login/sign-in and persistent account saving so users can reliably keep and access their account (beyond the current auth flow if needed).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-24",
+      "summary": "Add a new “Servers” feature alongside the existing “Create Room” option, allowing users to create servers (replacing the removed alt-account feature).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Replace the image/logo next to the “TerrorChat” title with the user-provided transparent (no background) image.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-26",
+      "summary": "Add theme-aware color styling options for chatroom boxes (different foreground/front colors per theme, including selected state styling).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-27",
+      "summary": "Implement a maximum limit of 100 servers per user/app for the new “Servers” feature (enforce in UI and backend when creating servers).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-28",
+      "summary": "Extend the backend to support per-user \"Servers\" with APIs to create and list servers, and enforce a maximum of 100 servers per user when creating a new server.",
+      "reqIds": [
+        "REQ-61"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-29",
+      "summary": "Add a voice chat option to TerrorChat (real-time voice communication between users in rooms/servers).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Add a feature to display a user's profile to other users (including profile picture), e.g., by viewing a profile from messages/friends with a profile view UI.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-31",
+      "summary": "Add backend support for room-scoped voice chat signaling so authenticated room members can establish WebRTC voice connections without WebSockets (polling-based signaling). The signaling layer must support creating a voice session for a room, joining/leaving, and exchanging SDP offers/answers and ICE candidates, with access control enforcing that only members of the room can read/write signaling for that room/session.",
+      "reqIds": [
+        "REQ-64"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-34",
+      "summary": "Ensure the backend profile-read path reliably supports displaying profiles to other authenticated users, including profile picture retrieval, without traps for valid authenticated callers.",
+      "reqIds": [
+        "REQ-67"
+      ],
+      "status": "pending"
     }
   ],
   "gameProjectType": "none",
-  "projectName": "Create a basic chat application (rooms + messages)",
+  "projectName": "TerrorChat",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

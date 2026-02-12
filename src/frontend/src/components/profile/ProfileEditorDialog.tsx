@@ -34,31 +34,40 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [selectedColor, setSelectedColor] = useState(AVATAR_COLORS[0]);
-  const [profilePicture, setProfilePicture] = useState<ExternalBlob | null>(null);
+  const [profilePicture, setProfilePicture] = useState<ExternalBlob | undefined>(undefined);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  // Rehydrate form state whenever dialog opens or profile changes
   useEffect(() => {
-    if (currentProfile) {
-      setName(currentProfile.name);
-      setBio(currentProfile.bio);
-      const matchingColor = AVATAR_COLORS.find(
-        c => c.bg === currentProfile.backgroundColor
-      );
-      if (matchingColor) {
-        setSelectedColor(matchingColor);
+    if (open) {
+      if (currentProfile) {
+        setName(currentProfile.name);
+        setBio(currentProfile.bio);
+        const matchingColor = AVATAR_COLORS.find(
+          c => c.bg === currentProfile.backgroundColor
+        );
+        if (matchingColor) {
+          setSelectedColor(matchingColor);
+        }
+        
+        // Handle profile picture: if it exists in saved profile, use it
+        if (currentProfile.profilePicture) {
+          setProfilePicture(currentProfile.profilePicture);
+          setPreviewUrl(currentProfile.profilePicture.getDirectURL());
+        } else {
+          // Explicitly clear if saved profile has no picture
+          setProfilePicture(undefined);
+          setPreviewUrl(null);
+        }
+      } else {
+        // Reset to defaults when no profile exists (create mode)
+        setName('');
+        setBio('');
+        setSelectedColor(AVATAR_COLORS[0]);
+        setProfilePicture(undefined);
+        setPreviewUrl(null);
       }
-      if (currentProfile.profilePicture) {
-        setProfilePicture(currentProfile.profilePicture);
-        setPreviewUrl(currentProfile.profilePicture.getDirectURL());
-      }
-    } else {
-      // Reset to defaults when no profile exists (create mode)
-      setName('');
-      setBio('');
-      setSelectedColor(AVATAR_COLORS[0]);
-      setProfilePicture(null);
-      setPreviewUrl(null);
     }
   }, [currentProfile, open]);
 
@@ -113,7 +122,7 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
   };
 
   const handleRemovePicture = () => {
-    setProfilePicture(null);
+    setProfilePicture(undefined);
     if (previewUrl && previewUrl.startsWith('blob:')) {
       URL.revokeObjectURL(previewUrl);
     }
@@ -136,7 +145,7 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
       color: selectedColor.text,
       backgroundColor: selectedColor.bg,
       textOverlays: trimmedName.charAt(0).toUpperCase(),
-      profilePicture: profilePicture || undefined,
+      profilePicture: profilePicture, // Will be undefined if cleared
     };
 
     try {
@@ -156,7 +165,7 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
     color: selectedColor.text,
     backgroundColor: selectedColor.bg,
     textOverlays: (name || 'P').charAt(0).toUpperCase(),
-    profilePicture: profilePicture || undefined,
+    profilePicture: profilePicture,
   };
 
   return (

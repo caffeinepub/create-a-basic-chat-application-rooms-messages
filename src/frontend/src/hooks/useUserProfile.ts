@@ -26,16 +26,17 @@ export function useGetCallerUserProfile() {
 export function useGetUserProfile(user: Principal) {
   const { actor, isFetching } = useActor();
 
-  return useQuery<UserProfile | null>({
+  return useQuery<UserProfile | null, Error>({
     queryKey: ['userProfile', user.toString()],
     queryFn: async () => {
       if (!actor) return null;
       try {
         return await actor.getUserProfile(user);
-      } catch (error) {
+      } catch (error: any) {
         // Handle authorization errors and backend traps gracefully
         console.warn(`Failed to fetch profile for ${user.toString()}:`, error);
-        return null;
+        // Throw error to allow UI to distinguish between null profile and fetch failure
+        throw new Error(error.message || 'Failed to fetch profile');
       }
     },
     enabled: !!actor && !isFetching,
@@ -53,11 +54,13 @@ export function useSaveCallerUserProfile() {
       if (!actor) throw new Error('Actor not available');
       return actor.saveCallerUserProfile(profile);
     },
-    onSuccess: (_, profile) => {
+    onSuccess: async (_, profile) => {
       // Immediately update the cache for snappier UI refresh
       queryClient.setQueryData(['currentUserProfile'], profile);
-      // Invalidate to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+      
+      // Refetch to ensure backend state is reflected (including cleared pictures)
+      await queryClient.refetchQueries({ queryKey: ['currentUserProfile'] });
+      
       // Also invalidate all user profiles to refresh message displays
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });
     },

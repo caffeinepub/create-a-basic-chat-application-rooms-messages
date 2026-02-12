@@ -76,6 +76,19 @@ export default {
                     'accent-foreground': 'oklch(var(--sidebar-accent-foreground))',
                     border: 'oklch(var(--sidebar-border))',
                     ring: 'oklch(var(--sidebar-ring))'
+                },
+                'room-tile': {
+                    DEFAULT: 'oklch(var(--room-tile-bg))',
+                    border: 'oklch(var(--room-tile-border))',
+                    foreground: 'oklch(var(--room-tile-fg))',
+                    icon: 'oklch(var(--room-tile-icon))',
+                    hover: 'oklch(var(--room-tile-hover-bg))',
+                    selected: {
+                        DEFAULT: 'oklch(var(--room-tile-selected-bg))',
+                        border: 'oklch(var(--room-tile-selected-border))',
+                        foreground: 'oklch(var(--room-tile-selected-fg))',
+                        icon: 'oklch(var(--room-tile-selected-icon))'
+                    }
                 }
             },
             borderRadius: {

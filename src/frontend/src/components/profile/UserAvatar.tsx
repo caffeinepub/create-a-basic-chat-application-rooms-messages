@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { UserProfile } from '../../backend';
 
 interface UserAvatarProps {
@@ -6,6 +7,8 @@ interface UserAvatarProps {
 }
 
 export default function UserAvatar({ profile, size = 'md' }: UserAvatarProps) {
+  const [imageError, setImageError] = useState(false);
+  
   const sizeClasses = {
     sm: 'h-8 w-8 text-sm',
     md: 'h-10 w-10 text-base',
@@ -14,8 +17,8 @@ export default function UserAvatar({ profile, size = 'md' }: UserAvatarProps) {
 
   const initial = profile.textOverlays || profile.name.charAt(0).toUpperCase();
 
-  // If profile picture exists, render it
-  if (profile.profilePicture) {
+  // If profile picture exists and hasn't errored, try to render it
+  if (profile.profilePicture && !imageError) {
     try {
       const imageUrl = profile.profilePicture.getDirectURL();
       return (
@@ -23,18 +26,15 @@ export default function UserAvatar({ profile, size = 'md' }: UserAvatarProps) {
           src={imageUrl}
           alt={profile.name}
           className={`flex-shrink-0 rounded-full object-cover ${sizeClasses[size]}`}
-          onError={(e) => {
-            // Fallback to initials if image fails to load
-            const target = e.target as HTMLImageElement;
-            target.style.display = 'none';
-            if (target.nextSibling) {
-              (target.nextSibling as HTMLElement).style.display = 'flex';
-            }
+          onError={() => {
+            console.warn('Failed to load profile picture, falling back to initials');
+            setImageError(true);
           }}
         />
       );
     } catch (error) {
-      console.error('Failed to load profile picture:', error);
+      console.error('Failed to get profile picture URL:', error);
+      // Fall through to initials avatar
     }
   }
 
