@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 5,
+  "projectStateVersion": 7,
   "summary": "Build a chat application.",
   "architectural_notes": [],
   "known_issues": [],
@@ -77,6 +77,38 @@
         "REQ-11"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-extend-the-user-profile-data-model-to-support-a-custom-profile-picture-uploaded-from-the-user-s-device-gallery-storage-and-expose-it-through-the-existing-profile-read-update-apis-so-it-can-be-displayed-anywhere-a-user-avatar-is-shown",
+      "title": "Extend the user profile data model to support a custom profile picture uploaded from the user’s device (gallery/storage), and expose it through the existing profile read/update APIs so it can be displayed anywhere a user avatar is shown.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-friend-system-that-lets-an-authenticated-user-search-for-other-users-by-username-send-accept-friend-requests-or-equivalent-and-maintain-a-persistent-friends-list-tied-to-the-authenticated-user",
+      "title": "Add a friend system that lets an authenticated user search for other users by username, send/accept friend requests (or equivalent), and maintain a persistent friends list tied to the authenticated user.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-allow-a-user-to-add-invite-a-befriended-user-into-the-user-s-chatroom-s-after-they-are-friends-and-enforce-room-membership-visibility-accordingly",
+      "title": "Allow a user to add/invite a befriended user into the user’s chatroom(s) after they are friends, and enforce room membership/visibility accordingly.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-support-sending-images-in-chat-messages-allow-a-user-to-attach-an-image-in-the-message-composer-send-it-to-the-backend-store-it-with-the-message-and-render-it-inline-in-the-message-thread",
+      "title": "Support sending images in chat messages: allow a user to attach an image in the message composer, send it to the backend, store it with the message, and render it inline in the message thread.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -112,6 +144,24 @@
       "reqIds": [
         "REQ-8"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Allow users to upload a custom profile picture from device gallery/storage (and use it as their avatar).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Add a friend system: search/add friends by username (and/or friend code), and after befriending allow adding/inviting friends into the user's chatroom(s).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Support sending images in chat messages (upload/attach image and render it in the message thread).",
+      "reqIds": [],
       "status": "pending"
     }
   ],

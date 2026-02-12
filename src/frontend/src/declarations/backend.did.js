@@ -8,65 +8,95 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const _CaffeineStorageCreateCertificateResult = IDL.Record({
+  'method' : IDL.Text,
+  'blob_hash' : IDL.Text,
+});
+export const _CaffeineStorageRefillInformation = IDL.Record({
+  'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+});
+export const _CaffeineStorageRefillResult = IDL.Record({
+  'success' : IDL.Opt(IDL.Bool),
+  'topped_up_amount' : IDL.Opt(IDL.Nat),
+});
+export const User = IDL.Principal;
+export const RoomId = IDL.Text;
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
-export const RoomId = IDL.Text;
 export const MessageId = IDL.Nat;
 export const Time = IDL.Int;
-export const Message = IDL.Record({
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
+export const ChatMessage = IDL.Record({
   'id' : MessageId,
   'content' : IDL.Text,
-  'sender' : IDL.Principal,
+  'sender' : User,
   'timestamp' : Time,
+  'image' : IDL.Opt(ExternalBlob),
   'roomId' : RoomId,
-});
-export const ThemePreference = IDL.Variant({
-  'dark' : IDL.Null,
-  'systemDefault' : IDL.Null,
-  'light' : IDL.Null,
-});
-export const ChatRefreshPreference = IDL.Record({
-  'pollingIntervalMs' : IDL.Nat,
-});
-export const UserPreferences = IDL.Record({
-  'theme' : ThemePreference,
-  'chatRefresh' : ChatRefreshPreference,
-});
-export const AvatarConfig = IDL.Record({
-  'backgroundColor' : IDL.Text,
-  'avatarType' : IDL.Text,
-  'color' : IDL.Text,
-  'textOverlays' : IDL.Text,
 });
 export const UserProfile = IDL.Record({
   'bio' : IDL.Text,
+  'backgroundColor' : IDL.Text,
+  'avatarType' : IDL.Text,
   'name' : IDL.Text,
-  'avatar' : AvatarConfig,
+  'color' : IDL.Text,
+  'textOverlays' : IDL.Text,
+  'profilePicture' : IDL.Opt(ExternalBlob),
 });
 export const Room = IDL.Record({
   'id' : RoomId,
-  'creator' : IDL.Principal,
+  'creator' : User,
   'name' : IDL.Text,
   'createdAt' : Time,
 });
+export const NewChatMessage = IDL.Record({
+  'content' : IDL.Text,
+  'image' : IDL.Opt(ExternalBlob),
+  'roomId' : RoomId,
+});
 
 export const idlService = IDL.Service({
+  '_caffeineStorageBlobIsLive' : IDL.Func(
+      [IDL.Vec(IDL.Nat8)],
+      [IDL.Bool],
+      ['query'],
+    ),
+  '_caffeineStorageBlobsToDelete' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      ['query'],
+    ),
+  '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      [],
+      [],
+    ),
+  '_caffeineStorageCreateCertificate' : IDL.Func(
+      [IDL.Text],
+      [_CaffeineStorageCreateCertificateResult],
+      [],
+    ),
+  '_caffeineStorageRefillCashier' : IDL.Func(
+      [IDL.Opt(_CaffeineStorageRefillInformation)],
+      [_CaffeineStorageRefillResult],
+      [],
+    ),
+  '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'acceptFriendRequest' : IDL.Func([User], [], []),
+  'addUserToRoom' : IDL.Func([RoomId, User], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'blockUser' : IDL.Func([User], [], []),
   'createRoom' : IDL.Func([IDL.Text], [RoomId], []),
   'fetchMessages' : IDL.Func(
       [RoomId, MessageId, IDL.Nat],
-      [IDL.Vec(Message)],
+      [IDL.Vec(ChatMessage)],
       ['query'],
     ),
-  'getCallerUserPreferences' : IDL.Func(
-      [],
-      [IDL.Opt(UserPreferences)],
-      ['query'],
-    ),
+  'getCallerFriends' : IDL.Func([], [IDL.Vec(User)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getUserProfile' : IDL.Func(
@@ -76,71 +106,105 @@ export const idlService = IDL.Service({
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'listRooms' : IDL.Func([], [IDL.Vec(Room)], ['query']),
-  'postMessage' : IDL.Func([RoomId, IDL.Text], [MessageId], []),
+  'postMessage' : IDL.Func([NewChatMessage], [MessageId], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-  'setCallerUserPreferences' : IDL.Func([UserPreferences], [], []),
+  'searchUsersByName' : IDL.Func([IDL.Text], [IDL.Vec(UserProfile)], ['query']),
+  'sendFriendRequest' : IDL.Func([User], [], []),
+  'unblockUser' : IDL.Func([User], [], []),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const _CaffeineStorageCreateCertificateResult = IDL.Record({
+    'method' : IDL.Text,
+    'blob_hash' : IDL.Text,
+  });
+  const _CaffeineStorageRefillInformation = IDL.Record({
+    'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+  });
+  const _CaffeineStorageRefillResult = IDL.Record({
+    'success' : IDL.Opt(IDL.Bool),
+    'topped_up_amount' : IDL.Opt(IDL.Nat),
+  });
+  const User = IDL.Principal;
+  const RoomId = IDL.Text;
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
-  const RoomId = IDL.Text;
   const MessageId = IDL.Nat;
   const Time = IDL.Int;
-  const Message = IDL.Record({
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
+  const ChatMessage = IDL.Record({
     'id' : MessageId,
     'content' : IDL.Text,
-    'sender' : IDL.Principal,
+    'sender' : User,
     'timestamp' : Time,
+    'image' : IDL.Opt(ExternalBlob),
     'roomId' : RoomId,
-  });
-  const ThemePreference = IDL.Variant({
-    'dark' : IDL.Null,
-    'systemDefault' : IDL.Null,
-    'light' : IDL.Null,
-  });
-  const ChatRefreshPreference = IDL.Record({ 'pollingIntervalMs' : IDL.Nat });
-  const UserPreferences = IDL.Record({
-    'theme' : ThemePreference,
-    'chatRefresh' : ChatRefreshPreference,
-  });
-  const AvatarConfig = IDL.Record({
-    'backgroundColor' : IDL.Text,
-    'avatarType' : IDL.Text,
-    'color' : IDL.Text,
-    'textOverlays' : IDL.Text,
   });
   const UserProfile = IDL.Record({
     'bio' : IDL.Text,
+    'backgroundColor' : IDL.Text,
+    'avatarType' : IDL.Text,
     'name' : IDL.Text,
-    'avatar' : AvatarConfig,
+    'color' : IDL.Text,
+    'textOverlays' : IDL.Text,
+    'profilePicture' : IDL.Opt(ExternalBlob),
   });
   const Room = IDL.Record({
     'id' : RoomId,
-    'creator' : IDL.Principal,
+    'creator' : User,
     'name' : IDL.Text,
     'createdAt' : Time,
   });
+  const NewChatMessage = IDL.Record({
+    'content' : IDL.Text,
+    'image' : IDL.Opt(ExternalBlob),
+    'roomId' : RoomId,
+  });
   
   return IDL.Service({
+    '_caffeineStorageBlobIsLive' : IDL.Func(
+        [IDL.Vec(IDL.Nat8)],
+        [IDL.Bool],
+        ['query'],
+      ),
+    '_caffeineStorageBlobsToDelete' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        ['query'],
+      ),
+    '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        [],
+        [],
+      ),
+    '_caffeineStorageCreateCertificate' : IDL.Func(
+        [IDL.Text],
+        [_CaffeineStorageCreateCertificateResult],
+        [],
+      ),
+    '_caffeineStorageRefillCashier' : IDL.Func(
+        [IDL.Opt(_CaffeineStorageRefillInformation)],
+        [_CaffeineStorageRefillResult],
+        [],
+      ),
+    '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'acceptFriendRequest' : IDL.Func([User], [], []),
+    'addUserToRoom' : IDL.Func([RoomId, User], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'blockUser' : IDL.Func([User], [], []),
     'createRoom' : IDL.Func([IDL.Text], [RoomId], []),
     'fetchMessages' : IDL.Func(
         [RoomId, MessageId, IDL.Nat],
-        [IDL.Vec(Message)],
+        [IDL.Vec(ChatMessage)],
         ['query'],
       ),
-    'getCallerUserPreferences' : IDL.Func(
-        [],
-        [IDL.Opt(UserPreferences)],
-        ['query'],
-      ),
+    'getCallerFriends' : IDL.Func([], [IDL.Vec(User)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getUserProfile' : IDL.Func(
@@ -150,9 +214,15 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'listRooms' : IDL.Func([], [IDL.Vec(Room)], ['query']),
-    'postMessage' : IDL.Func([RoomId, IDL.Text], [MessageId], []),
+    'postMessage' : IDL.Func([NewChatMessage], [MessageId], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-    'setCallerUserPreferences' : IDL.Func([UserPreferences], [], []),
+    'searchUsersByName' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(UserProfile)],
+        ['query'],
+      ),
+    'sendFriendRequest' : IDL.Func([User], [], []),
+    'unblockUser' : IDL.Func([User], [], []),
   });
 };
 

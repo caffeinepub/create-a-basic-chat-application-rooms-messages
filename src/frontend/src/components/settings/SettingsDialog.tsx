@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useGetCallerUserPreferences, useSetCallerUserPreferences } from '../../hooks/useUserPreferences';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -7,54 +6,40 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
-import { UserPreferences, ThemePreference } from '../../backend';
 
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  pollingInterval: number;
+  onPollingIntervalChange: (interval: number) => void;
 }
 
-export default function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
-  const { data: currentPreferences } = useGetCallerUserPreferences();
-  const savePreferences = useSetCallerUserPreferences();
-  const { setTheme } = useTheme();
+export default function SettingsDialog({ open, onOpenChange, pollingInterval, onPollingIntervalChange }: SettingsDialogProps) {
+  const { theme, setTheme } = useTheme();
   
-  const [theme, setThemeValue] = useState<ThemePreference>(ThemePreference.systemDefault);
-  const [pollingInterval, setPollingInterval] = useState('3');
+  const [themeValue, setThemeValue] = useState(theme || 'system');
+  const [pollingIntervalSeconds, setPollingIntervalSeconds] = useState((pollingInterval / 1000).toString());
 
   useEffect(() => {
-    if (currentPreferences) {
-      setThemeValue(currentPreferences.theme);
-      setPollingInterval((Number(currentPreferences.chatRefresh.pollingIntervalMs) / 1000).toString());
-    }
-  }, [currentPreferences]);
+    setThemeValue(theme || 'system');
+    setPollingIntervalSeconds((pollingInterval / 1000).toString());
+  }, [theme, pollingInterval]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const intervalSeconds = parseFloat(pollingInterval);
+    const intervalSeconds = parseFloat(pollingIntervalSeconds);
     if (isNaN(intervalSeconds) || intervalSeconds < 0) {
       toast.error('Please enter a valid polling interval (0 or greater)');
       return;
     }
 
-    const preferences: UserPreferences = {
-      theme: theme,
-      chatRefresh: {
-        pollingIntervalMs: BigInt(Math.round(intervalSeconds * 1000)),
-      },
-    };
-
     try {
-      await savePreferences.mutateAsync(preferences);
-      
       // Apply theme immediately
-      const themeMap: Record<ThemePreference, string> = {
-        [ThemePreference.light]: 'light',
-        [ThemePreference.dark]: 'dark',
-        [ThemePreference.systemDefault]: 'system',
-      };
-      setTheme(themeMap[theme]);
+      setTheme(themeValue);
+      
+      // Update polling interval
+      onPollingIntervalChange(Math.round(intervalSeconds * 1000));
       
       toast.success('Settings saved successfully!');
       onOpenChange(false);
@@ -78,17 +63,16 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
             <div className="space-y-2">
               <Label htmlFor="theme">Theme</Label>
               <Select
-                value={theme}
-                onValueChange={(value) => setThemeValue(value as ThemePreference)}
-                disabled={savePreferences.isPending}
+                value={themeValue}
+                onValueChange={setThemeValue}
               >
                 <SelectTrigger id="theme">
                   <SelectValue placeholder="Select theme" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={ThemePreference.light}>Light</SelectItem>
-                  <SelectItem value={ThemePreference.dark}>Dark</SelectItem>
-                  <SelectItem value={ThemePreference.systemDefault}>System Default</SelectItem>
+                  <SelectItem value="light">Light</SelectItem>
+                  <SelectItem value="dark">Dark</SelectItem>
+                  <SelectItem value="system">System Default</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
@@ -104,9 +88,8 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
                 min="0"
                 step="0.5"
                 placeholder="3"
-                value={pollingInterval}
-                onChange={(e) => setPollingInterval(e.target.value)}
-                disabled={savePreferences.isPending}
+                value={pollingIntervalSeconds}
+                onChange={(e) => setPollingIntervalSeconds(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
                 How often to check for new messages (0 disables auto-refresh)
@@ -118,19 +101,11 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={savePreferences.isPending}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={savePreferences.isPending}>
-              {savePreferences.isPending ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Saving...
-                </>
-              ) : (
-                'Save Settings'
-              )}
+            <Button type="submit">
+              Save Settings
             </Button>
           </DialogFooter>
         </form>

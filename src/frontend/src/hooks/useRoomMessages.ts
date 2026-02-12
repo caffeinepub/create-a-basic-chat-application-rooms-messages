@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { Message, MessageId, RoomId } from '../backend';
+import type { ChatMessage, MessageId, RoomId, NewChatMessage } from '../backend';
 
 export function useRoomMessages(roomId: string | null, pollingInterval: number = 3000) {
   const { actor, isFetching } = useActor();
 
-  return useQuery<Message[]>({
+  return useQuery<ChatMessage[]>({
     queryKey: ['messages', roomId],
     queryFn: async () => {
       if (!actor || !roomId) return [];
@@ -23,9 +23,9 @@ export function usePostMessage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ roomId, content }: { roomId: RoomId; content: string }): Promise<MessageId> => {
+    mutationFn: async (message: NewChatMessage): Promise<MessageId> => {
       if (!actor) throw new Error('Actor not available');
-      return actor.postMessage(roomId, content);
+      return actor.postMessage(message);
     },
     onSuccess: (_, variables) => {
       // Invalidate messages for the specific room

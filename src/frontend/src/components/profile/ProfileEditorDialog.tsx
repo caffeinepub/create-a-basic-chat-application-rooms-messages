@@ -7,7 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import UserAvatar from './UserAvatar';
+import { Upload, X } from 'lucide-react';
 import type { UserProfile } from '../../backend';
+import { ExternalBlob } from '../../backend';
 
 interface ProfileEditorDialogProps {
   open: boolean;
@@ -32,19 +34,70 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [selectedColor, setSelectedColor] = useState(AVATAR_COLORS[0]);
+  const [profilePicture, setProfilePicture] = useState<ExternalBlob | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (currentProfile) {
       setName(currentProfile.name);
       setBio(currentProfile.bio);
       const matchingColor = AVATAR_COLORS.find(
-        c => c.bg === currentProfile.avatar.backgroundColor
+        c => c.bg === currentProfile.backgroundColor
       );
       if (matchingColor) {
         setSelectedColor(matchingColor);
       }
+      if (currentProfile.profilePicture) {
+        setProfilePicture(currentProfile.profilePicture);
+        setPreviewUrl(currentProfile.profilePicture.getDirectURL());
+      }
     }
   }, [currentProfile]);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      
+      const blob = ExternalBlob.fromBytes(uint8Array).withUploadProgress((percentage) => {
+        setUploadProgress(percentage);
+      });
+      
+      setProfilePicture(blob);
+      
+      // Create preview URL
+      const blobUrl = URL.createObjectURL(file);
+      setPreviewUrl(blobUrl);
+      setUploadProgress(0);
+    } catch (error) {
+      console.error('Failed to process image:', error);
+      toast.error('Failed to process image. Please try again.');
+    }
+  };
+
+  const handleRemovePicture = () => {
+    setProfilePicture(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,12 +111,11 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
     const profile: UserProfile = {
       name: trimmedName,
       bio: bio.trim(),
-      avatar: {
-        avatarType: 'default',
-        color: selectedColor.text,
-        backgroundColor: selectedColor.bg,
-        textOverlays: trimmedName.charAt(0).toUpperCase(),
-      },
+      avatarType: 'default',
+      color: selectedColor.text,
+      backgroundColor: selectedColor.bg,
+      textOverlays: trimmedName.charAt(0).toUpperCase(),
+      profilePicture: profilePicture || undefined,
     };
 
     try {
@@ -79,12 +131,11 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
   const previewProfile: UserProfile = {
     name: name || 'Preview',
     bio: bio,
-    avatar: {
-      avatarType: 'default',
-      color: selectedColor.text,
-      backgroundColor: selectedColor.bg,
-      textOverlays: (name || 'P').charAt(0).toUpperCase(),
-    },
+    avatarType: 'default',
+    color: selectedColor.text,
+    backgroundColor: selectedColor.bg,
+    textOverlays: (name || 'P').charAt(0).toUpperCase(),
+    profilePicture: profilePicture || undefined,
   };
 
   return (
@@ -100,6 +151,50 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
           <div className="space-y-4 py-4">
             <div className="flex justify-center">
               <UserAvatar profile={previewProfile} size="lg" />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Profile Picture</Label>
+              <div className="flex flex-col gap-2">
+                {previewUrl ? (
+                  <div className="relative">
+                    <img 
+                      src={previewUrl} 
+                      alt="Profile preview" 
+                      className="w-full h-32 object-cover rounded-lg border border-border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2"
+                      onClick={handleRemovePicture}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors">
+                    <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                    <span className="text-sm text-muted-foreground">Click to upload image</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileSelect}
+                      disabled={saveProfile.isPending}
+                    />
+                  </label>
+                )}
+                {uploadProgress > 0 && uploadProgress < 100 && (
+                  <div className="w-full bg-secondary rounded-full h-2">
+                    <div 
+                      className="bg-primary h-2 rounded-full transition-all"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
             
             <div className="space-y-2">
@@ -126,7 +221,7 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
             </div>
 
             <div className="space-y-2">
-              <Label>Avatar Color</Label>
+              <Label>Avatar Color (fallback)</Label>
               <div className="grid grid-cols-4 gap-2">
                 {AVATAR_COLORS.map((color) => (
                   <button

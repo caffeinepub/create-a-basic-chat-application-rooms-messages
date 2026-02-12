@@ -1,14 +1,14 @@
 # Specification
 
 ## Summary
-**Goal:** Add profile customization and per-user in-app settings to the existing chat app while preserving existing user data and keeping chat functionality working.
+**Goal:** Add profile photo uploads, a friend system (search/add/requests), inviting friends to chatrooms, and inline image messages.
 
 **Planned changes:**
-- Extend the backend user profile model and APIs to support display name, bio, and an avatar configuration field (e.g., emoji and/or color) for the authenticated user.
-- Add a conditional backend migration to upgrade existing stored profiles from the legacy structure to the new structure with sensible defaults while preserving display names.
-- Update frontend UserProfile types to match the new backend profile shape.
-- Add a Profile editor UI in the main app experience to view/edit display name, bio, and avatar configuration with validation and readable English error messages.
-- Add backend storage and APIs for per-user settings: theme preference (light/dark/system) and message polling interval (seconds), with defaults when unset.
-- Add a Settings UI accessible from the app to change theme (applies immediately) and polling interval (updates polling behavior without refresh), persisting changes and showing readable English error messages on failures.
+- Extend the user profile model and profile read/update APIs to support either the existing color/initials avatar or an uploaded profile image.
+- Update the profile editor UI to let users pick an image from device storage and save it; render uploaded avatars in the header and message threads with fallback behavior and English errors.
+- Add backend APIs for searching users by unique username, sending/accepting/declining friend requests, and listing friends plus pending requests; persist per authenticated user.
+- Add frontend friend search UI with actions (add/accept/decline) and clear loading/error states in English.
+- Add backend support for inviting/adding friends to rooms, listing room members, and enforcing room membership for visibility and message access; preserve/clearly handle any existing public/general rooms.
+- Add image attachments to chat messages: backend message model and fetch responses include image data/metadata; frontend composer supports selecting an image, previewing it, validating non-empty sends, and rendering images inline in the thread (polling remains unchanged; English errors on failure).
 
-**User-visible outcome:** Authenticated users can open Profile and Settings from within the chat app to customize their profile (name, bio, avatar config) and control app theme and message refresh interval, with their choices saved and applied without breaking existing chats.
+**User-visible outcome:** Users can upload a custom profile picture, find and add friends by username (manage requests), invite friends into their rooms with member-only access, and send/receive images inside chat threads.

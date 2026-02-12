@@ -1,43 +1,31 @@
 import { useInternetIdentity } from './hooks/useInternetIdentity';
 import { useGetCallerUserProfile } from './hooks/useUserProfile';
-import { useGetCallerUserPreferences } from './hooks/useUserPreferences';
 import { useState } from 'react';
 import LoginButton from './components/auth/LoginButton';
 import ProfileSetupDialog from './components/profile/ProfileSetupDialog';
 import ProfileEditorDialog from './components/profile/ProfileEditorDialog';
 import SettingsDialog from './components/settings/SettingsDialog';
+import FriendsDialog from './components/friends/FriendsDialog';
 import RoomList from './components/chat/RoomList';
 import MessageThread from './components/chat/MessageThread';
 import UserAvatar from './components/profile/UserAvatar';
-import { ThemeProvider, useTheme } from 'next-themes';
+import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import { Button } from '@/components/ui/button';
-import { Settings, User } from 'lucide-react';
+import { Settings, User, Users } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ThemePreference } from './backend';
 
 function AppContent() {
   const { identity, isInitializing } = useInternetIdentity();
   const { data: userProfile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
-  const { data: userPreferences, isLoading: preferencesLoading } = useGetCallerUserPreferences();
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [showProfileEditor, setShowProfileEditor] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const { setTheme } = useTheme();
+  const [showFriends, setShowFriends] = useState(false);
+  const [pollingInterval, setPollingInterval] = useState(3000);
 
   const isAuthenticated = !!identity;
   const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null;
-
-  // Apply theme from user preferences
-  if (userPreferences && !preferencesLoading) {
-    const themeMap: Record<ThemePreference, string> = {
-      [ThemePreference.light]: 'light',
-      [ThemePreference.dark]: 'dark',
-      [ThemePreference.systemDefault]: 'system',
-    };
-    const preferredTheme = themeMap[userPreferences.theme];
-    setTheme(preferredTheme);
-  }
 
   if (isInitializing) {
     return (
@@ -68,10 +56,6 @@ function AppContent() {
       </div>
     );
   }
-
-  const pollingInterval = userPreferences 
-    ? Number(userPreferences.chatRefresh.pollingIntervalMs)
-    : 3000;
 
   return (
     <div className="flex h-screen flex-col bg-background">
@@ -105,6 +89,10 @@ function AppContent() {
                 <DropdownMenuItem onClick={() => setShowProfileEditor(true)}>
                   <User className="mr-2 h-4 w-4" />
                   Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowFriends(true)}>
+                  <Users className="mr-2 h-4 w-4" />
+                  Friends
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setShowSettings(true)}>
                   <Settings className="mr-2 h-4 w-4" />
@@ -164,6 +152,16 @@ function AppContent() {
         <SettingsDialog 
           open={showSettings} 
           onOpenChange={setShowSettings}
+          pollingInterval={pollingInterval}
+          onPollingIntervalChange={setPollingInterval}
+        />
+      )}
+
+      {/* Friends Dialog */}
+      {showFriends && (
+        <FriendsDialog 
+          open={showFriends} 
+          onOpenChange={setShowFriends}
         />
       )}
 

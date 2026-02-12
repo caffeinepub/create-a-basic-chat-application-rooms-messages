@@ -10,58 +10,90 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface AvatarConfig {
-  'backgroundColor' : string,
-  'avatarType' : string,
-  'color' : string,
-  'textOverlays' : string,
-}
-export interface ChatRefreshPreference { 'pollingIntervalMs' : bigint }
-export interface Message {
+export interface ChatMessage {
   'id' : MessageId,
   'content' : string,
-  'sender' : Principal,
+  'sender' : User,
   'timestamp' : Time,
+  'image' : [] | [ExternalBlob],
   'roomId' : RoomId,
 }
+export type ExternalBlob = Uint8Array;
 export type MessageId = bigint;
+export interface NewChatMessage {
+  'content' : string,
+  'image' : [] | [ExternalBlob],
+  'roomId' : RoomId,
+}
 export interface Room {
   'id' : RoomId,
-  'creator' : Principal,
+  'creator' : User,
   'name' : string,
   'createdAt' : Time,
 }
 export type RoomId = string;
-export type ThemePreference = { 'dark' : null } |
-  { 'systemDefault' : null } |
-  { 'light' : null };
 export type Time = bigint;
-export interface UserPreferences {
-  'theme' : ThemePreference,
-  'chatRefresh' : ChatRefreshPreference,
-}
+export type User = Principal;
 export interface UserProfile {
   'bio' : string,
+  'backgroundColor' : string,
+  'avatarType' : string,
   'name' : string,
-  'avatar' : AvatarConfig,
+  'color' : string,
+  'textOverlays' : string,
+  'profilePicture' : [] | [ExternalBlob],
 }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export interface _CaffeineStorageCreateCertificateResult {
+  'method' : string,
+  'blob_hash' : string,
+}
+export interface _CaffeineStorageRefillInformation {
+  'proposed_top_up_amount' : [] | [bigint],
+}
+export interface _CaffeineStorageRefillResult {
+  'success' : [] | [boolean],
+  'topped_up_amount' : [] | [bigint],
+}
 export interface _SERVICE {
+  '_caffeineStorageBlobIsLive' : ActorMethod<[Uint8Array], boolean>,
+  '_caffeineStorageBlobsToDelete' : ActorMethod<[], Array<Uint8Array>>,
+  '_caffeineStorageConfirmBlobDeletion' : ActorMethod<
+    [Array<Uint8Array>],
+    undefined
+  >,
+  '_caffeineStorageCreateCertificate' : ActorMethod<
+    [string],
+    _CaffeineStorageCreateCertificateResult
+  >,
+  '_caffeineStorageRefillCashier' : ActorMethod<
+    [[] | [_CaffeineStorageRefillInformation]],
+    _CaffeineStorageRefillResult
+  >,
+  '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'acceptFriendRequest' : ActorMethod<[User], undefined>,
+  'addUserToRoom' : ActorMethod<[RoomId, User], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'blockUser' : ActorMethod<[User], undefined>,
   'createRoom' : ActorMethod<[string], RoomId>,
-  'fetchMessages' : ActorMethod<[RoomId, MessageId, bigint], Array<Message>>,
-  'getCallerUserPreferences' : ActorMethod<[], [] | [UserPreferences]>,
+  'fetchMessages' : ActorMethod<
+    [RoomId, MessageId, bigint],
+    Array<ChatMessage>
+  >,
+  'getCallerFriends' : ActorMethod<[], Array<User>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'listRooms' : ActorMethod<[], Array<Room>>,
-  'postMessage' : ActorMethod<[RoomId, string], MessageId>,
+  'postMessage' : ActorMethod<[NewChatMessage], MessageId>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
-  'setCallerUserPreferences' : ActorMethod<[UserPreferences], undefined>,
+  'searchUsersByName' : ActorMethod<[string], Array<UserProfile>>,
+  'sendFriendRequest' : ActorMethod<[User], undefined>,
+  'unblockUser' : ActorMethod<[User], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

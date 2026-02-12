@@ -6,14 +6,18 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import MessageComposer from './MessageComposer';
-import type { Message } from '../../backend';
+import InviteToRoomDialog from './InviteToRoomDialog';
+import { Button } from '@/components/ui/button';
+import { UserPlus } from 'lucide-react';
+import { useState } from 'react';
+import type { ChatMessage } from '../../backend';
 
 interface MessageThreadProps {
   roomId: string | null;
   pollingInterval?: number;
 }
 
-function MessageBubble({ message }: { message: Message }) {
+function MessageBubble({ message }: { message: ChatMessage }) {
   const { data: profile } = useGetUserProfile(message.sender);
   
   const displayName = profile?.name || message.sender.toString().slice(0, 8) + '...';
@@ -39,7 +43,24 @@ function MessageBubble({ message }: { message: Message }) {
             </span>
           </div>
           <div className="bg-card border border-border rounded-lg px-4 py-2">
-            <p className="text-sm text-foreground whitespace-pre-wrap break-words">{message.content}</p>
+            {message.content && (
+              <p className="text-sm text-foreground whitespace-pre-wrap break-words mb-2">{message.content}</p>
+            )}
+            {message.image && (
+              <img 
+                src={message.image.getDirectURL()} 
+                alt="Shared image"
+                className="max-w-full max-h-96 rounded-lg"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const errorDiv = document.createElement('div');
+                  errorDiv.className = 'text-xs text-destructive';
+                  errorDiv.textContent = 'Failed to load image';
+                  target.parentNode?.appendChild(errorDiv);
+                }}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -51,6 +72,7 @@ export default function MessageThread({ roomId, pollingInterval = 3000 }: Messag
   const { data: messages, isLoading, isError } = useRoomMessages(roomId, pollingInterval);
   const scrollRef = useRef<HTMLDivElement>(null);
   const prevMessagesLengthRef = useRef(0);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
 
   useEffect(() => {
     if (messages && messages.length > prevMessagesLengthRef.current) {
@@ -85,6 +107,19 @@ export default function MessageThread({ roomId, pollingInterval = 3000 }: Messag
 
   return (
     <div className="flex h-full flex-col bg-background">
+      {/* Room Header */}
+      <div className="border-b border-border bg-card px-4 py-3 flex items-center justify-between">
+        <h2 className="font-semibold text-foreground">Room Chat</h2>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowInviteDialog(true)}
+        >
+          <UserPlus className="h-4 w-4 mr-2" />
+          Add Friend
+        </Button>
+      </div>
+
       {/* Messages */}
       <ScrollArea ref={scrollRef} className="flex-1">
         <div className="py-4">
@@ -114,11 +149,13 @@ export default function MessageThread({ roomId, pollingInterval = 3000 }: Messag
               <div className="text-center max-w-md">
                 <img 
                   src="/assets/generated/empty-chat-illustration.dim_1200x800.png" 
-                  alt="No messages" 
-                  className="w-full max-w-xs mx-auto mb-4 opacity-60"
+                  alt="No messages yet" 
+                  className="w-full max-w-sm mx-auto mb-6 opacity-80"
                 />
-                <p className="text-muted-foreground">No messages yet</p>
-                <p className="text-sm text-muted-foreground mt-1">Be the first to say something!</p>
+                <h3 className="text-xl font-semibold text-foreground mb-2">No messages yet</h3>
+                <p className="text-muted-foreground">
+                  Be the first to send a message in this room!
+                </p>
               </div>
             </div>
           )}
@@ -126,9 +163,16 @@ export default function MessageThread({ roomId, pollingInterval = 3000 }: Messag
       </ScrollArea>
 
       {/* Message Composer */}
-      <div className="border-t border-border bg-card">
-        <MessageComposer roomId={roomId} />
-      </div>
+      <MessageComposer roomId={roomId} />
+
+      {/* Invite Dialog */}
+      {showInviteDialog && (
+        <InviteToRoomDialog
+          open={showInviteDialog}
+          onOpenChange={setShowInviteDialog}
+          roomId={roomId}
+        />
+      )}
     </div>
   );
 }

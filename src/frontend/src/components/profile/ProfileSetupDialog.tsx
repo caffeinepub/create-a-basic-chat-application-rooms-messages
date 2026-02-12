@@ -25,12 +25,10 @@ export default function ProfileSetupDialog() {
     const profile: UserProfile = {
       name: trimmedName,
       bio: bio.trim(),
-      avatar: {
-        avatarType: 'default',
-        color: '#FFFFFF',
-        backgroundColor: '#D97706',
-        textOverlays: trimmedName.charAt(0).toUpperCase(),
-      },
+      avatarType: 'default',
+      color: '#FFFFFF',
+      backgroundColor: '#D97706',
+      textOverlays: trimmedName.charAt(0).toUpperCase(),
     };
 
     try {

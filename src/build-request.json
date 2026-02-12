@@ -1,121 +1,107 @@
 {
   "kind": "build_request",
-  "title": "Add profile customization and in-app settings to the chat app",
+  "title": "Add custom profile picture uploads, friend search/add + invite to rooms, and image messages",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-7",
-      "text": "Extend user profiles to support profile customization fields (in addition to the existing display name): bio and avatar configuration, and expose these fields through backend APIs for reading and updating the authenticated user's profile.",
+      "id": "REQ-12",
+      "text": "Extend the user profile data model to support a custom profile picture uploaded from the user’s device (gallery/storage), and expose it through the existing profile read/update APIs so it can be displayed anywhere a user avatar is shown.",
       "target": "both",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "Add features to my Chat app such as Profile customization and app settings"
+          "Add 3 features to my chat app \n\n1 adding custom Profile pictures from gallery"
         ]
       },
       "acceptanceCriteria": [
-        "Backend UserProfile model includes at least: display name, bio, and an avatar configuration field (e.g., avatar emoji and/or avatar color) in a way that can be stored per Principal.",
-        "Backend continues to support fetching the caller's profile and saving the caller's profile, now including the new fields.",
-        "Frontend TypeScript types generated/used for UserProfile match the updated backend shape.",
-        "Existing chat functionality (rooms, messaging) continues to work after the profile type change."
+        "Backend UserProfile/AvatarConfig supports representing either the current color/initials avatar OR an uploaded image avatar.",
+        "Frontend Profile Editor UI allows selecting an image file from device storage and saving it to the user’s profile.",
+        "After saving, the header avatar and message-thread avatars render the uploaded image for that user (with a reasonable fallback if no image is set).",
+        "User-facing error text is shown in English if the image cannot be saved/loaded."
       ]
     },
     {
-      "id": "REQ-8",
-      "text": "Implement state migration for existing deployed data so previously saved profiles that only contain the legacy name field are upgraded to the new UserProfile structure without data loss.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Add features to my Chat app such as Profile customization and app settings"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A conditional backend migration is added (migration.mo) to transform stored profiles from the legacy structure ({ name }) into the new structure (populating new fields with sensible defaults).",
-        "Upgrading the canister preserves existing users' display names.",
-        "After upgrade, getCallerUserProfile returns the upgraded structure for existing users."
-      ]
-    },
-    {
-      "id": "REQ-9",
-      "text": "Add a profile editing UI that allows authenticated users to view and update their profile customization fields (display name, bio, avatar configuration) from within the main app experience.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Add features to my Chat app such as Profile customization and app settings"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Authenticated users have an obvious way to open a 'Profile' editor from the app (e.g., from the header).",
-        "The profile editor pre-fills the current profile values and allows updating them.",
-        "Saving profile changes calls the backend save profile API and updates the UI to reflect the new values (including the header greeting and message sender display where applicable).",
-        "Validation prevents saving an empty display name and shows an English error message when validation fails or the save call fails."
-      ]
-    },
-    {
-      "id": "REQ-10",
-      "text": "Add per-user in-app settings stored on the backend, including at minimum: a theme preference (light/dark/system) and a chat refresh preference (message polling interval) that influences frontend polling behavior.",
+      "id": "REQ-13",
+      "text": "Add a friend system that lets an authenticated user search for other users by username, send/accept friend requests (or equivalent), and maintain a persistent friends list tied to the authenticated user.",
       "target": "both",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "Add features to my Chat app such as Profile customization and app settings"
+          "2 adding a serch bar lets you add friends by username"
         ]
       },
       "acceptanceCriteria": [
-        "Backend provides APIs to get and save the authenticated user's settings.",
-        "Settings include a theme preference with allowed values: light, dark, system.",
-        "Settings include a message polling interval preference (in seconds) that is used by the frontend to control how frequently messages refetch for the selected room.",
-        "If a user has no saved settings, the app uses defaults (system theme, current polling behavior) without errors."
+        "Backend provides APIs to (1) search users by username, (2) send a friend request, (3) accept/decline a request, and (4) list current friends and pending requests for the caller.",
+        "Usernames are treated as unique identifiers for friend search/add flows (backend must enforce uniqueness or otherwise provide deterministic behavior and clear errors).",
+        "Frontend provides a search bar UI to search by username and perform add/accept/decline actions with clear loading/error states in English.",
+        "Friend relationships persist across reloads and are scoped per authenticated user."
       ]
     },
     {
-      "id": "REQ-11",
-      "text": "Add a Settings UI area (dialog, drawer, or page within the existing single-screen app layout) where authenticated users can change app settings (theme preference and message polling interval) and persist them.",
-      "target": "frontend",
+      "id": "REQ-14",
+      "text": "Allow a user to add/invite a befriended user into the user’s chatroom(s) after they are friends, and enforce room membership/visibility accordingly.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "Add features to my Chat app such as Profile customization and app settings"
+          "2 adding a serch bar lets you add friends by username and lets you add them Into your own chatroom after befriended"
         ]
       },
       "acceptanceCriteria": [
-        "Authenticated users can open a 'Settings' UI from the app (e.g., from the header).",
-        "Changing theme updates the app theme immediately using the existing ThemeProvider setup and persists the choice via the backend settings API.",
-        "Changing polling interval updates message polling behavior (without requiring a full page refresh) and persists the choice via the backend settings API.",
-        "All settings UI user-facing strings are in English and failures show readable English error messages."
+        "Backend supports inviting/adding a friend to a room and listing room members for a room.",
+        "Frontend exposes an “Add to room” / invite control that only targets users who are already friends.",
+        "Invited/added friends can see the room in their room list and can fetch/post messages to that room.",
+        "Non-members cannot fetch/post messages to member-only rooms (backend enforces authorization).",
+        "Existing behavior for any pre-existing/general rooms is preserved or clearly handled without breaking the current UI (e.g., treat them as public rooms)."
+      ]
+    },
+    {
+      "id": "REQ-15",
+      "text": "Support sending images in chat messages: allow a user to attach an image in the message composer, send it to the backend, store it with the message, and render it inline in the message thread.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "3 adding a feature that lets you send images in Chat"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend message model supports image-bearing messages (e.g., content text plus optional image payload/metadata), and fetchMessages returns enough data for the frontend to render the image.",
+        "Frontend MessageComposer supports selecting an image file, shows an attachment preview, and allows sending with appropriate validation (e.g., cannot send an empty message with no text and no image).",
+        "MessageThread renders image messages inline (with sensible sizing) and continues to render text-only messages unchanged.",
+        "The app shows clear English error messages when an image upload/send fails.",
+        "No WebSockets are introduced; message polling continues to work with the new message format."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services.",
-    "Only create backend/migration.mo if required for upgrading existing state; migration must be conditional and preserve existing user data.",
-    "Do not edit any frontend files under the immutable paths listed in SYSTEM_CONTEXT (compose components instead).",
-    "Do not add WebSockets or real-time chat transport; polling must remain the mechanism for refresh."
+    "Backend must remain a single Motoko actor in backend/main.mo; add backend/migration.mo changes only if required to preserve existing persisted state (conditional migration policy).",
+    "Do not edit frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, and anything under frontend/src/components/ui (compose instead).",
+    "Do not introduce WebSockets or real-time infrastructure; continue using React Query polling for updates."
   ],
   "nonGoals": [
-    "Adding third-party authentication providers beyond Internet Identity.",
-    "Adding image upload or external storage for avatar photos.",
-    "Introducing new backend technologies or external databases.",
-    "Implementing push notifications or email/SMS notifications."
+    "Support for sending MP3/audio files in chat (not requested in the final scoped request).",
+    "Third-party authentication providers (only Internet Identity).",
+    "External file storage/CDNs or external databases for storing images."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
   },
   "userProfileUpdate": {
-    "goalsToAdd": [],
+    "goalsToAdd": [
+      "Enable users to upload custom profile pictures from device storage.",
+      "Add friend search/add by username and invite friends into private chatrooms.",
+      "Allow sending images in chat messages."
+    ],
     "goalsToRemove": [],
     "preferencesToAdd": [],
     "preferencesToRemove": [],
