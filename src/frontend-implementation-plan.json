@@ -1,47 +1,73 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add a Flags category with curated Unicode flag emojis to the emoji picker",
+  "title": "Saved server links (bookmarks) and account data export in TerrorChat (frontend)",
   "requirements": [
     {
-      "id": "REQ-114",
-      "summary": "Add a dedicated \"Flags\" category to EmojiPicker so users can insert standard Unicode flag emojis (including Unicode-supported non/partially-recognized territories) into any message composer at the cursor position.",
+      "id": "REQ-120",
+      "summary": "Add React Query hooks for listing/saving/removing saved server links with cache invalidation and normalized errors.",
       "acceptanceCriteria": [
-        "The emoji picker UI includes a visible \"Flags\" category header alongside existing categories.",
-        "Selecting a flag emoji inserts it into the message composer text input at the current cursor position (works anywhere EmojiPicker is used, including room chat and server chat composers).",
-        "The flags provided are standard Unicode emoji characters (no backend calls, no third-party APIs, no image assets required).",
-        "If a requested/non-recognized entity has no standard Unicode flag emoji, it is not included (do not fabricate custom flag emojis)."
+        "A new set of hooks exists (in the existing hooks style) to: fetch the caller’s saved server links, save a link, and remove a link.",
+        "On successful save/remove, the saved-links query is invalidated so the UI refreshes immediately.",
+        "Errors are normalized into readable English messages surfaced to the UI."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/emojiFlags.ts",
+          "path": "frontend/src/hooks/useSavedServerLinks.ts",
           "operation": "create",
-          "description": "Add a curated, static list of allowed standard Unicode flag emojis for use in the emoji picker (including widely-supported extra Unicode flags such as UN/EU and Unicode-supported territories), with no network calls or assets involved."
-        },
-        {
-          "path": "frontend/src/components/chat/EmojiPicker.tsx",
-          "operation": "modify",
-          "description": "Add a visible \"Flags\" category header and render the curated Unicode flag emoji list from frontend/src/utils/emojiFlags.ts as a new category in the existing emoji picker UI. Ensure selection continues to call onSelect(emoji) so insertion works anywhere EmojiPicker is used (e.g., MessageComposer and ServerAnnouncementThread)."
+          "description": "Create React Query hooks using the existing authenticated actor pattern (authorization component) to call listSavedServerLinks/saveServerLink/removeSavedServerLink with a single stable query key (e.g., ['savedServerLinks']), plus readable English error normalization. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-115",
-      "summary": "Enforce a safety filter/allowlist so the Flags category cannot display or insert extremist/terrorist/violent/hate-symbol flags or equivalents.",
+      "id": "REQ-121",
+      "summary": "Allow users to save a generated server invite code/link from the existing ServerView invite UI.",
       "acceptanceCriteria": [
-        "The Flags category list is curated/filtered so it does not include extremist/terrorist/violent/hate-symbol flags.",
-        "No user-facing text is added that promotes or endorses extremist/terrorist/violent/hate symbols; any added labels remain in English."
+        "In `frontend/src/components/servers/ServerView.tsx`, after an invite link/code is generated, provide a clear action (e.g., \"Save link\") that saves the inviteCode (and a reasonable default label such as the server name) via the new saved-links mutation.",
+        "Show an English success toast when saved, and an English error toast if saving fails.",
+        "Prevent saving when there is no inviteCode present."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/emojiFlags.ts",
+          "path": "frontend/src/components/servers/ServerView.tsx",
           "operation": "modify",
-          "description": "Implement an explicit allowlist-based safety filter for the Flags category (and any minimal supporting helpers) so only the curated set of Unicode flag emojis is exposed to the picker, excluding extremist/terrorist/violent/hate-symbol flags or equivalents."
-        },
+          "description": "Add a \"Save link\" action in the Invite section that is enabled only when inviteCode exists; call the saved-link mutation (from useSavedServerLinks) to persist the invite code for the current server, and show English success/error toasts. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-122",
+      "summary": "Add a Settings section to list/copy/open/remove the user's saved server links with loading/empty states and confirmation on removal.",
+      "acceptanceCriteria": [
+        "In `frontend/src/components/settings/SettingsDialog.tsx`, add a \"Saved server links\" section below existing sections.",
+        "The section lists saved server links (label + invite code, and/or a derived full URL) with actions: Copy, Open, and Remove.",
+        "Copy uses the clipboard API and shows an English success/error toast.",
+        "Open navigates the user to the invite flow using the same invite parameter pattern already used by the app (e.g., `?invite=...`).",
+        "Remove prompts for confirmation (English) before deleting, then removes via backend and refreshes the list.",
+        "Show appropriate loading/empty states in English (e.g., \"Loading saved links...\", \"No saved links yet.\")."
+      ],
+      "file_operations": [
         {
-          "path": "frontend/src/components/chat/EmojiPicker.tsx",
+          "path": "frontend/src/components/settings/SettingsDialog.tsx",
           "operation": "modify",
-          "description": "Ensure the Flags category uses only the allowlisted values from frontend/src/utils/emojiFlags.ts and add a defensive guard so the picker cannot insert any emoji through the Flags category unless it is in the allowlist."
+          "description": "Add a \"Saved server links\" section below existing sections. Use useSavedServerLinks to load and render items, derive a full invite URL using the same `?invite=...` pattern already used in App, implement Copy (clipboard + toasts), Open (navigate to the invite URL, e.g., via window.location.assign), and Remove with an English confirmation dialog and post-delete refresh via React Query invalidation. Optionally map serverId to a friendly server name by using the existing servers list hook for a better label display. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-123",
+      "summary": "Add an Account data section in Settings that displays/copies the current Principal and exports a local JSON backup containing principal, profile, alt accounts, and saved links.",
+      "acceptanceCriteria": [
+        "In `frontend/src/components/settings/SettingsDialog.tsx`, add an \"Account data\" section with: (1) the user’s current Principal displayed in a monospace field and a \"Copy\" button, and (2) an \"Export\" button that downloads a JSON file.",
+        "The export JSON includes at minimum: principal string, current caller profile (if available), linked alt accounts (if available), and saved server links.",
+        "All user-facing text is English, with clear success/error toasts (e.g., \"Account data exported\" / \"Failed to export account data\").",
+        "Export works fully client-side (downloaded file) and does not require any third-party services."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/settings/SettingsDialog.tsx",
+          "operation": "modify",
+          "description": "Add an \"Account data\" section that reads the current Principal from the Internet Identity context, shows it in a monospace field with a Copy button (clipboard + English toasts), and adds an Export button that downloads a client-side JSON file containing: principal string, current caller profile (if available via existing profile hook), linked alt accounts (if available via existing alt-accounts hooks), and saved server links (via useSavedServerLinks). Include English success/error toasts for export. Verify the component's usage instructions before implementing."
         }
       ]
     }

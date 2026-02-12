@@ -8,6 +8,7 @@ import ProfileSetupDialog from './components/profile/ProfileSetupDialog';
 import ProfileEditorDialog from './components/profile/ProfileEditorDialog';
 import SettingsDialog from './components/settings/SettingsDialog';
 import FriendsDialog from './components/friends/FriendsDialog';
+import InviteAcceptDialog from './components/servers/InviteAcceptDialog';
 import RoomList from './components/chat/RoomList';
 import MessageThread from './components/chat/MessageThread';
 import ServerChatView from './components/servers/ServerChatView';
@@ -22,6 +23,7 @@ import { Settings, User, Users, Shield, ArrowRightLeft } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { getPrincipalDisplayName, getPrincipalInitials } from './utils/principalDisplay';
 import { getSwitchIntent, clearSwitchIntent } from './utils/altAccountSwitch';
+import { getPersistedUrlParameter, clearSessionParameter, clearParamFromUrl } from './utils/urlParams';
 import type { UserProfile } from './backend';
 
 function AppContent() {
@@ -35,6 +37,8 @@ function AppContent() {
   const [showSettings, setShowSettings] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
   const [pollingInterval, setPollingInterval] = useState(3000);
+  const [pendingInviteCode, setPendingInviteCode] = useState<string | null>(null);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
 
   const isAuthenticated = !!identity;
   const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null;
@@ -72,6 +76,42 @@ function AppContent() {
     }
   }, [isAuthenticated, identity]);
 
+  // Handle invite code from URL
+  useEffect(() => {
+    // Check for invite code in URL (persisted through sign-in via sessionStorage)
+    const inviteCode = getPersistedUrlParameter('invite');
+    
+    if (inviteCode) {
+      if (isAuthenticated) {
+        // User is authenticated, show invite dialog
+        setPendingInviteCode(inviteCode);
+        setShowInviteDialog(true);
+      }
+      // If not authenticated, the invite code is stored in sessionStorage
+      // and will be picked up after sign-in
+    }
+  }, [isAuthenticated]);
+
+  const handleInviteConfirm = (serverId: string) => {
+    // Clear the invite code from URL and session
+    clearParamFromUrl('invite');
+    clearSessionParameter('invite');
+    setPendingInviteCode(null);
+    setShowInviteDialog(false);
+    
+    // Select the newly joined server
+    setSelectedServerId(serverId);
+    setSelectedRoomId(null);
+  };
+
+  const handleInviteCancel = () => {
+    // Clear the invite code from URL and session
+    clearParamFromUrl('invite');
+    clearSessionParameter('invite');
+    setPendingInviteCode(null);
+    setShowInviteDialog(false);
+  };
+
   if (isInitializing) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -85,6 +125,7 @@ function AppContent() {
 
   if (!isAuthenticated) {
     const switchIntent = getSwitchIntent();
+    const inviteCode = getPersistedUrlParameter('invite');
     
     return (
       <div className="flex h-screen flex-col items-center justify-center bg-background px-4">
@@ -107,6 +148,18 @@ function AppContent() {
                   </p>
                   <p className="text-xs text-muted-foreground">
                     Target account: <span className="font-mono">{switchIntent.slice(0, 20)}...</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : inviteCode ? (
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-6 mb-6">
+              <div className="flex items-start gap-3">
+                <Users className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-foreground mb-2">Server Invitation</h3>
+                  <p className="text-sm text-muted-foreground">
+                    You've been invited to join a server. Sign in to accept the invitation and start chatting.
                   </p>
                 </div>
               </div>
@@ -289,6 +342,14 @@ function AppContent() {
         open={showFriends} 
         onOpenChange={setShowFriends}
       />
+      {pendingInviteCode && (
+        <InviteAcceptDialog
+          open={showInviteDialog}
+          inviteCode={pendingInviteCode}
+          onConfirm={handleInviteConfirm}
+          onCancel={handleInviteCancel}
+        />
+      )}
     </div>
   );
 }

@@ -1,50 +1,58 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T16:38:54.461Z",
-  "summary": "Diff adds a new curated Unicode flag list utility and wires EmojiPicker to import flag-filter helpers, but the provided truncated snippets do not show the EmojiPicker UI actually adding a visible “Flags” category or the full enforcement logic that prevents inserting disallowed symbols via the Flags category. Diff also includes unrelated project metadata/summaries not requested.",
+  "generatedAt": "2026-02-12T19:39:27.808Z",
+  "summary": "Diff adds a new frontend hook file for saved server links and implements backend/actor APIs for saving, listing, and removing links keyed per-caller. However, backend saved-link records do not match the requested schema (missing unique id, inviteCode naming, and optional label), lack input validation for empty invite codes, and use traps for error signaling. Frontend Settings UI/account export and ServerView integration are only partially evidenced due to truncation, though a summary file claims they exist.",
   "missing_requirements": [
     {
-      "id": "REQ-114",
-      "requirement": "Emoji picker UI includes a visible dedicated “Flags” category header alongside existing categories.",
-      "reason": "In the truncated EmojiPicker.tsx snippet, EMOJI_CATEGORIES shows categories like “Smileys”, “Gestures”, etc., but no visible “Flags” category/header is shown, and the UI rendering portion that would show the header is not included in the diff summary.",
+      "id": "REQ-119",
+      "requirement": "Saved server link record must include a stable unique id, inviteCode (Text), optional label (Text), and savedAt timestamp.",
+      "reason": "Backend type `SavedServerLink` contains `{ serverId; code; savedAt }` but no stable unique id, no `inviteCode` field name, and no optional `label`.",
       "evidence": [
-        "frontend/src/components/chat/EmojiPicker.tsx"
+        "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-114",
-      "requirement": "Selecting a flag emoji inserts it into the message composer at the current cursor position everywhere EmojiPicker is used (room chat and server chat composers).",
-      "reason": "The diff summary does not show how selection/insertion is handled (e.g., cursor-position insertion logic). EmojiPicker only shows the onSelect callback signature, but not how it is used for the new Flags category nor confirmation it works across all composer contexts.",
+      "id": "REQ-119",
+      "requirement": "Backend must return clear English errors for invalid input (e.g., empty invite code) and not-found removals.",
+      "reason": "No validation for empty `code`/invite code is present; removal uses traps (e.g., \"No saved links found for user\", \"Link not found\") and save uses trap for duplicates, but explicit invalid-input handling (empty invite code) is not implemented.",
       "evidence": [
-        "frontend/src/components/chat/EmojiPicker.tsx"
+        "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-115",
-      "requirement": "Enforce a safety filter so the Flags category cannot be used to insert disallowed extremist/terrorist/violent/hate-symbol flags or equivalents.",
-      "reason": "EmojiPicker imports getAllowedFlags/isAllowedFlag, but the diff summary does not include the implementations of these functions (the new file is truncated and only clearly shows a large allowlist array). Without the helper implementations and the picker rendering code, it is not verifiable that disallowed symbols cannot be inserted via the Flags category.",
+      "id": "REQ-121",
+      "requirement": "In ServerView, after generating an invite link/code, provide a clear action (e.g., \"Save link\") that saves the inviteCode (and default label like server name), shows success/error toasts, and prevents saving when no inviteCode is present.",
+      "reason": "The diff snippet only shows `useSaveServerLink` imported/initialized; it does not show any UI control, toast handling, default label behavior, or a guard preventing save without an invite code.",
       "evidence": [
-        "frontend/src/utils/emojiFlags.ts",
-        "frontend/src/components/chat/EmojiPicker.tsx"
+        "frontend/src/components/servers/ServerView.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added/updated project metadata and frontend file summary documentation unrelated to adding a Flags category to the emoji picker.",
-      "reason": "The BuildRequest only asks for emoji picker flag support and a safety filter; it does not request updating project_state.json or adding/updating repository-wide file summaries.",
+      "description": "Added URL/session parameter utility helpers (persisting URL params into sessionStorage, clearing hash params, etc.).",
+      "reason": "Not requested by any requirement related to saved server links or account data export; appears as a general URL parameter/session persistence utility change.",
       "evidence": [
-        "frontend-file-summaries.txt",
-        "project_state.json"
+        "frontend/src/utils/urlParams.ts"
+      ]
+    },
+    {
+      "description": "Backend introduces an additional `ServerBookmark` type duplicating saved link fields.",
+      "reason": "Not requested; requirements only mention a saved server link record schema and APIs.",
+      "evidence": [
+        "backend/main.mo"
       ]
     }
   ],
-  "confidence": 0.55,
+  "confidence": 0.62,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/chat/EmojiPicker.tsx",
-    "frontend/src/utils/emojiFlags.ts",
+    "frontend/src/components/servers/ServerView.tsx",
+    "frontend/src/components/settings/SettingsDialog.tsx",
+    "frontend/src/hooks/useSavedServerLinks.ts",
+    "frontend/src/utils/urlParams.ts",
     "project_state.json"
   ]
 }

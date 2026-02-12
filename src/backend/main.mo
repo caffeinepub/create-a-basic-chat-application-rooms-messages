@@ -1,11 +1,11 @@
 import Time "mo:core/Time";
-import Text "mo:core/Text";
 import List "mo:core/List";
 import Map "mo:core/Map";
 import Set "mo:core/Set";
-import Nat "mo:core/Nat";
 import Iter "mo:core/Iter";
 import Order "mo:core/Order";
+import Text "mo:core/Text";
+import Nat "mo:core/Nat";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 
@@ -13,9 +13,6 @@ import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
-
-
-// Apply migration on upgrade (with-clause)
 
 actor {
   include MixinStorage();
@@ -56,6 +53,76 @@ actor {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
     userProfiles.add(caller, profile);
+  };
+
+  // --- NEW: Saved Server Links ---
+  public type SavedServerLink = {
+    serverId : Text;
+    code : Text;
+    savedAt : Time.Time;
+  };
+
+  public type ServerBookmark = {
+    serverId : Text;
+    code : Text;
+    savedAt : Time.Time;
+  };
+
+  let savedServerLinks = Map.empty<Principal, Map.Map<Text, SavedServerLink>>();
+
+  public shared ({ caller }) func saveServerLink(serverId : Text, code : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Must be authenticated to save server links");
+    };
+
+    switch (savedServerLinks.get(caller)) {
+      case (null) {
+        let newLinks = Map.empty<Text, SavedServerLink>();
+        newLinks.add(code, {
+          serverId;
+          code;
+          savedAt = Time.now();
+        });
+        savedServerLinks.add(caller, newLinks);
+      };
+      case (?links) {
+        if (links.get(code) != null) {
+          Runtime.trap("Server link already saved");
+        };
+        links.add(code, {
+          serverId;
+          code;
+          savedAt = Time.now();
+        });
+      };
+    };
+  };
+
+  public shared ({ caller }) func removeSavedServerLink(code : Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Must be authenticated to remove saved links");
+    };
+
+    switch (savedServerLinks.get(caller)) {
+      case (null) { Runtime.trap("No saved links found for user") };
+      case (?links) {
+        if (links.get(code) == null) {
+          Runtime.trap("Link not found");
+        };
+        links.remove(code);
+      };
+    };
+  };
+
+  public query ({ caller }) func listSavedServerLinks() : async [SavedServerLink] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Must be authenticated to view saved links");
+    };
+
+    switch (savedServerLinks.get(caller)) {
+      case (null) { [] };
+      case (?links) { links.values().toArray() };
+    };
   };
 
   // --- Social Features ---
@@ -836,14 +903,14 @@ actor {
       };
       case (?msgList) {
         let existingMsgArray = msgList.toArray();
-        
+
         // App-level admins can edit any message
         let isAppAdmin = AccessControl.isAdmin(accessControlState, caller);
-        
+
         let targetMsg = if (isAppAdmin) {
-          existingMsgArray.find(func(msg) { msg.id == messageId })
+          existingMsgArray.find(func(msg) { msg.id == messageId });
         } else {
-          existingMsgArray.find(func(msg) { msg.id == messageId and msg.sender == caller })
+          existingMsgArray.find(func(msg) { msg.id == messageId and msg.sender == caller });
         };
 
         switch (targetMsg) {
@@ -885,7 +952,7 @@ actor {
       case (?msgs) {
         let filtered = msgs.toArray().filter(
           func(msg : ChatMessage) : Bool {
-            msg.id > afterId
+            msg.id > afterId;
           }
         );
         let sorted = filtered.sort();
@@ -915,6 +982,18 @@ actor {
     banner : ?Storage.ExternalBlob;
     accentColor : Text;
   };
+
+  // Server invited code type
+  public type ServerInviteCode = {
+    code : Text;
+    serverId : ServerId;
+    createdBy : User;
+    createdAt : Time.Time;
+    isActive : Bool;
+  };
+
+  // Persistent invites map
+  let serverInvites = Map.empty<Text, ServerInviteCode>();
 
   let servers = Map.empty<ServerId, Server>();
   let serverMembers = Map.empty<ServerId, Set.Set<User>>();
@@ -980,6 +1059,69 @@ actor {
     serverMembers.add(newServer.id, members);
 
     newServer;
+  };
+
+  public shared ({ caller }) func generateServerInviteCode(serverId : ServerId) : async Text {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can generate invite codes");
+    };
+
+    switch (servers.get(serverId)) {
+      case (null) { Runtime.trap("Server not found") };
+      case (?server) {
+        // App-level admins can generate invite codes for any server
+        if (not AccessControl.isAdmin(accessControlState, caller)) {
+          // Check if caller is a member of the server
+          if (not isServerMember(serverId, caller)) {
+            Runtime.trap("Unauthorized: Only server members can generate invite codes");
+          };
+        };
+
+        let uniqueCode = "invite_" # (serverId) # "_" # Time.now().toText();
+        let invite : ServerInviteCode = {
+          code = uniqueCode;
+          serverId;
+          createdBy = caller;
+          createdAt = Time.now();
+          isActive = true;
+        };
+
+        serverInvites.add(uniqueCode, invite);
+        uniqueCode;
+      };
+    };
+  };
+
+  public shared ({ caller }) func joinServerWithInvite(inviteCode : Text) : async ServerId {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can join with invite codes");
+    };
+
+    switch (serverInvites.get(inviteCode)) {
+      case (null) { Runtime.trap("Invite code not found") };
+      case (?invite) {
+        switch (servers.get(invite.serverId)) {
+          case (null) { Runtime.trap("Server for invite code not found") };
+          case (?_) {
+            let members = switch (serverMembers.get(invite.serverId)) {
+              case (null) {
+                let newSet = Set.empty<User>();
+                serverMembers.add(invite.serverId, newSet);
+                newSet;
+              };
+              case (?existing) { existing };
+            };
+
+            if (members.contains(caller)) {
+              Runtime.trap("Already a server member, cannot join again");
+            };
+
+            members.add(caller);
+            invite.serverId;
+          };
+        };
+      };
+    };
   };
 
   public shared ({ caller }) func deleteServer(serverId : ServerId) : async Bool {
@@ -1260,14 +1402,14 @@ actor {
       };
       case (?announcementList) {
         let existingAnnouncements = announcementList.toArray();
-        
+
         // App-level admins can edit any announcement
         let isAppAdmin = AccessControl.isAdmin(accessControlState, caller);
-        
+
         let targetAnnouncement = if (isAppAdmin) {
-          existingAnnouncements.find(func(a) { a.id == announcementId })
+          existingAnnouncements.find(func(a) { a.id == announcementId });
         } else {
-          existingAnnouncements.find(func(a) { a.id == announcementId and a.author == caller })
+          existingAnnouncements.find(func(a) { a.id == announcementId and a.author == caller });
         };
 
         switch (targetAnnouncement) {
@@ -1334,14 +1476,14 @@ actor {
       };
       case (?msgList) {
         let existingMsgArray = msgList.toArray();
-        
+
         // App-level admins can delete any message
         let isAppAdmin = AccessControl.isAdmin(accessControlState, caller);
-        
+
         let targetMsg = if (isAppAdmin) {
-          existingMsgArray.find(func(msg) { msg.id == messageId })
+          existingMsgArray.find(func(msg) { msg.id == messageId });
         } else {
-          existingMsgArray.find(func(msg) { msg.id == messageId and msg.sender == caller })
+          existingMsgArray.find(func(msg) { msg.id == messageId and msg.sender == caller });
         };
 
         switch (targetMsg) {
@@ -1373,14 +1515,14 @@ actor {
       case (null) { Runtime.trap("Announcement list does not exist for this server") };
       case (?announcements) {
         let existingAnnounces = announcements.toArray();
-        
+
         // App-level admins can delete any announcement
         let isAppAdmin = AccessControl.isAdmin(accessControlState, caller);
-        
+
         let targetAnnouncement = if (isAppAdmin) {
-          existingAnnounces.find(func(a) { a.id == announcementId })
+          existingAnnounces.find(func(a) { a.id == announcementId });
         } else {
-          existingAnnounces.find(func(a) { a.id == announcementId and a.author == caller })
+          existingAnnounces.find(func(a) { a.id == announcementId and a.author == caller });
         };
 
         switch (targetAnnouncement) {
@@ -1412,14 +1554,14 @@ actor {
       case (null) { Runtime.trap("Message list does not exist for this room") };
       case (?msgList) {
         let existingMsgArray = msgList.toArray();
-        
+
         // App-level admins can pin any message
         let isAppAdmin = AccessControl.isAdmin(accessControlState, caller);
-        
+
         let targetMsg = if (isAppAdmin) {
-          existingMsgArray.find(func(msg) { msg.id == messageId })
+          existingMsgArray.find(func(msg) { msg.id == messageId });
         } else {
-          existingMsgArray.find(func(msg) { msg.id == messageId and msg.sender == caller })
+          existingMsgArray.find(func(msg) { msg.id == messageId and msg.sender == caller });
         };
 
         switch (targetMsg) {
@@ -1451,14 +1593,14 @@ actor {
       case (null) { Runtime.trap("Announcement list does not exist for this server") };
       case (?announcements) {
         let existingAnnounces = announcements.toArray();
-        
+
         // App-level admins can pin any announcement
         let isAppAdmin = AccessControl.isAdmin(accessControlState, caller);
-        
+
         let targetAnnouncement = if (isAppAdmin) {
-          existingAnnounces.find(func(a) { a.id == announcementId })
+          existingAnnounces.find(func(a) { a.id == announcementId });
         } else {
-          existingAnnounces.find(func(a) { a.id == announcementId and a.author == caller })
+          existingAnnounces.find(func(a) { a.id == announcementId and a.author == caller });
         };
 
         switch (targetAnnouncement) {

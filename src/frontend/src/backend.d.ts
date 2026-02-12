@@ -15,11 +15,16 @@ export class ExternalBlob {
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
 export type SdpAnswer = string;
+export interface SavedServerLink {
+    code: string;
+    savedAt: Time;
+    serverId: string;
+}
+export type Time = bigint;
 export interface RoomMember {
     role: RoomMemberRole;
     user: User;
 }
-export type Time = bigint;
 export type User = Principal;
 export interface VoiceSessionState {
     offer?: SdpOffer;
@@ -136,6 +141,7 @@ export interface backendInterface {
     editServerAnnouncement(serverId: ServerId, announcementId: bigint, newContent: string): Promise<void>;
     endVoiceSession(roomId: RoomId): Promise<void>;
     fetchMessages(roomId: RoomId, afterId: MessageId, limit: bigint): Promise<Array<ChatMessage>>;
+    generateServerInviteCode(serverId: ServerId): Promise<string>;
     getActiveMembers(serverId: ServerId): Promise<Array<User>>;
     getCallerFriends(): Promise<Array<User>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
@@ -157,12 +163,16 @@ export interface backendInterface {
     getUserServers(user: User): Promise<Array<Server>>;
     getVoiceSessionState(roomId: RoomId): Promise<VoiceSessionState | null>;
     isCallerAdmin(): Promise<boolean>;
+    joinServerWithInvite(inviteCode: string): Promise<ServerId>;
     kickRoomMember(roomId: RoomId, member: User): Promise<void>;
     linkAltAccount(altPrincipal: Principal): Promise<void>;
     listRooms(): Promise<Array<Room>>;
+    listSavedServerLinks(): Promise<Array<SavedServerLink>>;
     postMessage(message: NewChatMessage): Promise<MessageId>;
     postServerAnnouncement(serverId: ServerId, content: string, image: ExternalBlob | null, video: ExternalBlob | null): Promise<void>;
+    removeSavedServerLink(code: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    saveServerLink(serverId: string, code: string): Promise<void>;
     searchUsersByName(searchText: string): Promise<Array<UserProfile>>;
     sendFriendRequest(to: User): Promise<void>;
     sendSdpAnswer(roomId: RoomId, answer: SdpAnswer): Promise<void>;

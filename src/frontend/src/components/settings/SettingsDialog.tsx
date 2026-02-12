@@ -9,13 +9,15 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
 import { useGetLinkedAltAccounts, useGetPendingAltRequests, useLinkAltAccount, useAcceptAltAccount, useUnlinkAltAccount } from '@/hooks/useAltAccounts';
-import { useGetUserProfile } from '@/hooks/useUserProfile';
+import { useGetUserProfile, useGetCallerUserProfile } from '@/hooks/useUserProfile';
 import { useInternetIdentity } from '@/hooks/useInternetIdentity';
 import { useIsCallerAdmin, useClaimAdmin } from '@/hooks/useAdmin';
+import { useListSavedServerLinks, useRemoveSavedServerLink } from '@/hooks/useSavedServerLinks';
+import { useListServers } from '@/hooks/useServers';
 import { useQueryClient } from '@tanstack/react-query';
 import { Principal } from '@icp-sdk/core/principal';
 import { setSwitchIntent } from '@/utils/altAccountSwitch';
-import { Users, UserPlus, Check, X, ArrowRightLeft, Shield } from 'lucide-react';
+import { Users, UserPlus, Check, X, ArrowRightLeft, Shield, Bookmark, Copy, ExternalLink, Download } from 'lucide-react';
 
 interface SettingsDialogProps {
   open: boolean;
@@ -91,21 +93,26 @@ function PendingRequestItem({ requester, onAccept }: {
 
 export default function SettingsDialog({ open, onOpenChange, pollingInterval, onPollingIntervalChange }: SettingsDialogProps) {
   const { theme, setTheme } = useTheme();
-  const { clear } = useInternetIdentity();
+  const { clear, identity } = useInternetIdentity();
   const queryClient = useQueryClient();
   
   const [themeValue, setThemeValue] = useState(theme || 'system');
   const [pollingIntervalSeconds, setPollingIntervalSeconds] = useState((pollingInterval / 1000).toString());
   const [newAltPrincipal, setNewAltPrincipal] = useState('');
   const [unlinkTarget, setUnlinkTarget] = useState<Principal | null>(null);
+  const [removeTarget, setRemoveTarget] = useState<string | null>(null);
 
   const { data: linkedAccounts = [], isLoading: linkedLoading } = useGetLinkedAltAccounts();
   const { data: pendingRequests, isLoading: pendingLoading } = useGetPendingAltRequests();
   const { data: isAdmin = false, isLoading: adminLoading } = useIsCallerAdmin();
+  const { data: savedLinks = [], isLoading: savedLinksLoading } = useListSavedServerLinks();
+  const { data: userServers = [] } = useListServers();
+  const { data: callerProfile } = useGetCallerUserProfile();
   const linkMutation = useLinkAltAccount();
   const acceptMutation = useAcceptAltAccount();
   const unlinkMutation = useUnlinkAltAccount();
   const claimAdminMutation = useClaimAdmin();
+  const removeSavedLink = useRemoveSavedServerLink();
 
   useEffect(() => {
     setThemeValue(theme || 'system');
@@ -218,6 +225,91 @@ export default function SettingsDialog({ open, onOpenChange, pollingInterval, on
     }
   };
 
+  const handleCopyLink = async (code: string) => {
+    const inviteUrl = `${window.location.origin}${window.location.pathname}?invite=${encodeURIComponent(code)}`;
+    
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      toast.success('Link copied to clipboard!');
+    } catch (error) {
+      console.error('Failed to copy link:', error);
+      toast.error('Failed to copy link');
+    }
+  };
+
+  const handleOpenLink = (code: string) => {
+    const inviteUrl = `${window.location.origin}${window.location.pathname}?invite=${encodeURIComponent(code)}`;
+    window.location.assign(inviteUrl);
+  };
+
+  const handleRemoveLink = async () => {
+    if (!removeTarget) return;
+
+    try {
+      await removeSavedLink.mutateAsync(removeTarget);
+      toast.success('Saved link removed successfully!');
+      setRemoveTarget(null);
+    } catch (error: any) {
+      console.error('Failed to remove saved link:', error);
+      toast.error(error.message || 'Failed to remove saved link');
+    }
+  };
+
+  const handleCopyPrincipal = async () => {
+    if (!identity) return;
+
+    try {
+      await navigator.clipboard.writeText(identity.getPrincipal().toString());
+      toast.success('Principal copied to clipboard!');
+    } catch (error) {
+      console.error('Failed to copy principal:', error);
+      toast.error('Failed to copy principal');
+    }
+  };
+
+  const handleExportAccountData = async () => {
+    if (!identity) {
+      toast.error('Not authenticated');
+      return;
+    }
+
+    try {
+      const accountData = {
+        principal: identity.getPrincipal().toString(),
+        profile: callerProfile || null,
+        linkedAltAccounts: linkedAccounts.map(p => p.toString()),
+        savedServerLinks: savedLinks.map(link => ({
+          serverId: link.serverId,
+          code: link.code,
+          savedAt: link.savedAt.toString(),
+        })),
+        exportedAt: new Date().toISOString(),
+      };
+
+      const dataStr = JSON.stringify(accountData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `terrorchat-account-${Date.now()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success('Account data exported successfully!');
+    } catch (error) {
+      console.error('Failed to export account data:', error);
+      toast.error('Failed to export account data');
+    }
+  };
+
+  const getServerName = (serverId: string): string => {
+    const server = userServers.find(s => s.id === serverId);
+    return server?.name || serverId.slice(0, 20) + '...';
+  };
+
   const hasAltAccounts = linkedAccounts.length > 0 || (pendingRequests?.incoming.length ?? 0) > 0;
 
   return (
@@ -306,6 +398,113 @@ export default function SettingsDialog({ open, onOpenChange, pollingInterval, on
                         </>
                       )}
                     </Button>
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Saved Server Links Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Bookmark className="h-4 w-4 text-primary" />
+                  <Label className="text-base font-semibold">Saved Server Links</Label>
+                </div>
+
+                {savedLinksLoading ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    Loading saved links...
+                  </div>
+                ) : savedLinks.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No saved links yet.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {savedLinks.map((link) => (
+                      <div key={link.code} className="flex items-center justify-between gap-2 p-2 rounded-md bg-accent/50 border border-border">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{getServerName(link.serverId)}</p>
+                          <p className="text-xs text-muted-foreground font-mono truncate">{link.code}</p>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCopyLink(link.code)}
+                            className="h-7 px-2"
+                            title="Copy link"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleOpenLink(link.code)}
+                            className="h-7 px-2"
+                            title="Open link"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setRemoveTarget(link.code)}
+                            className="h-7 px-2 text-destructive hover:text-destructive"
+                            title="Remove"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Account Data Section */}
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">Account Data</Label>
+                
+                {identity && (
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <Label className="text-sm">Principal ID</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={identity.getPrincipal().toString()}
+                          readOnly
+                          className="font-mono text-xs"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={handleCopyPrincipal}
+                          className="flex-shrink-0"
+                          title="Copy principal"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleExportAccountData}
+                      className="gap-2 w-full"
+                    >
+                      <Download className="h-4 w-4" />
+                      Export Account Data
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      Download a JSON file containing your profile, linked accounts, and saved links.
+                    </p>
                   </div>
                 )}
               </div>
@@ -410,6 +609,24 @@ export default function SettingsDialog({ open, onOpenChange, pollingInterval, on
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleUnlink} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Unlink
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Remove Saved Link Confirmation Dialog */}
+      <AlertDialog open={!!removeTarget} onOpenChange={(open) => !open && setRemoveTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Saved Link</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this saved server link? You can save it again later if needed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRemoveLink} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remove
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

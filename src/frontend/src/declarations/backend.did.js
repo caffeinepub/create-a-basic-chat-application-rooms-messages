@@ -108,6 +108,11 @@ export const VoiceSessionState = IDL.Record({
   'answer' : IDL.Opt(SdpAnswer),
   'iceCandidates' : IDL.Vec(IceCandidate),
 });
+export const SavedServerLink = IDL.Record({
+  'code' : IDL.Text,
+  'savedAt' : Time,
+  'serverId' : IDL.Text,
+});
 export const NewChatMessage = IDL.Record({
   'content' : IDL.Text,
   'video' : IDL.Opt(ExternalBlob),
@@ -180,6 +185,7 @@ export const idlService = IDL.Service({
       [IDL.Vec(ChatMessage)],
       ['query'],
     ),
+  'generateServerInviteCode' : IDL.Func([ServerId], [IDL.Text], []),
   'getActiveMembers' : IDL.Func([ServerId], [IDL.Vec(User)], ['query']),
   'getCallerFriends' : IDL.Func([], [IDL.Vec(User)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
@@ -223,16 +229,20 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'joinServerWithInvite' : IDL.Func([IDL.Text], [ServerId], []),
   'kickRoomMember' : IDL.Func([RoomId, User], [], []),
   'linkAltAccount' : IDL.Func([IDL.Principal], [], []),
   'listRooms' : IDL.Func([], [IDL.Vec(Room)], ['query']),
+  'listSavedServerLinks' : IDL.Func([], [IDL.Vec(SavedServerLink)], ['query']),
   'postMessage' : IDL.Func([NewChatMessage], [MessageId], []),
   'postServerAnnouncement' : IDL.Func(
       [ServerId, IDL.Text, IDL.Opt(ExternalBlob), IDL.Opt(ExternalBlob)],
       [],
       [],
     ),
+  'removeSavedServerLink' : IDL.Func([IDL.Text], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'saveServerLink' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'searchUsersByName' : IDL.Func([IDL.Text], [IDL.Vec(UserProfile)], ['query']),
   'sendFriendRequest' : IDL.Func([User], [], []),
   'sendSdpAnswer' : IDL.Func([RoomId, SdpAnswer], [], []),
@@ -350,6 +360,11 @@ export const idlFactory = ({ IDL }) => {
     'answer' : IDL.Opt(SdpAnswer),
     'iceCandidates' : IDL.Vec(IceCandidate),
   });
+  const SavedServerLink = IDL.Record({
+    'code' : IDL.Text,
+    'savedAt' : Time,
+    'serverId' : IDL.Text,
+  });
   const NewChatMessage = IDL.Record({
     'content' : IDL.Text,
     'video' : IDL.Opt(ExternalBlob),
@@ -422,6 +437,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(ChatMessage)],
         ['query'],
       ),
+    'generateServerInviteCode' : IDL.Func([ServerId], [IDL.Text], []),
     'getActiveMembers' : IDL.Func([ServerId], [IDL.Vec(User)], ['query']),
     'getCallerFriends' : IDL.Func([], [IDL.Vec(User)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
@@ -469,16 +485,24 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'joinServerWithInvite' : IDL.Func([IDL.Text], [ServerId], []),
     'kickRoomMember' : IDL.Func([RoomId, User], [], []),
     'linkAltAccount' : IDL.Func([IDL.Principal], [], []),
     'listRooms' : IDL.Func([], [IDL.Vec(Room)], ['query']),
+    'listSavedServerLinks' : IDL.Func(
+        [],
+        [IDL.Vec(SavedServerLink)],
+        ['query'],
+      ),
     'postMessage' : IDL.Func([NewChatMessage], [MessageId], []),
     'postServerAnnouncement' : IDL.Func(
         [ServerId, IDL.Text, IDL.Opt(ExternalBlob), IDL.Opt(ExternalBlob)],
         [],
         [],
       ),
+    'removeSavedServerLink' : IDL.Func([IDL.Text], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'saveServerLink' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'searchUsersByName' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(UserProfile)],

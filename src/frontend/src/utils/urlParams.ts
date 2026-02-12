@@ -152,6 +152,30 @@ function clearParamFromHash(paramName: string): void {
 }
 
 /**
+ * Removes a specific parameter from the URL query string without reloading the page
+ * Preserves other parameters and the hash
+ *
+ * @param paramName - The parameter to remove from the URL
+ *
+ * @example
+ * // URL: https://app.com/?invite=xxx&other=value
+ * // After clearParamFromUrl('invite')
+ * // URL: https://app.com/?other=value
+ */
+export function clearParamFromUrl(paramName: string): void {
+    if (!window.history.replaceState) {
+        return;
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.delete(paramName);
+
+    const newQueryString = urlParams.toString();
+    const newUrl = window.location.pathname + (newQueryString ? '?' + newQueryString : '') + window.location.hash;
+    window.history.replaceState(null, '', newUrl);
+}
+
+/**
  * Gets a secret from the URL hash fragment only (more secure than query params)
  * Hash fragments aren't sent to servers or logged in access logs
  * The hash is immediately cleared from the URL after extraction to prevent history leakage

@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-dedicated-flags-category-to-the-existing-emoji-picker-frontend-src-components-chat-emojipicker-tsx-so-users-can-insert-flag-emojis-into-messages-including-flags-for-non-recognized-partially-recognized-territories-when-they-are-available-as-standard-unicode-emoji",
-      "featureTitle": "Add a dedicated \"Flags\" category to the existing emoji picker (frontend/src/components/chat/EmojiPicker.tsx) so users can insert flag emojis into messages, including flags for non-recognized/partially-recognized territories when they are available as standard Unicode emoji.",
+      "featureId": "feature-add-react-query-hooks-to-call-the-new-backend-saved-server-links-apis-using-the-existing-authenticated-actor-pattern-query-list-mutations-save-remove-and-ensure-proper-cache-invalidation",
+      "featureTitle": "Add React Query hooks to call the new backend saved-server-links APIs using the existing authenticated actor pattern (query: list; mutations: save/remove) and ensure proper cache invalidation.",
       "files": [
-        "frontend/src/components/chat/EmojiPicker.tsx",
-        "frontend/src/utils/emojiFlags.ts"
+        "frontend/src/hooks/useSavedServerLinks.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -18,16 +17,15 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-114"
+        "REQ-120"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-enforce-a-safety-filter-for-the-new-flag-emoji-list-used-by-the-emoji-picker-do-not-include-any-extremist-terrorist-violent-hate-symbol-flags-or-equivalents-and-ensure-the-picker-cannot-be-used-to-insert-disallowed-symbols-via-the-flags-category",
-      "featureTitle": "Enforce a safety filter for the new flag-emoji list used by the emoji picker: do not include any extremist/terrorist/violent/hate-symbol flags or equivalents, and ensure the picker cannot be used to insert disallowed symbols via the Flags category.",
+      "featureId": "feature-extend-the-existing-server-invite-ui-to-let-users-save-the-generated-invite-link-code-into-their-saved-server-links-list",
+      "featureTitle": "Extend the existing server invite UI to let users save the generated invite link/code into their saved server links list.",
       "files": [
-        "frontend/src/components/chat/EmojiPicker.tsx",
-        "frontend/src/utils/emojiFlags.ts"
+        "frontend/src/components/servers/ServerView.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -39,7 +37,47 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-115"
+        "REQ-121"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-settings-ui-section-for-saved-server-links-that-allows-the-user-to-view-copy-open-and-remove-their-saved-server-links",
+      "featureTitle": "Add a Settings UI section for \"Saved server links\" that allows the user to view, copy, open, and remove their saved server links.",
+      "files": [
+        "frontend/src/components/settings/SettingsDialog.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-122"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-an-account-data-section-in-settings-that-helps-users-save-recover-their-account-related-information-by-exporting-a-local-json-backup",
+      "featureTitle": "Add an \"Account data\" section in Settings that helps users save/recover their account-related information by exporting a local JSON backup.",
+      "files": [
+        "frontend/src/components/settings/SettingsDialog.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-123"
       ],
       "confidence": "high"
     }

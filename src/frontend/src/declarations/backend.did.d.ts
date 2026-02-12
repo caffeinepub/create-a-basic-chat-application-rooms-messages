@@ -51,6 +51,11 @@ export type RoomMemberRole = { 'member' : null } |
   { 'admin' : null } |
   { 'moderator' : null } |
   { 'owner' : null };
+export interface SavedServerLink {
+  'code' : string,
+  'savedAt' : Time,
+  'serverId' : string,
+}
 export type SdpAnswer = string;
 export type SdpOffer = string;
 export interface Server {
@@ -157,6 +162,7 @@ export interface _SERVICE {
     [RoomId, MessageId, bigint],
     Array<ChatMessage>
   >,
+  'generateServerInviteCode' : ActorMethod<[ServerId], string>,
   'getActiveMembers' : ActorMethod<[ServerId], Array<User>>,
   'getCallerFriends' : ActorMethod<[], Array<User>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
@@ -184,15 +190,19 @@ export interface _SERVICE {
   'getUserServers' : ActorMethod<[User], Array<Server>>,
   'getVoiceSessionState' : ActorMethod<[RoomId], [] | [VoiceSessionState]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'joinServerWithInvite' : ActorMethod<[string], ServerId>,
   'kickRoomMember' : ActorMethod<[RoomId, User], undefined>,
   'linkAltAccount' : ActorMethod<[Principal], undefined>,
   'listRooms' : ActorMethod<[], Array<Room>>,
+  'listSavedServerLinks' : ActorMethod<[], Array<SavedServerLink>>,
   'postMessage' : ActorMethod<[NewChatMessage], MessageId>,
   'postServerAnnouncement' : ActorMethod<
     [ServerId, string, [] | [ExternalBlob], [] | [ExternalBlob]],
     undefined
   >,
+  'removeSavedServerLink' : ActorMethod<[string], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'saveServerLink' : ActorMethod<[string, string], undefined>,
   'searchUsersByName' : ActorMethod<[string], Array<UserProfile>>,
   'sendFriendRequest' : ActorMethod<[User], undefined>,
   'sendSdpAnswer' : ActorMethod<[RoomId, SdpAnswer], undefined>,

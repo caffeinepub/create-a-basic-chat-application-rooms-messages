@@ -1,50 +1,82 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T16:38:54.466Z",
+  "generatedAt": "2026-02-12T19:39:27.814Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 5,
+    "implemented": 4,
     "items": [
       {
-        "id": "REQ-114",
-        "summary": "Add a dedicated \"Flags\" category to the existing emoji picker (frontend/src/components/chat/EmojiPicker.tsx) so users can insert flag emojis into messages, including flags for non-recognized/partially-recognized territories when they are available as standard Unicode emoji.",
+        "id": "REQ-119",
+        "summary": "Add backend support to persist per-user \"saved server links\" (bookmarks) so an authenticated user can save, list, and remove saved server invite links/codes.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-120",
+        "summary": "Add React Query hooks to call the new backend saved-server-links APIs using the existing authenticated actor pattern (query: list; mutations: save/remove) and ensure proper cache invalidation.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/emojiFlags.ts",
-          "frontend/src/components/chat/EmojiPicker.tsx"
+          "frontend/src/hooks/useSavedServerLinks.ts"
         ],
         "matchedFiles": [
-          "frontend/src/utils/emojiFlags.ts",
-          "frontend/src/components/chat/EmojiPicker.tsx"
+          "frontend/src/hooks/useSavedServerLinks.ts"
         ]
       },
       {
-        "id": "REQ-115",
-        "summary": "Enforce a safety filter for the new flag-emoji list used by the emoji picker: do not include any extremist/terrorist/violent/hate-symbol flags or equivalents, and ensure the picker cannot be used to insert disallowed symbols via the Flags category.",
+        "id": "REQ-121",
+        "summary": "Extend the existing server invite UI to let users save the generated invite link/code into their saved server links list.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/emojiFlags.ts",
-          "frontend/src/components/chat/EmojiPicker.tsx"
+          "frontend/src/components/servers/ServerView.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/utils/emojiFlags.ts",
-          "frontend/src/components/chat/EmojiPicker.tsx"
+          "frontend/src/components/servers/ServerView.tsx"
+        ]
+      },
+      {
+        "id": "REQ-122",
+        "summary": "Add a Settings UI section for \"Saved server links\" that allows the user to view, copy, open, and remove their saved server links.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/settings/SettingsDialog.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/settings/SettingsDialog.tsx"
+        ]
+      },
+      {
+        "id": "REQ-123",
+        "summary": "Add an \"Account data\" section in Settings that helps users save/recover their account-related information by exporting a local JSON backup.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/settings/SettingsDialog.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/settings/SettingsDialog.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/chat/EmojiPicker.tsx",
-    "frontend/src/utils/emojiFlags.ts",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/servers/ServerView.tsx",
+    "frontend/src/components/settings/SettingsDialog.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useSavedServerLinks.ts",
+    "frontend/src/utils/urlParams.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

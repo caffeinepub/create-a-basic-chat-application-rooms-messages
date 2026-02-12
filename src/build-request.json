@@ -1,54 +1,115 @@
 {
   "kind": "build_request",
-  "title": "Add flag emojis (including non-recognized/partially-recognized territories where Unicode supports them) to the emoji picker",
+  "title": "Add saved server links (bookmarks) and account data export in TerrorChat",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-114",
-      "text": "Add a dedicated \"Flags\" category to the existing emoji picker (frontend/src/components/chat/EmojiPicker.tsx) so users can insert flag emojis into messages, including flags for non-recognized/partially-recognized territories when they are available as standard Unicode emoji.",
-      "target": "frontend",
+      "id": "REQ-119",
+      "text": "Add backend support to persist per-user \"saved server links\" (bookmarks) so an authenticated user can save, list, and remove saved server invite links/codes.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "recent-messages-1"
+          "msg-5"
         ],
         "quotes": [
-          "add flag emojis too including the flags of non recognized states"
+          "add save features into chat app about saving a server links and account data"
         ]
       },
       "acceptanceCriteria": [
-        "The emoji picker UI includes a visible \"Flags\" category header alongside existing categories.",
-        "Selecting a flag emoji inserts it into the message composer text input at the current cursor position (works anywhere EmojiPicker is used, including room chat and server chat composers).",
-        "The flags provided are standard Unicode emoji characters (no backend calls, no third-party APIs, no image assets required).",
-        "If a requested/non-recognized entity has no standard Unicode flag emoji, it is not included (do not fabricate custom flag emojis)."
+        "Backend exposes authenticated canister APIs to: (1) list saved server links for the caller, (2) add/save a new saved server link for the caller, and (3) remove a saved server link for the caller.",
+        "Each saved server link record includes at minimum: a stable unique id, inviteCode (Text), an optional label (Text), and savedAt timestamp.",
+        "All APIs enforce that only the authenticated caller can read/write their own saved server links.",
+        "Backend returns clear English errors (no traps with unclear messages) for invalid input (e.g., empty invite code) and not-found removals.",
+        "React Query cache keys used by the frontend can be invalidated reliably after add/remove (e.g., a single query key for saved links)."
       ]
     },
     {
-      "id": "REQ-115",
-      "text": "Enforce a safety filter for the new flag-emoji list used by the emoji picker: do not include any extremist/terrorist/violent/hate-symbol flags or equivalents, and ensure the picker cannot be used to insert disallowed symbols via the Flags category.",
+      "id": "REQ-120",
+      "text": "Add React Query hooks to call the new backend saved-server-links APIs using the existing authenticated actor pattern (query: list; mutations: save/remove) and ensure proper cache invalidation.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages-1"
+          "msg-5"
         ],
         "quotes": [
-          "add flag emojis too including the flags of non recognized states"
+          "add save features into chat app about saving a server links and account data"
         ]
       },
       "acceptanceCriteria": [
-        "The Flags category list is curated/filtered so it does not include extremist/terrorist/violent/hate-symbol flags.",
-        "No user-facing text is added that promotes or endorses extremist/terrorist/violent/hate symbols; any added labels remain in English."
+        "A new set of hooks exists (in the existing hooks style) to: fetch the caller’s saved server links, save a link, and remove a link.",
+        "On successful save/remove, the saved-links query is invalidated so the UI refreshes immediately.",
+        "Errors are normalized into readable English messages surfaced to the UI."
+      ]
+    },
+    {
+      "id": "REQ-121",
+      "text": "Extend the existing server invite UI to let users save the generated invite link/code into their saved server links list.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "add save features into chat app about saving a server links and account data"
+        ]
+      },
+      "acceptanceCriteria": [
+        "In `frontend/src/components/servers/ServerView.tsx`, after an invite link/code is generated, provide a clear action (e.g., \"Save link\") that saves the inviteCode (and a reasonable default label such as the server name) via the new saved-links mutation.",
+        "Show an English success toast when saved, and an English error toast if saving fails.",
+        "Prevent saving when there is no inviteCode present."
+      ]
+    },
+    {
+      "id": "REQ-122",
+      "text": "Add a Settings UI section for \"Saved server links\" that allows the user to view, copy, open, and remove their saved server links.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "add save features into chat app about saving a server links and account data"
+        ]
+      },
+      "acceptanceCriteria": [
+        "In `frontend/src/components/settings/SettingsDialog.tsx`, add a \"Saved server links\" section below existing sections.",
+        "The section lists saved server links (label + invite code, and/or a derived full URL) with actions: Copy, Open, and Remove.",
+        "Copy uses the clipboard API and shows an English success/error toast.",
+        "Open navigates the user to the invite flow using the same invite parameter pattern already used by the app (e.g., `?invite=...`).",
+        "Remove prompts for confirmation (English) before deleting, then removes via backend and refreshes the list.",
+        "Show appropriate loading/empty states in English (e.g., \"Loading saved links...\", \"No saved links yet.\")."
+      ]
+    },
+    {
+      "id": "REQ-123",
+      "text": "Add an \"Account data\" section in Settings that helps users save/recover their account-related information by exporting a local JSON backup.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-5"
+        ],
+        "quotes": [
+          "add save features into chat app about saving a server links and account data"
+        ]
+      },
+      "acceptanceCriteria": [
+        "In `frontend/src/components/settings/SettingsDialog.tsx`, add an \"Account data\" section with: (1) the user’s current Principal displayed in a monospace field and a \"Copy\" button, and (2) an \"Export\" button that downloads a JSON file.",
+        "The export JSON includes at minimum: principal string, current caller profile (if available), linked alt accounts (if available), and saved server links.",
+        "All user-facing text is English, with clear success/error toasts (e.g., \"Account data exported\" / \"Failed to export account data\").",
+        "Export works fully client-side (downloaded file) and does not require any third-party services."
       ]
     }
   ],
   "constraints": [
-    "Frontend immutable paths must not be modified: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
-    "Do not add WebSockets or real-time infrastructure; keep the existing polling-based approach unchanged.",
-    "Keep all user-facing text in English."
+    "Backend must remain a single Motoko actor in `backend/main.mo` (no additional backend services).",
+    "Only Internet Identity authentication is supported.",
+    "Do not edit any frontend files under `frontend/src/components/ui` or other immutable paths listed in SYSTEM_CONTEXT.",
+    "Use English for all user-facing text added/modified."
   ],
   "nonGoals": [
-    "Do not reintroduce profile flag-badge functionality (profile editor flag selection and profile name flag rendering remain out of scope).",
-    "Do not add or change any backend APIs or backend data models for flags.",
-    "Do not add custom flag image assets to represent entities that do not have Unicode flag emojis."
+    "Implementing third-party cloud backup/sync (Google Drive/iCloud/Dropbox) for account data.",
+    "Adding real-time updates via WebSockets for saved links (polling/standard refetch is sufficient).",
+    "Implementing third-party authentication or wallet integrations."
   ],
   "imageRequirements": {
     "required": [],

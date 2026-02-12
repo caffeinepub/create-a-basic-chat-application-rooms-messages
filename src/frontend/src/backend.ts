@@ -90,11 +90,16 @@ export class ExternalBlob {
     }
 }
 export type SdpAnswer = string;
+export interface SavedServerLink {
+    code: string;
+    savedAt: Time;
+    serverId: string;
+}
+export type Time = bigint;
 export interface RoomMember {
     role: RoomMemberRole;
     user: User;
 }
-export type Time = bigint;
 export type User = Principal;
 export interface _CaffeineStorageRefillInformation {
     proposed_top_up_amount?: bigint;
@@ -229,6 +234,7 @@ export interface backendInterface {
     editServerAnnouncement(serverId: ServerId, announcementId: bigint, newContent: string): Promise<void>;
     endVoiceSession(roomId: RoomId): Promise<void>;
     fetchMessages(roomId: RoomId, afterId: MessageId, limit: bigint): Promise<Array<ChatMessage>>;
+    generateServerInviteCode(serverId: ServerId): Promise<string>;
     getActiveMembers(serverId: ServerId): Promise<Array<User>>;
     getCallerFriends(): Promise<Array<User>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
@@ -250,12 +256,16 @@ export interface backendInterface {
     getUserServers(user: User): Promise<Array<Server>>;
     getVoiceSessionState(roomId: RoomId): Promise<VoiceSessionState | null>;
     isCallerAdmin(): Promise<boolean>;
+    joinServerWithInvite(inviteCode: string): Promise<ServerId>;
     kickRoomMember(roomId: RoomId, member: User): Promise<void>;
     linkAltAccount(altPrincipal: Principal): Promise<void>;
     listRooms(): Promise<Array<Room>>;
+    listSavedServerLinks(): Promise<Array<SavedServerLink>>;
     postMessage(message: NewChatMessage): Promise<MessageId>;
     postServerAnnouncement(serverId: ServerId, content: string, image: ExternalBlob | null, video: ExternalBlob | null): Promise<void>;
+    removeSavedServerLink(code: string): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    saveServerLink(serverId: string, code: string): Promise<void>;
     searchUsersByName(searchText: string): Promise<Array<UserProfile>>;
     sendFriendRequest(to: User): Promise<void>;
     sendSdpAnswer(roomId: RoomId, answer: SdpAnswer): Promise<void>;
@@ -634,6 +644,20 @@ export class Backend implements backendInterface {
             return from_candid_vec_n15(this._uploadFile, this._downloadFile, result);
         }
     }
+    async generateServerInviteCode(arg0: ServerId): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.generateServerInviteCode(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.generateServerInviteCode(arg0);
+            return result;
+        }
+    }
     async getActiveMembers(arg0: ServerId): Promise<Array<User>> {
         if (this.processError) {
             try {
@@ -889,6 +913,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async joinServerWithInvite(arg0: string): Promise<ServerId> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.joinServerWithInvite(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.joinServerWithInvite(arg0);
+            return result;
+        }
+    }
     async kickRoomMember(arg0: RoomId, arg1: User): Promise<void> {
         if (this.processError) {
             try {
@@ -931,6 +969,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async listSavedServerLinks(): Promise<Array<SavedServerLink>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.listSavedServerLinks();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.listSavedServerLinks();
+            return result;
+        }
+    }
     async postMessage(arg0: NewChatMessage): Promise<MessageId> {
         if (this.processError) {
             try {
@@ -959,6 +1011,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async removeSavedServerLink(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.removeSavedServerLink(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.removeSavedServerLink(arg0);
+            return result;
+        }
+    }
     async saveCallerUserProfile(arg0: UserProfile): Promise<void> {
         if (this.processError) {
             try {
@@ -970,6 +1036,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.saveCallerUserProfile(await to_candid_UserProfile_n49(this._uploadFile, this._downloadFile, arg0));
+            return result;
+        }
+    }
+    async saveServerLink(arg0: string, arg1: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.saveServerLink(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.saveServerLink(arg0, arg1);
             return result;
         }
     }

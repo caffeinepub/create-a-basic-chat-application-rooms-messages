@@ -1,12 +1,14 @@
 import { useState, useRef } from 'react';
 import { useSetServerIcon } from '../../hooks/useServers';
+import { useGenerateServerInvite } from '../../hooks/useServerInvites';
 import { useSetServerBio, useSetServerBanner, useSetServerAccentColor } from '../../hooks/useServerCustomization';
+import { useSaveServerLink } from '../../hooks/useSavedServerLinks';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload, X, Save } from 'lucide-react';
+import { Upload, X, Save, Link2, Copy, Check, Bookmark } from 'lucide-react';
 import { toast } from 'sonner';
 import ServerAvatar from './ServerAvatar';
 import type { Server } from '../../backend';
@@ -24,6 +26,8 @@ export default function ServerView({ server, isOwner }: ServerViewProps) {
   const setServerBio = useSetServerBio();
   const setServerBanner = useSetServerBanner();
   const setServerAccentColor = useSetServerAccentColor();
+  const generateInvite = useGenerateServerInvite();
+  const saveServerLink = useSaveServerLink();
   
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [bannerUploadProgress, setBannerUploadProgress] = useState<number | null>(null);
@@ -32,6 +36,8 @@ export default function ServerView({ server, isOwner }: ServerViewProps) {
   const [editingAccentColor, setEditingAccentColor] = useState(false);
   const [accentColorValue, setAccentColorValue] = useState(server.accentColor || '#404eed');
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -175,6 +181,45 @@ export default function ServerView({ server, isOwner }: ServerViewProps) {
     }
   };
 
+  const handleGenerateInvite = async () => {
+    try {
+      const code = await generateInvite.mutateAsync(server.id);
+      setInviteCode(code);
+      toast.success('Invite link generated!');
+    } catch (error: any) {
+      console.error('Failed to generate invite:', error);
+      toast.error(error?.message || 'Failed to generate invite link');
+    }
+  };
+
+  const handleCopyInvite = async () => {
+    if (!inviteCode) return;
+    
+    const inviteUrl = `${window.location.origin}${window.location.pathname}?invite=${encodeURIComponent(inviteCode)}`;
+    
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setCopied(true);
+      toast.success('Invite link copied to clipboard!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy invite link:', error);
+      toast.error('Failed to copy invite link');
+    }
+  };
+
+  const handleSaveLink = async () => {
+    if (!inviteCode) return;
+
+    try {
+      await saveServerLink.mutateAsync({ serverId: server.id, code: inviteCode });
+      toast.success('Server link saved successfully!');
+    } catch (error: any) {
+      console.error('Failed to save server link:', error);
+      toast.error(error?.message || 'Failed to save server link');
+    }
+  };
+
   return (
     <div className="flex h-full flex-col bg-background">
       <div className="flex-1 overflow-y-auto p-6">
@@ -278,6 +323,69 @@ export default function ServerView({ server, isOwner }: ServerViewProps) {
                   {server.accentColor}
                 </span>
               </div>
+            </div>
+
+            {/* Invite Section - Available to all members */}
+            <div className="space-y-4 pt-4 border-t border-border">
+              <h3 className="text-sm font-semibold text-foreground">Invite</h3>
+              <p className="text-sm text-muted-foreground">
+                Generate an invite link to share with others so they can join this server.
+              </p>
+              
+              {!inviteCode ? (
+                <Button
+                  onClick={handleGenerateInvite}
+                  disabled={generateInvite.isPending}
+                  className="gap-2"
+                >
+                  {generateInvite.isPending ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Link2 className="h-4 w-4" />
+                      Generate Invite Link
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={`${window.location.origin}${window.location.pathname}?invite=${inviteCode}`}
+                      readOnly
+                      className="font-mono text-xs"
+                    />
+                    <Button
+                      onClick={handleCopyInvite}
+                      variant="outline"
+                      size="icon"
+                      className="flex-shrink-0"
+                    >
+                      {copied ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Button
+                      onClick={handleSaveLink}
+                      variant="outline"
+                      size="icon"
+                      className="flex-shrink-0"
+                      disabled={saveServerLink.isPending}
+                      title="Save link"
+                    >
+                      <Bookmark className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Share this link with others to invite them to the server.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Owner Controls */}
@@ -388,21 +496,13 @@ export default function ServerView({ server, isOwner }: ServerViewProps) {
                     </Button>
                   ) : (
                     <div className="space-y-2">
-                      <Label htmlFor="accentColor">Hex Color Code</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          id="accentColor"
-                          type="text"
-                          value={accentColorValue}
-                          onChange={(e) => setAccentColorValue(e.target.value)}
-                          placeholder="#404eed"
-                          className="font-mono"
-                        />
-                        <div
-                          className="w-10 h-10 rounded border border-border flex-shrink-0"
-                          style={{ backgroundColor: accentColorValue }}
-                        />
-                      </div>
+                      <Input
+                        type="text"
+                        value={accentColorValue}
+                        onChange={(e) => setAccentColorValue(e.target.value)}
+                        placeholder="#404eed"
+                        className="font-mono"
+                      />
                       <div className="flex gap-2">
                         <Button
                           variant="outline"

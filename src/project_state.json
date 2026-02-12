@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 71,
+  "projectStateVersion": 75,
   "summary": "Build a chat application branded as TerrorChat for terrorchat.org (replacing freechat.com, tchat.org, and any other prior domains/references).",
   "architectural_notes": [
     "Branding/domain should be configurable or centralized (e.g., constants/env) to avoid hardcoded .com references; update to .org.",
@@ -653,6 +653,54 @@
         "REQ-115"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-add-react-query-hooks-for-the-new-server-invite-backend-apis-create-invite-resolve-invite-join-via-invite-using-the-existing-authenticated-actor-pattern-and-ensure-correct-cache-invalidation-so-server-lists-members-update-after-a-successful-join",
+      "title": "Add React Query hooks for the new server-invite backend APIs (create invite, resolve invite, join via invite) using the existing authenticated actor pattern and ensure correct cache invalidation so server lists/members update after a successful join.",
+      "reqIds": [
+        "REQ-117"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-server-invite-ui-in-the-server-details-area-so-users-can-generate-copy-an-invite-link-for-the-currently-selected-server-and-add-an-invite-accept-flow-that-joins-a-server-when-a-signed-in-user-opens-an-invite-link",
+      "title": "Add a server-invite UI in the Server Details area so users can generate/copy an invite link for the currently selected server, and add an invite-accept flow that joins a server when a signed-in user opens an invite link.",
+      "reqIds": [
+        "REQ-118"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-react-query-hooks-to-call-the-new-backend-saved-server-links-apis-using-the-existing-authenticated-actor-pattern-query-list-mutations-save-remove-and-ensure-proper-cache-invalidation",
+      "title": "Add React Query hooks to call the new backend saved-server-links APIs using the existing authenticated actor pattern (query: list; mutations: save/remove) and ensure proper cache invalidation.",
+      "reqIds": [
+        "REQ-120"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-the-existing-server-invite-ui-to-let-users-save-the-generated-invite-link-code-into-their-saved-server-links-list",
+      "title": "Extend the existing server invite UI to let users save the generated invite link/code into their saved server links list.",
+      "reqIds": [
+        "REQ-121"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-settings-ui-section-for-saved-server-links-that-allows-the-user-to-view-copy-open-and-remove-their-saved-server-links",
+      "title": "Add a Settings UI section for \"Saved server links\" that allows the user to view, copy, open, and remove their saved server links.",
+      "reqIds": [
+        "REQ-122"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-account-data-section-in-settings-that-helps-users-save-recover-their-account-related-information-by-exporting-a-local-json-backup",
+      "title": "Add an \"Account data\" section in Settings that helps users save/recover their account-related information by exporting a local JSON backup.",
+      "reqIds": [
+        "REQ-123"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -1112,6 +1160,34 @@
       "id": "AR-79",
       "summary": "Add flag emojis support, including flags of non-recognized states (expand available flag/emoji set beyond current allowlist).",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-80",
+      "summary": "Add a server invite feature so server members/owners can invite users into servers (e.g., via an invite link shown in Server Details).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-81",
+      "summary": "Add backend support for server invite links so an authenticated server member with permission can create an invite code for a specific server, and any authenticated user with that invite code can join the server.",
+      "reqIds": [
+        "REQ-116"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-82",
+      "summary": "Add save features: persist server invite links (saved server links/bookmarks) and persist account data so users can store/recover their account-related info reliably.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-83",
+      "summary": "Add backend support to persist per-user \"saved server links\" (bookmarks) so an authenticated user can save, list, and remove saved server invite links/codes.",
+      "reqIds": [
+        "REQ-119"
+      ],
       "status": "pending"
     }
   ],
