@@ -34,6 +34,7 @@ export default function ProfileSetupDialog() {
     try {
       await saveProfile.mutateAsync(profile);
       toast.success('Profile created successfully!');
+      // Dialog will close automatically when userProfile becomes non-null
     } catch (error) {
       console.error('Failed to save profile:', error);
       toast.error('Failed to create profile. Please try again.');
@@ -58,10 +59,11 @@ export default function ProfileSetupDialog() {
                 placeholder="Enter your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                autoFocus
                 disabled={saveProfile.isPending}
+                autoFocus
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="bio">Bio (optional)</Label>
               <Textarea
@@ -75,14 +77,14 @@ export default function ProfileSetupDialog() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={saveProfile.isPending || !name.trim()}>
+            <Button type="submit" disabled={saveProfile.isPending || !name.trim()} className="w-full">
               {saveProfile.isPending ? (
                 <>
                   <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Creating...
+                  Creating Profile...
                 </>
               ) : (
-                'Continue'
+                'Get Started'
               )}
             </Button>
           </DialogFooter>

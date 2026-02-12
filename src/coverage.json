@@ -1,57 +1,106 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T01:55:48.022Z",
+  "generatedAt": "2026-02-12T03:29:59.717Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 5,
+    "implemented": 4,
     "items": [
       {
-        "id": "REQ-17",
-        "summary": "Replace all user-facing branding text in the app UI from “Chat” to “Tchat” where it represents the product/site name (e.g., the unauthenticated welcome headline and the authenticated header title), so the app is branded as Tchat.",
+        "id": "REQ-37",
+        "summary": "Replace the emoji-based flag badge metadata with image-based metadata by updating the frontend flag allowlist so each allowed flag option provides a static image asset path (served from the frontend) instead of an emoji value.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/App.tsx"
+          "frontend/src/utils/flags.ts"
         ],
         "matchedFiles": [
-          "frontend/src/App.tsx"
+          "frontend/src/utils/flags.ts"
         ]
       },
       {
-        "id": "REQ-18",
-        "summary": "Replace the footer domain text and link target from freechat.com to Tchat.com: update the visible link label to “tchat.com” and the href to https://tchat.com while preserving target=\"_blank\" and rel=\"noopener noreferrer\".",
+        "id": "REQ-38",
+        "summary": "Update the shared flag badge renderer to display the historical flag as a static image (not emoji) everywhere the badge appears, while keeping the existing behavior of returning null for unknown/disallowed flags.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/App.tsx"
+          "frontend/src/components/profile/FlagBadge.tsx",
+          "frontend/src/components/profile/ProfileName.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/App.tsx"
+          "frontend/src/components/profile/FlagBadge.tsx"
         ]
       },
       {
-        "id": "REQ-19",
-        "summary": "Update any app “web domain” mentions in static page metadata to reflect Tchat.com branding (e.g., the HTML document title if it still uses generic/old branding), ensuring no freechat.com references remain in the frontend static entrypoint.",
+        "id": "REQ-39",
+        "summary": "Update the Profile Editor flag selection UI to preview and select historical flag images instead of emoji, including the selected value display and the dropdown option list, while preserving the 'None' option to clear the selection.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/index.html"
+          "frontend/src/components/profile/ProfileEditorDialog.tsx"
         ],
         "matchedFiles": [
-          "frontend/index.html"
+          "frontend/src/components/profile/ProfileEditorDialog.tsx"
+        ]
+      },
+      {
+        "id": "REQ-40",
+        "summary": "Align backend flag allowlist validation with the frontend allowed flag IDs used for historical-flag image selection so saving and reading profiles consistently preserves only the frontend-allowed IDs.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-41",
+        "summary": "Add static historical-flag image assets for each allowed flag option and ensure they are loaded directly by the frontend (not routed through the backend).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/public/assets/generated/flag-rainbow.dim_96x64.png",
+          "frontend/public/assets/generated/flag-transgender.dim_96x64.png",
+          "frontend/public/assets/generated/flag-non-binary.dim_96x64.png",
+          "frontend/public/assets/generated/flag-eu.dim_96x64.png",
+          "frontend/public/assets/generated/flag-african-union.dim_96x64.png",
+          "frontend/public/assets/generated/flag-asean.dim_96x64.png",
+          "frontend/public/assets/generated/flag-ussr.dim_96x64.png",
+          "frontend/public/assets/generated/flag-rhodesia.dim_96x64.png",
+          "frontend/public/assets/generated/flag-imperial-japan.dim_96x64.png",
+          "frontend/public/assets/generated/flag-fascist-italy.dim_96x64.png"
+        ],
+        "matchedFiles": [
+          "frontend/public/assets/generated/flag-rainbow.dim_96x64.png",
+          "frontend/public/assets/generated/flag-transgender.dim_96x64.png",
+          "frontend/public/assets/generated/flag-non-binary.dim_96x64.png",
+          "frontend/public/assets/generated/flag-eu.dim_96x64.png",
+          "frontend/public/assets/generated/flag-african-union.dim_96x64.png",
+          "frontend/public/assets/generated/flag-asean.dim_96x64.png",
+          "frontend/public/assets/generated/flag-ussr.dim_96x64.png",
+          "frontend/public/assets/generated/flag-rhodesia.dim_96x64.png",
+          "frontend/public/assets/generated/flag-imperial-japan.dim_96x64.png",
+          "frontend/public/assets/generated/flag-fascist-italy.dim_96x64.png"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/index.html",
-    "frontend/src/App.tsx",
+    "frontend/public/assets/generated/flag-african-union.dim_96x64.png",
+    "frontend/public/assets/generated/flag-asean.dim_96x64.png",
+    "frontend/public/assets/generated/flag-eu.dim_96x64.png",
+    "frontend/public/assets/generated/flag-fascist-italy.dim_96x64.png",
+    "frontend/public/assets/generated/flag-imperial-japan.dim_96x64.png",
+    "frontend/public/assets/generated/flag-non-binary.dim_96x64.png",
+    "frontend/public/assets/generated/flag-rainbow.dim_96x64.png",
+    "frontend/public/assets/generated/flag-rhodesia.dim_96x64.png",
+    "frontend/public/assets/generated/flag-transgender.dim_96x64.png",
+    "frontend/public/assets/generated/flag-ussr.dim_96x64.png",
+    "frontend/src/components/profile/FlagBadge.tsx",
+    "frontend/src/components/profile/ProfileEditorDialog.tsx",
+    "frontend/src/utils/flags.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

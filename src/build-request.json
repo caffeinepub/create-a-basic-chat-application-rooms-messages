@@ -1,72 +1,132 @@
 {
   "kind": "build_request",
-  "title": "Rebrand freechat.com references to Tchat.com",
+  "title": "Replace emoji-style profile flag badges with historical flag images",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-17",
-      "text": "Replace all user-facing branding text in the app UI from “Chat” to “Tchat” where it represents the product/site name (e.g., the unauthenticated welcome headline and the authenticated header title), so the app is branded as Tchat.",
+      "id": "REQ-37",
+      "text": "Replace the emoji-based flag badge metadata with image-based metadata by updating the frontend flag allowlist so each allowed flag option provides a static image asset path (served from the frontend) instead of an emoji value.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Replace the freechat.com to Tchat.com ... and replace the Chat app web domain to Tchat.com"
+          "Remove the emoji style and replace it with the historial flag instead"
         ]
       },
       "acceptanceCriteria": [
-        "On the unauthenticated screen, the primary headline uses “Tchat” (not “Chat”) when referring to the app name.",
-        "In the authenticated header, the product title uses “Tchat” (not “Chat”).",
-        "No new user-facing text is introduced that mentions freechat.com."
+        "`frontend/src/utils/flags.ts` no longer exposes an `emoji` field in `FlagOption`; it exposes an image path field (e.g., `assetPath`) for each allowed flag option.",
+        "The allowlist lookup helpers (`getAllowedFlags`, `getFlagById`, `validateFlagId`) continue to function and return the correct metadata for a valid flag id.",
+        "All user-facing labels for the flag options remain in English."
       ]
     },
     {
-      "id": "REQ-18",
-      "text": "Replace the footer domain text and link target from freechat.com to Tchat.com: update the visible link label to “tchat.com” and the href to https://tchat.com while preserving target=\"_blank\" and rel=\"noopener noreferrer\".",
+      "id": "REQ-38",
+      "text": "Update the shared flag badge renderer to display the historical flag as a static image (not emoji) everywhere the badge appears, while keeping the existing behavior of returning null for unknown/disallowed flags.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Replace the freechat.com to Tchat.com ... and replace the Chat app web domain to Tchat.com"
+          "Remove the emoji style and replace it with the historial flag instead"
         ]
       },
       "acceptanceCriteria": [
-        "The footer shows the exact text “@ 2026 ai licensed tchat.com”, with “tchat.com” as a clickable link.",
-        "The footer link navigates to https://tchat.com in a new tab and includes rel=\"noopener noreferrer\".",
-        "There are no remaining references to https://freechat.com or the label “freechat.com” in frontend/src/App.tsx."
+        "`frontend/src/components/profile/FlagBadge.tsx` renders an `<img>` (or equivalent) using the allowed flag option's static asset path and uses an English `alt`/`title` based on the flag label.",
+        "Flag badges render correctly anywhere `FlagBadge` is used (e.g., `ProfileName` in message threads, invite UI, friends UI).",
+        "If `profileFlag` is missing or not in the allowlist, no badge is rendered (null output), matching prior safety behavior."
       ]
     },
     {
-      "id": "REQ-19",
-      "text": "Update any app “web domain” mentions in static page metadata to reflect Tchat.com branding (e.g., the HTML document title if it still uses generic/old branding), ensuring no freechat.com references remain in the frontend static entrypoint.",
+      "id": "REQ-39",
+      "text": "Update the Profile Editor flag selection UI to preview and select historical flag images instead of emoji, including the selected value display and the dropdown option list, while preserving the 'None' option to clear the selection.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "replace the Chat app web domain to Tchat.com"
+          "Remove the emoji style and replace it with the historial flag instead"
         ]
       },
       "acceptanceCriteria": [
-        "frontend/index.html does not contain any references to freechat.com.",
-        "The HTML <title> is updated to reflect Tchat branding (contains “Tchat” and no longer reads as a generic scaffold title)."
+        "`frontend/src/components/profile/ProfileEditorDialog.tsx` shows image-based badges in the Select trigger value when a flag is selected, and in each Select option row.",
+        "Selecting 'None' clears the flag selection and saving the profile persists no flag (`profileFlag` unset/undefined).",
+        "All user-facing strings in the flag selection area are in English (e.g., 'Flag Badge', 'None')."
+      ]
+    },
+    {
+      "id": "REQ-40",
+      "text": "Align backend flag allowlist validation with the frontend allowed flag IDs used for historical-flag image selection so saving and reading profiles consistently preserves only the frontend-allowed IDs.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Remove the emoji style and replace it with the historial flag instead"
+        ]
+      },
+      "acceptanceCriteria": [
+        "`allowedFlags` in `backend/main.mo` includes all flag IDs offered by the updated frontend allowlist and does not include IDs that the frontend no longer offers.",
+        "When `saveCallerUserProfile` is called with a disallowed `profileFlag`, it is persisted as null (current behavior preserved).",
+        "`getCallerUserProfile` and `getUserProfile` continue to sanitize `profileFlag` on reads (returning null if not currently allowed)."
+      ]
+    },
+    {
+      "id": "REQ-41",
+      "text": "Add static historical-flag image assets for each allowed flag option and ensure they are loaded directly by the frontend (not routed through the backend).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Remove the emoji style and replace it with the historial flag instead"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All flag badge images referenced by the frontend allowlist exist under `frontend/public/assets/generated/` and load successfully in the browser without backend calls.",
+        "Flag images render crisply at small badge sizes (e.g., inline next to a user name) without layout shifts.",
+        "No broken image icons appear in the Profile Editor flag selector or next to user names when a valid flag is selected."
       ]
     }
   ],
   "constraints": [
-    "Do not modify any files under frontend/src/components/ui (read-only).",
-    "Do not modify any files listed as immutable paths in SYSTEM_CONTEXT."
+    "Use English for all user-facing text.",
+    "Do not edit any frontend files under the immutable paths listed in SYSTEM_CONTEXT (e.g., `frontend/src/hooks/useInternetIdentity.ts(x)`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`, and anything in `frontend/src/components/ui`).",
+    "Backend must remain a single Motoko actor; keep all backend logic in `backend/main.mo` and only add `backend/migration.mo` if a state upgrade is strictly required."
   ],
   "nonGoals": [
-    "Implementing any content moderation, “rules/no rules” policy, reporting, blocking, or safety features.",
-    "Changing backend canister logic or data models."
+    "Do not introduce new flag categories or add new flags beyond what is needed to replace emoji rendering with static historical-flag images.",
+    "Do not change the user profile schema shape beyond what is necessary for rendering (the stored value remains the existing `profileFlag` id string).",
+    "Do not add third-party integrations or external asset hosting/CDNs for flags."
   ],
   "imageRequirements": {
-    "required": [],
+    "required": [
+      "Rainbow flag illustration, flat flag icon (flag-rainbow.dim_96x64.png)",
+      "Transgender flag illustration, flat flag icon (flag-transgender.dim_96x64.png)",
+      "Non-binary flag illustration, flat flag icon (flag-non-binary.dim_96x64.png)",
+      "European Union flag illustration, flat flag icon (flag-eu.dim_96x64.png)",
+      "African Union flag illustration, flat flag icon (flag-african-union.dim_96x64.png)",
+      "ASEAN flag illustration, flat flag icon (flag-asean.dim_96x64.png)",
+      "USSR historical flag illustration, flat flag icon (flag-ussr.dim_96x64.png)",
+      "Rhodesia historical flag illustration, flat flag icon (flag-rhodesia.dim_96x64.png)",
+      "Imperial Japan historical flag illustration, flat flag icon (flag-imperial-japan.dim_96x64.png)",
+      "Fascist Italy historical flag illustration, flat flag icon (flag-fascist-italy.dim_96x64.png)"
+    ],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

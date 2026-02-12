@@ -9,22 +9,19 @@ import Order "mo:core/Order";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 
-
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
-// Apply prefabricated components
-
 actor {
   include MixinStorage();
 
+  // Initialize the user system state
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
   type User = Principal;
-
   // Persistent User Profile with Avatar and Picture Storage
   public type UserProfile = {
     name : Text;
@@ -34,31 +31,84 @@ actor {
     backgroundColor : Text;
     textOverlays : Text;
     profilePicture : ?Storage.ExternalBlob;
+    profileFlag : ?Text;
   };
 
   // Persistent Map for Storing User Profiles
   let userProfiles = Map.empty<Principal, UserProfile>();
+
+  // Updated flag allowlist (front+backend validated)
+  let allowedFlags = Set.fromArray([
+    "rainbow",
+    "transgender",
+    "non-binary",
+    "germany",
+    "france",
+    "japan",
+    "usa",
+    "uk",
+    // International organizations
+    "eu",
+    "african-union",
+    "asean",
+  ]);
+
+  func validateFlagId(selectedFlag : ?Text) : ?Text {
+    switch (selectedFlag) {
+      case (null) { null };
+      case (?flagId) {
+        if (allowedFlags.contains(flagId)) { ?flagId } else { null };
+      };
+    };
+  };
+
+  // Sanitize profile flags returned from APIs (return null if no longer allowed)
+  func sanitizeProfileFlag(profile : UserProfile) : UserProfile {
+    let sanitizedFlag = switch (profile.profileFlag) {
+      case (null) { null };
+      case (?flagId) {
+        if (allowedFlags.contains(flagId)) { ?flagId } else { null };
+      };
+    };
+    {
+      profile with
+      profileFlag = sanitizedFlag;
+    };
+  };
 
   // Authentication and Authorization Functions
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can access profiles");
     };
-    userProfiles.get(caller);
+    switch (userProfiles.get(caller)) {
+      case (null) { null };
+      case (?profile) { ?sanitizeProfileFlag(profile) };
+    };
   };
 
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
-    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Can only view your own profile");
+    // Allow any authenticated user to fetch other users' profiles
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view profiles");
     };
-    userProfiles.get(user);
+    switch (userProfiles.get(user)) {
+      case (null) { null };
+      case (?profile) { ?sanitizeProfileFlag(profile) };
+    };
   };
 
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
-    userProfiles.add(caller, profile);
+
+    let validatedProfile = {
+      profile with
+      profileFlag = validateFlagId(profile.profileFlag);
+    };
+
+    userProfiles.add(caller, validatedProfile);
   };
 
   // Social Features
@@ -458,4 +508,3 @@ actor {
     };
   };
 };
-

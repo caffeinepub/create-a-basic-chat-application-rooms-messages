@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-replace-all-user-facing-branding-text-in-the-app-ui-from-chat-to-tchat-where-it-represents-the-product-site-name-e-g-the-unauthenticated-welcome-headline-and-the-authenticated-header-title-so-the-app-is-branded-as-tchat",
-      "featureTitle": "Replace all user-facing branding text in the app UI from “Chat” to “Tchat” where it represents the product/site name (e.g., the unauthenticated welcome headline and the authenticated header title), so the app is branded as Tchat.",
+      "featureId": "feature-replace-the-emoji-based-flag-badge-metadata-with-image-based-metadata-by-updating-the-frontend-flag-allowlist-so-each-allowed-flag-option-provides-a-static-image-asset-path-served-from-the-frontend-instead-of-an-emoji-value",
+      "featureTitle": "Replace the emoji-based flag badge metadata with image-based metadata by updating the frontend flag allowlist so each allowed flag option provides a static image asset path (served from the frontend) instead of an emoji value.",
       "files": [
-        "frontend/src/App.tsx"
+        "frontend/src/utils/flags.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -17,15 +17,15 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-17"
+        "REQ-37"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-replace-the-footer-domain-text-and-link-target-from-freechat-com-to-tchat-com-update-the-visible-link-label-to-tchat-com-and-the-href-to-https-tchat-com-while-preserving-target-blank-and-rel-noopener-noreferrer",
-      "featureTitle": "Replace the footer domain text and link target from freechat.com to Tchat.com: update the visible link label to “tchat.com” and the href to https://tchat.com while preserving target=\"_blank\" and rel=\"noopener noreferrer\".",
+      "featureId": "feature-update-the-shared-flag-badge-renderer-to-display-the-historical-flag-as-a-static-image-not-emoji-everywhere-the-badge-appears-while-keeping-the-existing-behavior-of-returning-null-for-unknown-disallowed-flags",
+      "featureTitle": "Update the shared flag badge renderer to display the historical flag as a static image (not emoji) everywhere the badge appears, while keeping the existing behavior of returning null for unknown/disallowed flags.",
       "files": [
-        "frontend/src/App.tsx"
+        "frontend/src/components/profile/FlagBadge.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -37,15 +37,15 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-18"
+        "REQ-38"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-any-app-web-domain-mentions-in-static-page-metadata-to-reflect-tchat-com-branding-e-g-the-html-document-title-if-it-still-uses-generic-old-branding-ensuring-no-freechat-com-references-remain-in-the-frontend-static-entrypoint",
-      "featureTitle": "Update any app “web domain” mentions in static page metadata to reflect Tchat.com branding (e.g., the HTML document title if it still uses generic/old branding), ensuring no freechat.com references remain in the frontend static entrypoint.",
+      "featureId": "feature-update-the-profile-editor-flag-selection-ui-to-preview-and-select-historical-flag-images-instead-of-emoji-including-the-selected-value-display-and-the-dropdown-option-list-while-preserving-the-none-option-to-clear-the-selection",
+      "featureTitle": "Update the Profile Editor flag selection UI to preview and select historical flag images instead of emoji, including the selected value display and the dropdown option list, while preserving the 'None' option to clear the selection.",
       "files": [
-        "frontend/index.html"
+        "frontend/src/components/profile/ProfileEditorDialog.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -57,7 +57,25 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-19"
+        "REQ-39"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-static-historical-flag-image-assets-for-each-allowed-flag-option-and-ensure-they-are-loaded-directly-by-the-frontend-not-routed-through-the-backend",
+      "featureTitle": "Add static historical-flag image assets for each allowed flag option and ensure they are loaded directly by the frontend (not routed through the backend).",
+      "files": [],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-41"
       ],
       "confidence": "high"
     }

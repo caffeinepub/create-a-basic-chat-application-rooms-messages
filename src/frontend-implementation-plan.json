@@ -1,52 +1,119 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Rebrand UI text and domain references to Tchat.com",
+  "title": "Replace emoji profile flag badges with historical flag images",
   "requirements": [
     {
-      "id": "REQ-17",
-      "summary": "Rebrand user-facing product name text from “Chat” to “Tchat” in unauthenticated and authenticated UI.",
+      "id": "REQ-37",
+      "summary": "Replace emoji-based flag allowlist metadata with static frontend image asset paths.",
       "acceptanceCriteria": [
-        "On the unauthenticated screen, the primary headline uses “Tchat” (not “Chat”) when referring to the app name.",
-        "In the authenticated header, the product title uses “Tchat” (not “Chat”).",
-        "No new user-facing text is introduced that mentions freechat.com."
+        "`frontend/src/utils/flags.ts` no longer exposes an `emoji` field in `FlagOption`; it exposes an image path field (e.g., `assetPath`) for each allowed flag option.",
+        "The allowlist lookup helpers (`getAllowedFlags`, `getFlagById`, `validateFlagId`) continue to function and return the correct metadata for a valid flag id.",
+        "All user-facing labels for the flag options remain in English."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/utils/flags.ts",
           "operation": "modify",
-          "description": "Update product/site branding strings to “Tchat” where they represent the app name (unauthenticated welcome headline and authenticated header title). Also update any related user-facing accessibility text (e.g., logo alt text) to reflect Tchat branding, without introducing any freechat.com mentions."
+          "description": "Update FlagOption to remove `emoji` and add an image path field (e.g., `assetPath`) pointing to static files under frontend/public; update ALLOWED_FLAGS entries (rainbow, transgender, non-binary, eu, african-union, asean, ussr, rhodesia, imperial-japan, fascist-italy) to use the required generated asset paths, and keep helper functions working with the updated metadata."
         }
       ]
     },
     {
-      "id": "REQ-18",
-      "summary": "Update footer domain label and link target from freechat.com to tchat.com while preserving security attributes.",
+      "id": "REQ-38",
+      "summary": "Render flag badges as static images everywhere FlagBadge is used, preserving null for unknown flags.",
       "acceptanceCriteria": [
-        "The footer shows the exact text “@ 2026 ai licensed tchat.com”, with “tchat.com” as a clickable link.",
-        "The footer link navigates to https://tchat.com in a new tab and includes rel=\"noopener noreferrer\".",
-        "There are no remaining references to https://freechat.com or the label “freechat.com” in frontend/src/App.tsx."
+        "`frontend/src/components/profile/FlagBadge.tsx` renders an `<img>` (or equivalent) using the allowed flag option's static asset path and uses an English `alt`/`title` based on the flag label.",
+        "Flag badges render correctly anywhere `FlagBadge` is used (e.g., `ProfileName` in message threads, invite UI, friends UI).",
+        "If `profileFlag` is missing or not in the allowlist, no badge is rendered (null output), matching prior safety behavior."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/components/profile/FlagBadge.tsx",
           "operation": "modify",
-          "description": "Replace the footer link label and href from freechat.com to tchat.com (label exactly “tchat.com”; href exactly https://tchat.com) while preserving target=\"_blank\" and rel=\"noopener noreferrer\". Ensure the full footer text reads exactly “@ 2026 ai licensed tchat.com” and remove any remaining freechat.com references from this file."
+          "description": "Replace emoji span rendering with an image-based badge that uses the allowlist option's static asset path; keep returning null for missing/unknown/disallowed flags; set fixed dimensions and object-fit styling to avoid layout shifts, and provide English alt/title text from the flag label."
+        },
+        {
+          "path": "frontend/src/components/profile/ProfileName.tsx",
+          "operation": "modify",
+          "description": "Ensure inline name+badge layout remains stable with the new image-based FlagBadge (e.g., alignment and spacing), without changing user-facing text."
         }
       ]
     },
     {
-      "id": "REQ-19",
-      "summary": "Update static HTML metadata to reflect Tchat.com branding and remove any freechat.com references.",
+      "id": "REQ-39",
+      "summary": "Update Profile Editor flag selection UI to preview/select historical flag images and preserve the None option.",
       "acceptanceCriteria": [
-        "frontend/index.html does not contain any references to freechat.com.",
-        "The HTML <title> is updated to reflect Tchat branding (contains “Tchat” and no longer reads as a generic scaffold title)."
+        "`frontend/src/components/profile/ProfileEditorDialog.tsx` shows image-based badges in the Select trigger value when a flag is selected, and in each Select option row.",
+        "Selecting 'None' clears the flag selection and saving the profile persists no flag (`profileFlag` unset/undefined).",
+        "All user-facing strings in the flag selection area are in English (e.g., 'Flag Badge', 'None')."
       ],
       "file_operations": [
         {
-          "path": "frontend/index.html",
+          "path": "frontend/src/components/profile/ProfileEditorDialog.tsx",
           "operation": "modify",
-          "description": "Update the document <title> to a Tchat-branded title (must include “Tchat” and remove the generic scaffold wording). Verify no freechat.com references exist in this static entrypoint."
+          "description": "Update the flag Select trigger and option rows to preview image-based badges via the updated FlagBadge/allowlist metadata; keep 'Flag Badge' and 'None' labels in English; ensure selecting 'None' clears the selection and saving persists `profileFlag` as undefined."
+        }
+      ]
+    },
+    {
+      "id": "REQ-41",
+      "summary": "Add required static historical flag image assets under frontend/public and ensure the allowlist references them.",
+      "acceptanceCriteria": [
+        "All flag badge images referenced by the frontend allowlist exist under `frontend/public/assets/generated/` and load successfully in the browser without backend calls.",
+        "Flag images render crisply at small badge sizes (e.g., inline next to a user name) without layout shifts.",
+        "No broken image icons appear in the Profile Editor flag selector or next to user names when a valid flag is selected."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/generated/flag-rainbow.dim_96x64.png",
+          "operation": "create",
+          "description": "Add the generated static asset: frontend/public/assets/generated/flag-rainbow.dim_96x64.png."
+        },
+        {
+          "path": "frontend/public/assets/generated/flag-transgender.dim_96x64.png",
+          "operation": "create",
+          "description": "Add the generated static asset: frontend/public/assets/generated/flag-transgender.dim_96x64.png."
+        },
+        {
+          "path": "frontend/public/assets/generated/flag-non-binary.dim_96x64.png",
+          "operation": "create",
+          "description": "Add the generated static asset: frontend/public/assets/generated/flag-non-binary.dim_96x64.png."
+        },
+        {
+          "path": "frontend/public/assets/generated/flag-eu.dim_96x64.png",
+          "operation": "create",
+          "description": "Add the generated static asset: frontend/public/assets/generated/flag-eu.dim_96x64.png."
+        },
+        {
+          "path": "frontend/public/assets/generated/flag-african-union.dim_96x64.png",
+          "operation": "create",
+          "description": "Add the generated static asset: frontend/public/assets/generated/flag-african-union.dim_96x64.png."
+        },
+        {
+          "path": "frontend/public/assets/generated/flag-asean.dim_96x64.png",
+          "operation": "create",
+          "description": "Add the generated static asset: frontend/public/assets/generated/flag-asean.dim_96x64.png."
+        },
+        {
+          "path": "frontend/public/assets/generated/flag-ussr.dim_96x64.png",
+          "operation": "create",
+          "description": "Add the generated static asset: frontend/public/assets/generated/flag-ussr.dim_96x64.png."
+        },
+        {
+          "path": "frontend/public/assets/generated/flag-rhodesia.dim_96x64.png",
+          "operation": "create",
+          "description": "Add the generated static asset: frontend/public/assets/generated/flag-rhodesia.dim_96x64.png."
+        },
+        {
+          "path": "frontend/public/assets/generated/flag-imperial-japan.dim_96x64.png",
+          "operation": "create",
+          "description": "Add the generated static asset: frontend/public/assets/generated/flag-imperial-japan.dim_96x64.png."
+        },
+        {
+          "path": "frontend/public/assets/generated/flag-fascist-italy.dim_96x64.png",
+          "operation": "create",
+          "description": "Add the generated static asset: frontend/public/assets/generated/flag-fascist-italy.dim_96x64.png."
         }
       ]
     }

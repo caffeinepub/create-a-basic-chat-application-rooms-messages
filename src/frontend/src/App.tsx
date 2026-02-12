@@ -9,6 +9,7 @@ import FriendsDialog from './components/friends/FriendsDialog';
 import RoomList from './components/chat/RoomList';
 import MessageThread from './components/chat/MessageThread';
 import UserAvatar from './components/profile/UserAvatar';
+import ProfileName from './components/profile/ProfileName';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import { Button } from '@/components/ui/button';
@@ -75,7 +76,7 @@ function AppContent() {
               <div className="flex items-center gap-2">
                 <UserAvatar profile={userProfile} size="sm" />
                 <span className="text-sm text-muted-foreground">
-                  Hello, <span className="font-medium text-foreground">{userProfile.name}</span>
+                  Hello, <span className="font-medium text-foreground"><ProfileName profile={userProfile} /></span>
                 </span>
               </div>
             )}
@@ -124,14 +125,14 @@ function AppContent() {
       {/* Footer */}
       <footer className="border-t border-border bg-card px-6 py-3">
         <p className="text-center text-sm text-muted-foreground">
-          @ 2026 ai licensed{' '}
+          © {new Date().getFullYear()} · Built with ❤️ using{' '}
           <a
-            href="https://tchat.com"
+            href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-foreground hover:underline font-medium"
           >
-            tchat.com
+            caffeine.ai
           </a>
         </p>
       </footer>
@@ -139,13 +140,11 @@ function AppContent() {
       {/* Profile Setup Dialog */}
       {showProfileSetup && <ProfileSetupDialog />}
       
-      {/* Profile Editor Dialog */}
-      {showProfileEditor && userProfile && (
-        <ProfileEditorDialog 
-          open={showProfileEditor} 
-          onOpenChange={setShowProfileEditor}
-        />
-      )}
+      {/* Profile Editor Dialog - now opens even when profile is null */}
+      <ProfileEditorDialog 
+        open={showProfileEditor} 
+        onOpenChange={setShowProfileEditor}
+      />
 
       {/* Settings Dialog */}
       {showSettings && (

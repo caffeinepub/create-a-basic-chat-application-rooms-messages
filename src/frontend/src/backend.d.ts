@@ -45,6 +45,7 @@ export interface UserProfile {
     color: string;
     textOverlays: string;
     profilePicture?: ExternalBlob;
+    profileFlag?: string;
 }
 export enum UserRole {
     admin = "admin",

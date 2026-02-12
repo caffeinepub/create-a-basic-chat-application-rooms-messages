@@ -6,11 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, UserPlus, Check, X } from 'lucide-react';
+import { Search, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
-import { useSearchUsers, useGetCallerFriends, useSendFriendRequest, useAcceptFriendRequest } from '../../hooks/useFriends';
+import { useSearchUsers, useGetCallerFriends, useSendFriendRequest } from '../../hooks/useFriends';
 import { useGetUserProfile } from '../../hooks/useUserProfile';
 import UserAvatar from '../profile/UserAvatar';
+import ProfileName from '../profile/ProfileName';
 import type { User, UserProfile } from '../../backend';
 
 interface FriendsDialogProps {
@@ -19,9 +20,10 @@ interface FriendsDialogProps {
 }
 
 function FriendCard({ userId }: { userId: User }) {
-  const { data: profile } = useGetUserProfile(userId);
+  const { data: profile, isLoading, isFetched } = useGetUserProfile(userId);
 
-  if (!profile) {
+  // Show skeleton only while loading
+  if (isLoading) {
     return (
       <Card className="p-4">
         <div className="flex items-center gap-3">
@@ -32,19 +34,44 @@ function FriendCard({ userId }: { userId: User }) {
     );
   }
 
-  return (
-    <Card className="p-4">
-      <div className="flex items-center gap-3">
-        <UserAvatar profile={profile} size="md" />
-        <div className="flex-1 min-w-0">
-          <p className="font-medium text-foreground truncate">{profile.name}</p>
-          {profile.bio && (
-            <p className="text-xs text-muted-foreground truncate">{profile.bio}</p>
-          )}
+  // Show fallback when profile is null or fetch failed
+  if (!profile && isFetched) {
+    const principalSnippet = userId.toString().slice(0, 8) + '...';
+    return (
+      <Card className="p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+            <span className="text-sm font-medium text-muted-foreground">?</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-foreground truncate">Unknown user</p>
+            <p className="text-xs text-muted-foreground truncate">{principalSnippet}</p>
+          </div>
         </div>
-      </div>
-    </Card>
-  );
+      </Card>
+    );
+  }
+
+  // Show profile when available
+  if (profile) {
+    return (
+      <Card className="p-4">
+        <div className="flex items-center gap-3">
+          <UserAvatar profile={profile} size="md" />
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-foreground truncate">
+              <ProfileName profile={profile} />
+            </p>
+            {profile.bio && (
+              <p className="text-xs text-muted-foreground truncate">{profile.bio}</p>
+            )}
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  return null;
 }
 
 function SearchResultCard({ profile, onAdd }: { profile: UserProfile; onAdd: () => void }) {
@@ -63,7 +90,9 @@ function SearchResultCard({ profile, onAdd }: { profile: UserProfile; onAdd: () 
       <div className="flex items-center gap-3">
         <UserAvatar profile={profile} size="md" />
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-foreground truncate">{profile.name}</p>
+          <p className="font-medium text-foreground truncate">
+            <ProfileName profile={profile} />
+          </p>
           {profile.bio && (
             <p className="text-xs text-muted-foreground truncate">{profile.bio}</p>
           )}

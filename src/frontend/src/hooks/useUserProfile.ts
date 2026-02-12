@@ -30,10 +30,17 @@ export function useGetUserProfile(user: Principal) {
     queryKey: ['userProfile', user.toString()],
     queryFn: async () => {
       if (!actor) return null;
-      return actor.getUserProfile(user);
+      try {
+        return await actor.getUserProfile(user);
+      } catch (error) {
+        // Handle authorization errors and backend traps gracefully
+        console.warn(`Failed to fetch profile for ${user.toString()}:`, error);
+        return null;
+      }
     },
     enabled: !!actor && !isFetching,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    retry: false, // Don't retry on failure
   });
 }
 
@@ -46,7 +53,10 @@ export function useSaveCallerUserProfile() {
       if (!actor) throw new Error('Actor not available');
       return actor.saveCallerUserProfile(profile);
     },
-    onSuccess: () => {
+    onSuccess: (_, profile) => {
+      // Immediately update the cache for snappier UI refresh
+      queryClient.setQueryData(['currentUserProfile'], profile);
+      // Invalidate to ensure consistency
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
       // Also invalidate all user profiles to refresh message displays
       queryClient.invalidateQueries({ queryKey: ['userProfile'] });

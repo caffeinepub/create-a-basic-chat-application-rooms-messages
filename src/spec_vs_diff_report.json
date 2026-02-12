@@ -1,33 +1,53 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T01:55:48.020Z",
-  "summary": "Rebranding to “Tchat” appears implemented in the unauthenticated headline and authenticated header, and index.html title updated. Footer/link changes and absence of freechat.com references in App.tsx are claimed in a summary file but not directly evidenced in the truncated App.tsx diff, so those acceptance criteria cannot be fully verified from the provided diff excerpt.",
+  "generatedAt": "2026-02-12T03:29:59.712Z",
+  "summary": "Frontend flags metadata was updated to use image asset paths and FlagBadge now renders an <img>. However, the backend allowlist is not aligned with the frontend IDs, and the diff does not show the required static image assets being added under frontend/public/assets/generated/. Profile editor UI changes for image previews/selection are only partially evidenced due to truncation.",
   "missing_requirements": [
     {
-      "id": "REQ-18",
-      "requirement": "Update the footer domain text and link target from freechat.com to tchat.com, preserving target=\"_blank\" and rel=\"noopener noreferrer\", and ensure no remaining references to https://freechat.com or label “freechat.com” in frontend/src/App.tsx.",
-      "reason": "The App.tsx diff is truncated before the footer section; the footer text/link and attributes are not directly visible in the provided App.tsx excerpt, so the exact required footer text/link behavior and absence of freechat.com references in App.tsx cannot be confirmed from the diff content shown.",
+      "id": "REQ-39",
+      "requirement": "Update the Profile Editor flag selection UI to preview and select historical flag images (trigger value + dropdown options) and preserve a 'None' option that clears the selection and persists no flag.",
+      "reason": "ProfileEditorDialog.tsx is truncated before the Select UI rendering and save logic; the diff summary does not provide evidence that the Select trigger and option rows render image-based badges, nor that selecting 'None' persists profileFlag as unset/undefined on save.",
       "evidence": [
-        "frontend/src/App.tsx (truncated)",
-        "frontend-file-summaries.txt (claims footer update but does not show code/attributes)"
+        "frontend/src/components/profile/ProfileEditorDialog.tsx (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-40",
+      "requirement": "Align backend allowedFlags validation with the updated frontend allowed flag IDs (include all offered IDs; exclude IDs no longer offered) and keep sanitization/persist-null behavior for disallowed flags.",
+      "reason": "backend/main.mo allowedFlags includes ids that are not present in the updated frontend allowlist (germany, france, japan, usa, uk) and is missing several frontend-offered historical ids (ussr, rhodesia, imperial-japan, fascist-italy). This breaks the 'includes all' and 'does not include removed IDs' acceptance criteria.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/utils/flags.ts"
+      ]
+    },
+    {
+      "id": "REQ-41",
+      "requirement": "Add static historical-flag image assets under frontend/public/assets/generated/ for each allowed option and ensure they load directly from the frontend.",
+      "reason": "No files were added in the diff, and there is no evidence that the required PNG assets exist under frontend/public/assets/generated/ (the allowlist references them, but the assets themselves are not shown as added/modified).",
+      "evidence": [
+        "frontend/src/utils/flags.ts",
+        "file-diff summary: Added files = none"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Updated project_state.json summary text to mention branding/replacing freechat.com references.",
-      "reason": "Not part of the requested frontend rebranding requirements (REQ-17/18/19) and not necessary to satisfy them.",
+      "description": "Backend allowlist expanded/changed to include additional country flag IDs (germany, france, japan, usa, uk) that are not offered by the updated frontend allowlist.",
+      "reason": "BuildRequest explicitly focuses on replacing emoji rendering with static historical-flag images and aligning backend validation to the frontend-offered IDs. Adding backend-allowed IDs not present in the frontend violates that alignment and is not requested.",
       "evidence": [
-        "project_state.json (truncated)"
+        "backend/main.mo",
+        "frontend/src/utils/flags.ts"
       ]
     }
   ],
-  "confidence": 0.62,
+  "confidence": 0.78,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/index.html",
-    "frontend/src/App.tsx",
+    "frontend/src/components/profile/FlagBadge.tsx",
+    "frontend/src/components/profile/ProfileEditorDialog.tsx",
+    "frontend/src/utils/flags.ts",
     "project_state.json"
   ]
 }
