@@ -1,58 +1,33 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Remove profile flag badge feature from backend and UI",
+  "title": "Add additional theme options in Settings (include Black theme)",
   "requirements": [
     {
-      "id": "REQ-44",
-      "summary": "Remove all flag-badge UI from profile editor and name display surfaces so no flag is shown or saved.",
+      "id": "REQ-46",
+      "summary": "Add a Black theme option to Settings and implement a matching CSS variable palette so the entire app updates via next-themes class switching.",
       "acceptanceCriteria": [
-        "`frontend/src/components/profile/ProfileEditorDialog.tsx` no longer shows a \"Flag Badge\" field and does not send any flag value when saving a profile.",
-        "`frontend/src/components/profile/ProfileName.tsx` renders only the display name (no flag badge).",
-        "The app header greeting, message thread sender names, friends UI, and invite UI no longer render any flag badge next to a user’s name.",
-        "All user-facing text remains in English."
+        "In Settings, the Theme dropdown includes a new option labeled \"Black\" (English text).",
+        "Selecting \"Black\" calls the existing theme application mechanism (next-themes) using a stable theme value (e.g., \"black\").",
+        "A corresponding `.black` theme class is defined in `frontend/src/index.css` that sets `--background` to a true/near-true black and updates related variables (`--foreground`, `--card`, `--border`, `--muted`, etc.) so text and UI controls remain readable and consistent.",
+        "When the Black theme is selected, the app UI (header, sidebar, dialogs, message thread, and inputs) visibly switches to the Black palette without breaking contrast or readability.",
+        "Existing theme options (Light, Dark, System Default) continue to work as before."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/profile/ProfileEditorDialog.tsx",
+          "path": "frontend/src/components/settings/SettingsDialog.tsx",
           "operation": "modify",
-          "description": "Remove the flag selector UI and related state; remove any reads of a legacy profile flag from loaded profiles; ensure the saved UserProfile object does not include any flag-related field; update dialog description copy to remove mention of flags while keeping all other profile fields/behavior unchanged."
+          "description": "Extend the Theme selector to include a new SelectItem labeled \"Black\" with a stable value \"black\", ensuring the existing next-themes setTheme flow applies it and existing Light/Dark/System options remain unchanged."
         },
         {
-          "path": "frontend/src/components/profile/ProfileName.tsx",
+          "path": "frontend/src/index.css",
           "operation": "modify",
-          "description": "Remove FlagBadge usage and any reliance on a profile flag field so the component renders only the user's display name; keep inline layout/truncation behavior intact for all call sites (header, message thread, friends, invite)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-45",
-      "summary": "Eliminate frontend flag allowlist and renderer dependencies so the app has no runtime dependency on flag assets/metadata.",
-      "acceptanceCriteria": [
-        "The app no longer imports/uses `frontend/src/utils/flags.ts` and no longer imports/uses `frontend/src/components/profile/FlagBadge.tsx`.",
-        "The frontend builds successfully with no references to `/assets/generated/flag-*.png` in TypeScript/TSX source.",
-        "Profile save/load flows continue working end-to-end (create/edit profile still works; avatars and profile pictures still work)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/profile/FlagBadge.tsx",
-          "operation": "delete",
-          "description": "Delete the flag badge renderer component since the UI no longer renders flags anywhere."
+          "description": "Define a new `.black` theme class in the @layer base section that sets a near-true black `--background` and adjusts the full variable palette (`--foreground`, `--card`, `--popover`, `--muted`, `--border`, `--input`, `--ring`, and `--sidebar*`) to preserve readability/contrast across header, sidebar, dialogs, threads, and inputs."
         },
         {
-          "path": "frontend/src/utils/flags.ts",
-          "operation": "delete",
-          "description": "Delete flag allowlist/validation utilities so the frontend no longer contains flag metadata or any references to generated flag assets."
-        },
-        {
-          "path": "frontend/src/components/profile/ProfileEditorDialog.tsx",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Remove all imports and logic that depended on `utils/flags` and `FlagBadge` to ensure there are no remaining TypeScript/TSX references to flag assets or flag metadata."
-        },
-        {
-          "path": "frontend/src/components/profile/ProfileName.tsx",
-          "operation": "modify",
-          "description": "Remove the `FlagBadge` import and any `profileFlag` access so there are no remaining references to the deleted flag components/utilities."
+          "description": "Update the ThemeProvider configuration (next-themes) to explicitly support the new \"black\" theme value (while keeping defaultTheme=\"system\" and enableSystem behavior intact), so applying \"black\" results in the `.black` class being used consistently."
         }
       ]
     }

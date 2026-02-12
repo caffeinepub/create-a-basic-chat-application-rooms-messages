@@ -76,6 +76,42 @@
         --sidebar-ring: 0.65 0.15 40;
     }
 
+    .black {
+        /* True black theme with warm accents for OLED displays */
+        --background: 0 0 0;
+        --foreground: 0.95 0.01 40;
+        --card: 0.08 0.01 30;
+        --card-foreground: 0.95 0.01 40;
+        --popover: 0.10 0.01 30;
+        --popover-foreground: 0.95 0.01 40;
+        --primary: 0.70 0.18 40;
+        --primary-foreground: 0.10 0.01 30;
+        --secondary: 0.15 0.02 35;
+        --secondary-foreground: 0.95 0.01 40;
+        --muted: 0.18 0.01 35;
+        --muted-foreground: 0.60 0.03 40;
+        --accent: 0.20 0.03 40;
+        --accent-foreground: 0.95 0.01 40;
+        --destructive: 0.60 0.20 25;
+        --destructive-foreground: 0.95 0.01 40;
+        --border: 0.20 0.01 35;
+        --input: 0.20 0.01 35;
+        --ring: 0.65 0.15 40;
+        --chart-1: 0.65 0.18 40;
+        --chart-2: 0.60 0.12 60;
+        --chart-3: 0.70 0.15 80;
+        --chart-4: 0.55 0.20 20;
+        --chart-5: 0.75 0.10 100;
+        --sidebar: 0.08 0.01 30;
+        --sidebar-foreground: 0.95 0.01 40;
+        --sidebar-primary: 0.70 0.18 40;
+        --sidebar-primary-foreground: 0.10 0.01 30;
+        --sidebar-accent: 0.15 0.02 35;
+        --sidebar-accent-foreground: 0.95 0.01 40;
+        --sidebar-border: 0.20 0.01 35;
+        --sidebar-ring: 0.65 0.15 40;
+    }
+
     * {
         @apply border-border;
     }

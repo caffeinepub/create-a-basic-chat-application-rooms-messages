@@ -1,92 +1,36 @@
 {
   "kind": "build_request",
-  "title": "Remove profile flag badge feature from backend and UI",
+  "title": "Add additional theme options in Settings (include Black theme)",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-42",
-      "text": "Remove the flag-badge field and all flag-badge validation/sanitization logic from the backend user profile model and APIs.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Remove the flag badge feature"
-        ]
-      },
-      "acceptanceCriteria": [
-        "`backend/main.mo` no longer defines `profileFlag` in `UserProfile`.",
-        "All backend methods that read/save user profiles compile and function without any flag-related allowlist/validation/sanitization.",
-        "Saved profiles returned by `getCallerUserProfile` / `getUserProfile` no longer contain any flag-related data.",
-        "Backend builds successfully with the single-actor architecture preserved."
-      ]
-    },
-    {
-      "id": "REQ-43",
-      "text": "Add a conditional state migration to safely upgrade existing deployed state that may contain `UserProfile.profileFlag`, ensuring upgrade does not trap and existing profile data (name, bio, avatar colors, profile picture) is preserved.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Remove the flag badge feature"
-        ]
-      },
-      "acceptanceCriteria": [
-        "If existing canister state contains user profiles with the legacy `profileFlag` field, upgrading to the new version completes without trapping.",
-        "After upgrade, profiles still load correctly and all non-flag fields remain unchanged.",
-        "No new persistent flag-related state remains after migration."
-      ]
-    },
-    {
-      "id": "REQ-44",
-      "text": "Remove all flag-badge UI from the profile editor and profile display components, including the flag selector and any inline flag rendering next to names.",
+      "id": "REQ-46",
+      "text": "Extend the Settings theme selector to include additional theme options, including a \"Black\" theme, and make selecting the new theme apply the correct CSS variable palette across the app.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-4"
         ],
         "quotes": [
-          "Remove the flag badge feature"
+          "Add more themes in the settings including a black theme"
         ]
       },
       "acceptanceCriteria": [
-        "`frontend/src/components/profile/ProfileEditorDialog.tsx` no longer shows a \"Flag Badge\" field and does not send any flag value when saving a profile.",
-        "`frontend/src/components/profile/ProfileName.tsx` renders only the display name (no flag badge).",
-        "The app header greeting, message thread sender names, friends UI, and invite UI no longer render any flag badge next to a user’s name.",
-        "All user-facing text remains in English."
-      ]
-    },
-    {
-      "id": "REQ-45",
-      "text": "Remove frontend flag allowlist utilities and flag badge renderer usage so the app has no runtime dependency on flag assets or flag metadata.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Remove the flag badge feature"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The app no longer imports/uses `frontend/src/utils/flags.ts` and no longer imports/uses `frontend/src/components/profile/FlagBadge.tsx`.",
-        "The frontend builds successfully with no references to `/assets/generated/flag-*.png` in TypeScript/TSX source.",
-        "Profile save/load flows continue working end-to-end (create/edit profile still works; avatars and profile pictures still work)."
+        "In Settings, the Theme dropdown includes a new option labeled \"Black\" (English text).",
+        "Selecting \"Black\" calls the existing theme application mechanism (next-themes) using a stable theme value (e.g., \"black\").",
+        "A corresponding `.black` theme class is defined in `frontend/src/index.css` that sets `--background` to a true/near-true black and updates related variables (`--foreground`, `--card`, `--border`, `--muted`, etc.) so text and UI controls remain readable and consistent.",
+        "When the Black theme is selected, the app UI (header, sidebar, dialogs, message thread, and inputs) visibly switches to the Black palette without breaking contrast or readability.",
+        "Existing theme options (Light, Dark, System Default) continue to work as before."
       ]
     }
   ],
   "constraints": [
-    "Do not edit any files under `frontend/src/components/ui` (compose them instead).",
-    "Do not modify any files listed as immutable in SYSTEM_CONTEXT (e.g., `frontend/src/hooks/useInternetIdentity.ts(x)`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`).",
-    "Keep all backend logic in the single Motoko main actor (`backend/main.mo`); only add `backend/migration.mo` if needed for upgrade safety."
+    "Use English for all user-facing text.",
+    "Do not edit files under frontend/src/components/ui or other immutable frontend paths listed in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Do not add replacement badge features (no new emoji badges, icons, or alternative label systems).",
-    "Do not change other profile fields or behavior beyond removing the flag badge feature.",
-    "Do not redesign unrelated UI areas (chat rooms, messages, friends, settings) beyond removing flag badge rendering."
+    "Implementing WebSocket or real-time theme synchronization across clients.",
+    "Adding third-party theming libraries beyond the existing next-themes/Tailwind setup."
   ],
   "imageRequirements": {
     "required": [],

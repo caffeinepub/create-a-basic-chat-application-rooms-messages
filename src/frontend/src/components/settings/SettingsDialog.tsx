@@ -72,6 +72,7 @@ export default function SettingsDialog({ open, onOpenChange, pollingInterval, on
                 <SelectContent>
                   <SelectItem value="light">Light</SelectItem>
                   <SelectItem value="dark">Dark</SelectItem>
+                  <SelectItem value="black">Black</SelectItem>
                   <SelectItem value="system">System Default</SelectItem>
                 </SelectContent>
               </Select>

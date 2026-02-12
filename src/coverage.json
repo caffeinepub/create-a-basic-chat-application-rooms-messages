@@ -1,76 +1,40 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T03:38:53.194Z",
+  "generatedAt": "2026-02-12T10:41:32.824Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 2,
+    "total": 1,
+    "implemented": 1,
     "items": [
       {
-        "id": "REQ-42",
-        "summary": "Remove the flag-badge field and all flag-badge validation/sanitization logic from the backend user profile model and APIs.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-43",
-        "summary": "Add a conditional state migration to safely upgrade existing deployed state that may contain `UserProfile.profileFlag`, ensuring upgrade does not trap and existing profile data (name, bio, avatar colors, profile picture) is preserved.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-44",
-        "summary": "Remove all flag-badge UI from the profile editor and profile display components, including the flag selector and any inline flag rendering next to names.",
+        "id": "REQ-46",
+        "summary": "Extend the Settings theme selector to include additional theme options, including a \"Black\" theme, and make selecting the new theme apply the correct CSS variable palette across the app.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/profile/ProfileEditorDialog.tsx",
-          "frontend/src/components/profile/ProfileName.tsx"
+          "frontend/src/components/settings/SettingsDialog.tsx",
+          "frontend/src/index.css",
+          "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/profile/ProfileEditorDialog.tsx",
-          "frontend/src/components/profile/ProfileName.tsx"
-        ]
-      },
-      {
-        "id": "REQ-45",
-        "summary": "Remove frontend flag allowlist utilities and flag badge renderer usage so the app has no runtime dependency on flag assets or flag metadata.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/profile/FlagBadge.tsx",
-          "frontend/src/utils/flags.ts",
-          "frontend/src/components/profile/ProfileEditorDialog.tsx",
-          "frontend/src/components/profile/ProfileName.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/profile/FlagBadge.tsx",
-          "frontend/src/utils/flags.ts",
-          "frontend/src/components/profile/ProfileEditorDialog.tsx",
-          "frontend/src/components/profile/ProfileName.tsx"
+          "frontend/src/components/settings/SettingsDialog.tsx",
+          "frontend/src/index.css",
+          "frontend/src/App.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/profile/FlagBadge.tsx",
-    "frontend/src/components/profile/ProfileEditorDialog.tsx",
-    "frontend/src/components/profile/ProfileName.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/utils/flags.ts",
+    "frontend/src/App.tsx",
+    "frontend/src/components/settings/SettingsDialog.tsx",
+    "frontend/src/index.css",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

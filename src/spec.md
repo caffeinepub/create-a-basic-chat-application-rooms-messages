@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Remove the profile flag badge feature from both backend and frontend while preserving existing user profile data during upgrade.
+**Goal:** Add additional theme options in Settings, including a new “Black” theme that correctly applies a black-focused CSS variable palette across the app.
 
 **Planned changes:**
-- Backend: remove the `profileFlag` field from `UserProfile` and delete all flag-related validation/sanitization/allowlist logic from profile APIs.
-- Backend: add an upgrade-safe, conditional state migration so older deployed state containing `profileFlag` can be upgraded without trapping, preserving all non-flag profile fields.
-- Frontend: remove all flag badge UI from profile editing and profile display (including header greeting, message sender names, friends UI, and invites).
-- Frontend: remove flag allowlist utilities and flag badge renderer usage so the app has no runtime dependency on flag assets/metadata.
+- Extend the Settings Theme dropdown to include a new option labeled “Black” and wire it to the existing next-themes mechanism using a stable theme value (e.g., `black`).
+- Add a corresponding `.black` theme class in `frontend/src/index.css` defining a near-true black `--background` and updated related variables (e.g., `--foreground`, `--card`, `--border`, `--muted`) to maintain readability and consistent UI styling.
+- Ensure existing theme options (Light, Dark, System Default) continue working unchanged.
 
-**User-visible outcome:** Users can view and edit profiles normally (name, bio, avatar colors, profile picture), but no flag badge is shown or editable anywhere in the app, and existing deployments upgrade safely without losing profile data.
+**User-visible outcome:** Users can select “Black” in Settings and see the entire UI (header, sidebar, dialogs, message thread, inputs) switch to a readable black theme without breaking contrast.

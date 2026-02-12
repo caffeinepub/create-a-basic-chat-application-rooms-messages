@@ -171,7 +171,7 @@ function AppContent() {
 
 export default function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem themes={['light', 'dark', 'black', 'system']}>
       <AppContent />
     </ThemeProvider>
   );

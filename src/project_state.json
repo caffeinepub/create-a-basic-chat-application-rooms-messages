@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 25,
+  "projectStateVersion": 27,
   "summary": "Build a chat application branded for Tchat.org (replacing freechat.com and any .com references and web domain).",
   "architectural_notes": [
     "Branding/domain should be configurable or centralized (e.g., constants/env) to avoid hardcoded .com references; update to .org."
@@ -281,6 +281,14 @@
         "REQ-45"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-extend-the-settings-theme-selector-to-include-additional-theme-options-including-a-black-theme-and-make-selecting-the-new-theme-apply-the-correct-css-variable-palette-across-the-app",
+      "title": "Extend the Settings theme selector to include additional theme options, including a \"Black\" theme, and make selecting the new theme apply the correct CSS variable palette across the app.",
+      "reqIds": [
+        "REQ-46"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -364,6 +372,12 @@
       "reqIds": [
         "REQ-43"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Add additional theme options in Settings, including a black theme.",
+      "reqIds": [],
       "status": "pending"
     }
   ],
