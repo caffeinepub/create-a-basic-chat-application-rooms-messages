@@ -44,10 +44,10 @@ function AppContent() {
         <div className="mb-8">
           <img 
             src="/assets/generated/chat-logo.dim_512x512.png" 
-            alt="Chat Logo" 
+            alt="Tchat Logo" 
             className="h-32 w-32 mx-auto mb-6"
           />
-          <h1 className="text-4xl font-bold text-foreground mb-2 text-center">Welcome to Chat</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-2 text-center">Welcome to Tchat</h1>
           <p className="text-muted-foreground text-center max-w-md">
             Connect with others in real-time. Sign in to start chatting.
           </p>
@@ -65,10 +65,10 @@ function AppContent() {
           <div className="flex items-center gap-3">
             <img 
               src="/assets/generated/chat-logo.dim_512x512.png" 
-              alt="Chat Logo" 
+              alt="Tchat Logo" 
               className="h-10 w-10"
             />
-            <h1 className="text-2xl font-bold text-foreground">Chat</h1>
+            <h1 className="text-2xl font-bold text-foreground">Tchat</h1>
           </div>
           <div className="flex items-center gap-4">
             {userProfile && (
@@ -124,14 +124,14 @@ function AppContent() {
       {/* Footer */}
       <footer className="border-t border-border bg-card px-6 py-3">
         <p className="text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} · Built with ❤️ using{' '}
+          @ 2026 ai licensed{' '}
           <a
-            href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
+            href="https://tchat.com"
             target="_blank"
             rel="noopener noreferrer"
             className="text-foreground hover:underline font-medium"
           >
-            caffeine.ai
+            tchat.com
           </a>
         </p>
       </footer>

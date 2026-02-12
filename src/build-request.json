@@ -1,113 +1,72 @@
 {
   "kind": "build_request",
-  "title": "Add custom profile picture uploads, friend search/add + invite to rooms, and image messages",
+  "title": "Rebrand freechat.com references to Tchat.com",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-12",
-      "text": "Extend the user profile data model to support a custom profile picture uploaded from the user’s device (gallery/storage), and expose it through the existing profile read/update APIs so it can be displayed anywhere a user avatar is shown.",
-      "target": "both",
+      "id": "REQ-17",
+      "text": "Replace all user-facing branding text in the app UI from “Chat” to “Tchat” where it represents the product/site name (e.g., the unauthenticated welcome headline and the authenticated header title), so the app is branded as Tchat.",
+      "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Add 3 features to my chat app \n\n1 adding custom Profile pictures from gallery"
+          "Replace the freechat.com to Tchat.com ... and replace the Chat app web domain to Tchat.com"
         ]
       },
       "acceptanceCriteria": [
-        "Backend UserProfile/AvatarConfig supports representing either the current color/initials avatar OR an uploaded image avatar.",
-        "Frontend Profile Editor UI allows selecting an image file from device storage and saving it to the user’s profile.",
-        "After saving, the header avatar and message-thread avatars render the uploaded image for that user (with a reasonable fallback if no image is set).",
-        "User-facing error text is shown in English if the image cannot be saved/loaded."
+        "On the unauthenticated screen, the primary headline uses “Tchat” (not “Chat”) when referring to the app name.",
+        "In the authenticated header, the product title uses “Tchat” (not “Chat”).",
+        "No new user-facing text is introduced that mentions freechat.com."
       ]
     },
     {
-      "id": "REQ-13",
-      "text": "Add a friend system that lets an authenticated user search for other users by username, send/accept friend requests (or equivalent), and maintain a persistent friends list tied to the authenticated user.",
-      "target": "both",
+      "id": "REQ-18",
+      "text": "Replace the footer domain text and link target from freechat.com to Tchat.com: update the visible link label to “tchat.com” and the href to https://tchat.com while preserving target=\"_blank\" and rel=\"noopener noreferrer\".",
+      "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "2 adding a serch bar lets you add friends by username"
+          "Replace the freechat.com to Tchat.com ... and replace the Chat app web domain to Tchat.com"
         ]
       },
       "acceptanceCriteria": [
-        "Backend provides APIs to (1) search users by username, (2) send a friend request, (3) accept/decline a request, and (4) list current friends and pending requests for the caller.",
-        "Usernames are treated as unique identifiers for friend search/add flows (backend must enforce uniqueness or otherwise provide deterministic behavior and clear errors).",
-        "Frontend provides a search bar UI to search by username and perform add/accept/decline actions with clear loading/error states in English.",
-        "Friend relationships persist across reloads and are scoped per authenticated user."
+        "The footer shows the exact text “@ 2026 ai licensed tchat.com”, with “tchat.com” as a clickable link.",
+        "The footer link navigates to https://tchat.com in a new tab and includes rel=\"noopener noreferrer\".",
+        "There are no remaining references to https://freechat.com or the label “freechat.com” in frontend/src/App.tsx."
       ]
     },
     {
-      "id": "REQ-14",
-      "text": "Allow a user to add/invite a befriended user into the user’s chatroom(s) after they are friends, and enforce room membership/visibility accordingly.",
-      "target": "both",
+      "id": "REQ-19",
+      "text": "Update any app “web domain” mentions in static page metadata to reflect Tchat.com branding (e.g., the HTML document title if it still uses generic/old branding), ensuring no freechat.com references remain in the frontend static entrypoint.",
+      "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "2 adding a serch bar lets you add friends by username and lets you add them Into your own chatroom after befriended"
+          "replace the Chat app web domain to Tchat.com"
         ]
       },
       "acceptanceCriteria": [
-        "Backend supports inviting/adding a friend to a room and listing room members for a room.",
-        "Frontend exposes an “Add to room” / invite control that only targets users who are already friends.",
-        "Invited/added friends can see the room in their room list and can fetch/post messages to that room.",
-        "Non-members cannot fetch/post messages to member-only rooms (backend enforces authorization).",
-        "Existing behavior for any pre-existing/general rooms is preserved or clearly handled without breaking the current UI (e.g., treat them as public rooms)."
-      ]
-    },
-    {
-      "id": "REQ-15",
-      "text": "Support sending images in chat messages: allow a user to attach an image in the message composer, send it to the backend, store it with the message, and render it inline in the message thread.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "3 adding a feature that lets you send images in Chat"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend message model supports image-bearing messages (e.g., content text plus optional image payload/metadata), and fetchMessages returns enough data for the frontend to render the image.",
-        "Frontend MessageComposer supports selecting an image file, shows an attachment preview, and allows sending with appropriate validation (e.g., cannot send an empty message with no text and no image).",
-        "MessageThread renders image messages inline (with sensible sizing) and continues to render text-only messages unchanged.",
-        "The app shows clear English error messages when an image upload/send fails.",
-        "No WebSockets are introduced; message polling continues to work with the new message format."
+        "frontend/index.html does not contain any references to freechat.com.",
+        "The HTML <title> is updated to reflect Tchat branding (contains “Tchat” and no longer reads as a generic scaffold title)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; add backend/migration.mo changes only if required to preserve existing persisted state (conditional migration policy).",
-    "Do not edit frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, and anything under frontend/src/components/ui (compose instead).",
-    "Do not introduce WebSockets or real-time infrastructure; continue using React Query polling for updates."
+    "Do not modify any files under frontend/src/components/ui (read-only).",
+    "Do not modify any files listed as immutable paths in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Support for sending MP3/audio files in chat (not requested in the final scoped request).",
-    "Third-party authentication providers (only Internet Identity).",
-    "External file storage/CDNs or external databases for storing images."
+    "Implementing any content moderation, “rules/no rules” policy, reporting, blocking, or safety features.",
+    "Changing backend canister logic or data models."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [
-      "Enable users to upload custom profile pictures from device storage.",
-      "Add friend search/add by username and invite friends into private chatrooms.",
-      "Allow sending images in chat messages."
-    ],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

@@ -8,7 +8,7 @@ import Iter "mo:core/Iter";
 import Order "mo:core/Order";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
-import Migration "migration";
+
 
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
@@ -16,7 +16,7 @@ import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
 // Apply prefabricated components
-(with migration = Migration.run)
+
 actor {
   include MixinStorage();
 

@@ -2,14 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-extend-the-user-profile-data-model-to-support-a-custom-profile-picture-uploaded-from-the-user-s-device-gallery-storage-and-expose-it-through-the-existing-profile-read-update-apis-so-it-can-be-displayed-anywhere-a-user-avatar-is-shown",
-      "featureTitle": "Extend the user profile data model to support a custom profile picture uploaded from the user’s device (gallery/storage), and expose it through the existing profile read/update APIs so it can be displayed anywhere a user avatar is shown.",
+      "featureId": "feature-replace-all-user-facing-branding-text-in-the-app-ui-from-chat-to-tchat-where-it-represents-the-product-site-name-e-g-the-unauthenticated-welcome-headline-and-the-authenticated-header-title-so-the-app-is-branded-as-tchat",
+      "featureTitle": "Replace all user-facing branding text in the app UI from “Chat” to “Tchat” where it represents the product/site name (e.g., the unauthenticated welcome headline and the authenticated header title), so the app is branded as Tchat.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/chat/MessageThread.tsx",
-        "frontend/src/components/profile/ProfileEditorDialog.tsx",
-        "frontend/src/components/profile/ProfileSetupDialog.tsx",
-        "frontend/src/components/profile/UserAvatar.tsx"
+        "frontend/src/App.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -21,17 +17,15 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-12"
+        "REQ-17"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-friend-system-that-lets-an-authenticated-user-search-for-other-users-by-username-send-accept-friend-requests-or-equivalent-and-maintain-a-persistent-friends-list-tied-to-the-authenticated-user",
-      "featureTitle": "Add a friend system that lets an authenticated user search for other users by username, send/accept friend requests (or equivalent), and maintain a persistent friends list tied to the authenticated user.",
+      "featureId": "feature-replace-the-footer-domain-text-and-link-target-from-freechat-com-to-tchat-com-update-the-visible-link-label-to-tchat-com-and-the-href-to-https-tchat-com-while-preserving-target-blank-and-rel-noopener-noreferrer",
+      "featureTitle": "Replace the footer domain text and link target from freechat.com to Tchat.com: update the visible link label to “tchat.com” and the href to https://tchat.com while preserving target=\"_blank\" and rel=\"noopener noreferrer\".",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/friends/FriendsDialog.tsx",
-        "frontend/src/hooks/useFriends.ts"
+        "frontend/src/App.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -43,18 +37,15 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-13"
+        "REQ-18"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-allow-a-user-to-add-invite-a-befriended-user-into-the-user-s-chatroom-s-after-they-are-friends-and-enforce-room-membership-visibility-accordingly",
-      "featureTitle": "Allow a user to add/invite a befriended user into the user’s chatroom(s) after they are friends, and enforce room membership/visibility accordingly.",
+      "featureId": "feature-update-any-app-web-domain-mentions-in-static-page-metadata-to-reflect-tchat-com-branding-e-g-the-html-document-title-if-it-still-uses-generic-old-branding-ensuring-no-freechat-com-references-remain-in-the-frontend-static-entrypoint",
+      "featureTitle": "Update any app “web domain” mentions in static page metadata to reflect Tchat.com branding (e.g., the HTML document title if it still uses generic/old branding), ensuring no freechat.com references remain in the frontend static entrypoint.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/chat/InviteToRoomDialog.tsx",
-        "frontend/src/components/chat/MessageThread.tsx",
-        "frontend/src/hooks/useRoomMembers.ts"
+        "frontend/index.html"
       ],
       "components": [
         "authorization@4.0.0",
@@ -66,29 +57,7 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-14"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-support-sending-images-in-chat-messages-allow-a-user-to-attach-an-image-in-the-message-composer-send-it-to-the-backend-store-it-with-the-message-and-render-it-inline-in-the-message-thread",
-      "featureTitle": "Support sending images in chat messages: allow a user to attach an image in the message composer, send it to the backend, store it with the message, and render it inline in the message thread.",
-      "files": [
-        "frontend/src/components/chat/MessageComposer.tsx",
-        "frontend/src/components/chat/MessageThread.tsx",
-        "frontend/src/hooks/useRoomMessages.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-15"
+        "REQ-19"
       ],
       "confidence": "high"
     }

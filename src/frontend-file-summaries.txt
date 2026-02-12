@@ -1,5 +1,5 @@
 {
-  "frontend/src/App.tsx": "Main application component with authentication flow, profile setup, profile editor, settings, friends dialog, and manages polling interval via local state.",
+  "frontend/src/App.tsx": "Main application component with authentication flow, profile setup, profile editor, settings, friends dialog, and manages polling interval via local state; footer now displays \"@ 2026 ai licensed tchat.com\" with tchat.com as a clickable link, and all product branding updated to \"Tchat\".",
   "frontend/src/components/auth/LoginButton.tsx": "Reusable login/logout button component that integrates with Internet Identity and clears React Query cache on logout.",
   "frontend/src/components/profile/ProfileSetupDialog.tsx": "Modal dialog for new users to create their profile with display name, bio, and default avatar configuration on first login (no profile picture upload during initial setup).",
   "frontend/src/components/chat/RoomList.tsx": "Sidebar component displaying all chat rooms with create room form, room selection, and loading/error states.",
@@ -17,5 +17,6 @@
   "frontend/src/components/friends/FriendsDialog.tsx": "Dialog component for managing friends with tabs for viewing friends list and searching users by username with add friend functionality.",
   "frontend/src/components/chat/InviteToRoomDialog.tsx": "Dialog component that allows adding friends to the current chat room with friend selection and invitation functionality.",
   "frontend/src/hooks/useFriends.ts": "React Query hooks for friend operations including searching users by username, listing caller's friends, sending friend requests, and accepting requests.",
-  "frontend/src/hooks/useRoomMembers.ts": "React Query hooks for room membership operations including adding users to rooms with automatic cache invalidation."
+  "frontend/src/hooks/useRoomMembers.ts": "React Query hooks for room membership operations including adding users to rooms with automatic cache invalidation.",
+  "frontend/index.html": "HTML entry point with updated document title reflecting Tchat branding."
 }

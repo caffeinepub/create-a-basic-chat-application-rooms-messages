@@ -1,82 +1,33 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T00:45:42.410Z",
-  "summary": "REQ-12 and REQ-15 appear largely implemented (profilePicture field + upload UI; image attachments in composer + inline rendering). The friend system (REQ-13) and its linkage to room invites/membership enforcement (REQ-14) look incomplete based on the provided diff: search results don’t provide a deterministic identifier for adding friends, and decline/pending-request listing and username uniqueness enforcement are not evidenced. There are also unrequested theming/style changes mentioned in the diff summaries.",
+  "generatedAt": "2026-02-12T01:55:48.020Z",
+  "summary": "Rebranding to “Tchat” appears implemented in the unauthenticated headline and authenticated header, and index.html title updated. Footer/link changes and absence of freechat.com references in App.tsx are claimed in a summary file but not directly evidenced in the truncated App.tsx diff, so those acceptance criteria cannot be fully verified from the provided diff excerpt.",
   "missing_requirements": [
     {
-      "id": "REQ-13",
-      "requirement": "User search/add flow must deterministically identify a user by unique username (backend enforces uniqueness or provides deterministic behavior), and frontend must be able to send friend requests from search results.",
-      "reason": "Backend search returns only [UserProfile] (no Principal/user id), and the frontend explicitly notes it cannot add because it cannot map profile -> principal. Also, the search is by profile.name substring, not a unique username with enforced uniqueness.",
+      "id": "REQ-18",
+      "requirement": "Update the footer domain text and link target from freechat.com to tchat.com, preserving target=\"_blank\" and rel=\"noopener noreferrer\", and ensure no remaining references to https://freechat.com or label “freechat.com” in frontend/src/App.tsx.",
+      "reason": "The App.tsx diff is truncated before the footer section; the footer text/link and attributes are not directly visible in the provided App.tsx excerpt, so the exact required footer text/link behavior and absence of freechat.com references in App.tsx cannot be confirmed from the diff content shown.",
       "evidence": [
-        "backend/main.mo (searchUsersByName returns [UserProfile] and filters by profile.name.contains)",
-        "frontend/src/components/friends/FriendsDialog.tsx (handleAddFriend shows toast error: cannot add because principal is not available)",
-        "frontend/src/hooks/useFriends.ts (useSearchUsers returns UserProfile[]; useSendFriendRequest expects a User/Principal)"
-      ]
-    },
-    {
-      "id": "REQ-13",
-      "requirement": "Backend provides APIs to accept/decline requests and list current friends and pending requests for the caller; frontend provides accept/decline actions with clear states.",
-      "reason": "Only getCallerFriends(), sendFriendRequest(), and acceptFriendRequest() are evidenced in hooks; no decline API or pending-requests listing API is shown in the diff summary, and the FriendsDialog truncation does not evidence pending-request UI.",
-      "evidence": [
-        "frontend/src/hooks/useFriends.ts (no decline; no list pending requests)",
-        "frontend/src/components/friends/FriendsDialog.tsx (imports useAcceptFriendRequest but no evidenced pending list/decline flow in shown content)"
-      ]
-    },
-    {
-      "id": "REQ-14",
-      "requirement": "Backend must list room members and enforce room membership/visibility (non-members cannot fetch/post to member-only rooms); invited friends can see the room in their room list.",
-      "reason": "An addUserToRoom() mutation is wired on the frontend, and migration introduces roomMembers, but the diff summary does not show backend authorization checks on fetchMessages/postMessage/room listing, nor any getRoomMembers/list-members API implementation.",
-      "evidence": [
-        "frontend/src/hooks/useRoomMembers.ts (calls actor.addUserToRoom)",
-        "backend/migration.mo (introduces roomMembers but no enforcement logic shown)",
-        "backend/main.mo (truncated; membership enforcement/list-members not evidenced)"
-      ]
-    },
-    {
-      "id": "REQ-12",
-      "requirement": "User-facing error text is shown in English if the image cannot be saved/loaded (profile picture).",
-      "reason": "There is an image-load fallback in UserAvatar, but it hides the <img> without showing an English error message; only console.error is evidenced.",
-      "evidence": [
-        "frontend/src/components/profile/UserAvatar.tsx (onError hides image; no user-visible error text)"
+        "frontend/src/App.tsx (truncated)",
+        "frontend-file-summaries.txt (claims footer update but does not show code/attributes)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Theme/palette redesign and warm terracotta/amber color system updates (index.css and tailwind config) unrelated to the requested features.",
-      "reason": "BuildRequest focuses on profile pictures, friends/invites, and image messages; it does not request a global visual theme overhaul in this change.",
+      "description": "Updated project_state.json summary text to mention branding/replacing freechat.com references.",
+      "reason": "Not part of the requested frontend rebranding requirements (REQ-17/18/19) and not necessary to satisfy them.",
       "evidence": [
-        "frontend-file-summaries.txt (mentions changes to frontend/src/index.css and frontend/tailwind.config.js for warm palette)"
-      ]
-    },
-    {
-      "description": "Settings dialog additions for local message polling interval and theme selection behavior changes.",
-      "reason": "REQ-12–REQ-15 do not request adding/modifying settings UI/behavior; this appears to be additional scope beyond the stated requirements.",
-      "evidence": [
-        "frontend/src/components/settings/SettingsDialog.tsx",
-        "frontend/src/App.tsx (manages pollingInterval via local state and passes into dialogs/thread)"
+        "project_state.json (truncated)"
       ]
     }
   ],
-  "confidence": 0.72,
+  "confidence": 0.62,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
+    "frontend/index.html",
     "frontend/src/App.tsx",
-    "frontend/src/components/chat/InviteToRoomDialog.tsx",
-    "frontend/src/components/chat/MessageComposer.tsx",
-    "frontend/src/components/chat/MessageThread.tsx",
-    "frontend/src/components/friends/FriendsDialog.tsx",
-    "frontend/src/components/profile/ProfileEditorDialog.tsx",
-    "frontend/src/components/profile/ProfileSetupDialog.tsx",
-    "frontend/src/components/profile/UserAvatar.tsx",
-    "frontend/src/components/settings/SettingsDialog.tsx",
-    "frontend/src/hooks/useFriends.ts",
-    "frontend/src/hooks/useRoomMembers.ts",
-    "frontend/src/hooks/useRoomMessages.ts",
-    "frontend/src/hooks/useUserPreferences.ts",
     "project_state.json"
   ]
 }

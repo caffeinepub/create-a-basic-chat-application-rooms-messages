@@ -1,8 +1,10 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 7,
-  "summary": "Build a chat application.",
-  "architectural_notes": [],
+  "projectStateVersion": 11,
+  "summary": "Build a chat application branded for Tchat.com (replacing freechat.com references and web domain).",
+  "architectural_notes": [
+    "Branding/domain should be configurable or centralized (e.g., constants/env) to avoid hardcoded freechat.com references; update to Tchat.com."
+  ],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
@@ -109,6 +111,38 @@
         "REQ-15"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-app-footer-in-frontend-src-app-tsx-to-replace-the-current-year-built-with-using-caffeine-ai-text-link-with-the-exact-text-2026-ai-licensed-freechat-com-and-make-freechat-com-a-clickable-link-to-https-freechat-com-open-in-a-new-tab-with-rel-noopener-noreferrer",
+      "title": "Update the app footer in frontend/src/App.tsx to replace the current “© {year} · Built with ❤️ using caffeine.ai” text/link with the exact text “@ 2026 ai licensed freechat.com”, and make “freechat.com” a clickable link to https://freechat.com (open in a new tab with rel=\"noopener noreferrer\").",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-all-user-facing-branding-text-in-the-app-ui-from-chat-to-tchat-where-it-represents-the-product-site-name-e-g-the-unauthenticated-welcome-headline-and-the-authenticated-header-title-so-the-app-is-branded-as-tchat",
+      "title": "Replace all user-facing branding text in the app UI from “Chat” to “Tchat” where it represents the product/site name (e.g., the unauthenticated welcome headline and the authenticated header title), so the app is branded as Tchat.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-footer-domain-text-and-link-target-from-freechat-com-to-tchat-com-update-the-visible-link-label-to-tchat-com-and-the-href-to-https-tchat-com-while-preserving-target-blank-and-rel-noopener-noreferrer",
+      "title": "Replace the footer domain text and link target from freechat.com to Tchat.com: update the visible link label to “tchat.com” and the href to https://tchat.com while preserving target=\"_blank\" and rel=\"noopener noreferrer\".",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-any-app-web-domain-mentions-in-static-page-metadata-to-reflect-tchat-com-branding-e-g-the-html-document-title-if-it-still-uses-generic-old-branding-ensuring-no-freechat-com-references-remain-in-the-frontend-static-entrypoint",
+      "title": "Update any app “web domain” mentions in static page metadata to reflect Tchat.com branding (e.g., the HTML document title if it still uses generic/old branding), ensuring no freechat.com references remain in the frontend static entrypoint.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -161,6 +195,12 @@
     {
       "id": "AR-9",
       "summary": "Support sending images in chat messages (upload/attach image and render it in the message thread).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Replace all freechat.com branding/domain references with Tchat.com across the chat app (e.g., footer text/link and any other web domain mentions).",
       "reqIds": [],
       "status": "pending"
     }

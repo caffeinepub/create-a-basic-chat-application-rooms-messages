@@ -1,119 +1,57 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T00:45:42.413Z",
+  "generatedAt": "2026-02-12T01:55:48.022Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 4,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-12",
-        "summary": "Extend the user profile data model to support a custom profile picture uploaded from the user’s device (gallery/storage), and expose it through the existing profile read/update APIs so it can be displayed anywhere a user avatar is shown.",
+        "id": "REQ-17",
+        "summary": "Replace all user-facing branding text in the app UI from “Chat” to “Tchat” where it represents the product/site name (e.g., the unauthenticated welcome headline and the authenticated header title), so the app is branded as Tchat.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/backend.d.ts",
-          "frontend/src/components/profile/ProfileEditorDialog.tsx",
-          "frontend/src/components/profile/ProfileSetupDialog.tsx",
-          "frontend/src/components/profile/UserAvatar.tsx",
-          "frontend/src/components/chat/MessageThread.tsx",
           "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/backend.d.ts",
-          "frontend/src/components/profile/ProfileEditorDialog.tsx",
-          "frontend/src/components/profile/ProfileSetupDialog.tsx",
-          "frontend/src/components/profile/UserAvatar.tsx",
-          "frontend/src/components/chat/MessageThread.tsx",
           "frontend/src/App.tsx"
         ]
       },
       {
-        "id": "REQ-13",
-        "summary": "Add a friend system that lets an authenticated user search for other users by username, send/accept friend requests (or equivalent), and maintain a persistent friends list tied to the authenticated user.",
+        "id": "REQ-18",
+        "summary": "Replace the footer domain text and link target from freechat.com to Tchat.com: update the visible link label to “tchat.com” and the href to https://tchat.com while preserving target=\"_blank\" and rel=\"noopener noreferrer\".",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/backend.d.ts",
-          "frontend/src/hooks/useFriends.ts",
-          "frontend/src/components/friends/FriendsDialog.tsx",
           "frontend/src/App.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/backend.d.ts",
-          "frontend/src/hooks/useFriends.ts",
-          "frontend/src/components/friends/FriendsDialog.tsx",
           "frontend/src/App.tsx"
         ]
       },
       {
-        "id": "REQ-14",
-        "summary": "Allow a user to add/invite a befriended user into the user’s chatroom(s) after they are friends, and enforce room membership/visibility accordingly.",
+        "id": "REQ-19",
+        "summary": "Update any app “web domain” mentions in static page metadata to reflect Tchat.com branding (e.g., the HTML document title if it still uses generic/old branding), ensuring no freechat.com references remain in the frontend static entrypoint.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/backend.d.ts",
-          "frontend/src/hooks/useRoomMembers.ts",
-          "frontend/src/components/chat/InviteToRoomDialog.tsx",
-          "frontend/src/components/chat/RoomList.tsx",
-          "frontend/src/components/chat/MessageThread.tsx",
-          "frontend/src/App.tsx"
+          "frontend/index.html"
         ],
         "matchedFiles": [
-          "frontend/src/backend.d.ts",
-          "frontend/src/hooks/useRoomMembers.ts",
-          "frontend/src/components/chat/InviteToRoomDialog.tsx",
-          "frontend/src/components/chat/MessageThread.tsx",
-          "frontend/src/App.tsx"
-        ]
-      },
-      {
-        "id": "REQ-15",
-        "summary": "Support sending images in chat messages: allow a user to attach an image in the message composer, send it to the backend, store it with the message, and render it inline in the message thread.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/backend.d.ts",
-          "frontend/src/hooks/useRoomMessages.ts",
-          "frontend/src/components/chat/MessageComposer.tsx",
-          "frontend/src/components/chat/MessageThread.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/backend.d.ts",
-          "frontend/src/hooks/useRoomMessages.ts",
-          "frontend/src/components/chat/MessageComposer.tsx",
-          "frontend/src/components/chat/MessageThread.tsx"
+          "frontend/index.html"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/blob-storage/Mixin.mo",
-    "backend/blob-storage/Storage.mo",
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
-    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/index.html",
     "frontend/src/App.tsx",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/chat/InviteToRoomDialog.tsx",
-    "frontend/src/components/chat/MessageComposer.tsx",
-    "frontend/src/components/chat/MessageThread.tsx",
-    "frontend/src/components/friends/FriendsDialog.tsx",
-    "frontend/src/components/profile/ProfileEditorDialog.tsx",
-    "frontend/src/components/profile/ProfileSetupDialog.tsx",
-    "frontend/src/components/profile/UserAvatar.tsx",
-    "frontend/src/components/settings/SettingsDialog.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useFriends.ts",
-    "frontend/src/hooks/useRoomMembers.ts",
-    "frontend/src/hooks/useRoomMessages.ts",
-    "frontend/src/hooks/useUserPreferences.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

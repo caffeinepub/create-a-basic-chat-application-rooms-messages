@@ -1,155 +1,52 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Custom avatars, friends + room invites, and image messages (frontend-only)",
+  "title": "Rebrand UI text and domain references to Tchat.com",
   "requirements": [
     {
-      "id": "REQ-12",
-      "summary": "Allow users to pick/upload a profile picture and render it anywhere avatars are shown, with English error handling.",
+      "id": "REQ-17",
+      "summary": "Rebrand user-facing product name text from “Chat” to “Tchat” in unauthenticated and authenticated UI.",
       "acceptanceCriteria": [
-        "Backend UserProfile/AvatarConfig supports representing either the current color/initials avatar OR an uploaded image avatar.",
-        "Frontend Profile Editor UI allows selecting an image file from device storage and saving it to the user’s profile.",
-        "After saving, the header avatar and message-thread avatars render the uploaded image for that user (with a reasonable fallback if no image is set).",
-        "User-facing error text is shown in English if the image cannot be saved/loaded."
+        "On the unauthenticated screen, the primary headline uses “Tchat” (not “Chat”) when referring to the app name.",
+        "In the authenticated header, the product title uses “Tchat” (not “Chat”).",
+        "No new user-facing text is introduced that mentions freechat.com."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/backend.d.ts",
-          "operation": "modify",
-          "description": "Align frontend typings with avatar image support: ensure UserProfile includes optional profilePicture: ExternalBlob and any related fields used by the UI (and keep existing fields consistent with the backend)."
-        },
-        {
-          "path": "frontend/src/components/profile/ProfileEditorDialog.tsx",
-          "operation": "modify",
-          "description": "Add a profile picture file picker + preview and save it as an ExternalBlob on the user profile. Use the blob-storage ExternalBlob helpers (fromBytes, withUploadProgress, getDirectURL for preview) to support uploading and displaying the image. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/profile/ProfileSetupDialog.tsx",
-          "operation": "modify",
-          "description": "Ensure initial profile creation sets a valid default (no profilePicture) and keeps avatar fallback fields consistent with updated UserProfile typing (no upload required during setup)."
-        },
-        {
-          "path": "frontend/src/components/profile/UserAvatar.tsx",
-          "operation": "modify",
-          "description": "Render profilePicture when present (using ExternalBlob.getDirectURL), otherwise fall back to the existing color/initials avatar. Use the blob-storage ExternalBlob capability for URL rendering. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/chat/MessageThread.tsx",
-          "operation": "modify",
-          "description": "Ensure message bubbles and any other avatar usages render UserAvatar that now supports image avatars; keep a safe fallback when the sender profile is missing."
-        },
-        {
           "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Ensure the header avatar uses the updated UserAvatar behavior (image when available) and display a reasonable fallback if the profile picture cannot be loaded (English error/toast where applicable)."
+          "description": "Update product/site branding strings to “Tchat” where they represent the app name (unauthenticated welcome headline and authenticated header title). Also update any related user-facing accessibility text (e.g., logo alt text) to reflect Tchat branding, without introducing any freechat.com mentions."
         }
       ]
     },
     {
-      "id": "REQ-13",
-      "summary": "Add a friends UI to search by unique username, send/accept/decline requests, and view persistent friends/pending lists with clear loading/error states.",
+      "id": "REQ-18",
+      "summary": "Update footer domain label and link target from freechat.com to tchat.com while preserving security attributes.",
       "acceptanceCriteria": [
-        "Backend provides APIs to (1) search users by username, (2) send a friend request, (3) accept/decline a request, and (4) list current friends and pending requests for the caller.",
-        "Usernames are treated as unique identifiers for friend search/add flows (backend must enforce uniqueness or otherwise provide deterministic behavior and clear errors).",
-        "Frontend provides a search bar UI to search by username and perform add/accept/decline actions with clear loading/error states in English.",
-        "Friend relationships persist across reloads and are scoped per authenticated user."
+        "The footer shows the exact text “@ 2026 ai licensed tchat.com”, with “tchat.com” as a clickable link.",
+        "The footer link navigates to https://tchat.com in a new tab and includes rel=\"noopener noreferrer\".",
+        "There are no remaining references to https://freechat.com or the label “freechat.com” in frontend/src/App.tsx."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/backend.d.ts",
-          "operation": "modify",
-          "description": "Update/extend frontend typings to cover friend flows: include types needed for pending requests and search results that identify the target user deterministically (e.g., include a Principal/user id alongside username/display name)."
-        },
-        {
-          "path": "frontend/src/hooks/useFriends.ts",
-          "operation": "create",
-          "description": "Create React Query hooks for friend search, listing friends/pending requests, and send/accept/decline actions using the authenticated actor. Ensure errors are surfaced for English UI messaging. (Auth behavior follows the authorization component guidance already used by the app.) Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/friends/FriendsDialog.tsx",
-          "operation": "create",
-          "description": "Add a dialog UI containing: (1) username search bar + results with Add button, (2) pending requests list with Accept/Decline, and (3) current friends list. Include clear loading/empty/error states in English using existing shadcn/ui primitives (compose; do not edit ui components). Verify the component's usage instructions before implementing."
-        },
-        {
           "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Wire the FriendsDialog into the authenticated app UI (e.g., add an item in the existing header dropdown/menu). Ensure it is only reachable when authenticated per the app’s existing authorization-based gating. Verify the component's usage instructions before implementing."
+          "description": "Replace the footer link label and href from freechat.com to tchat.com (label exactly “tchat.com”; href exactly https://tchat.com) while preserving target=\"_blank\" and rel=\"noopener noreferrer\". Ensure the full footer text reads exactly “@ 2026 ai licensed tchat.com” and remove any remaining freechat.com references from this file."
         }
       ]
     },
     {
-      "id": "REQ-14",
-      "summary": "Allow inviting/adding a friend to a room from the UI, limited to friends, and ensure invited users see and can use the room.",
+      "id": "REQ-19",
+      "summary": "Update static HTML metadata to reflect Tchat.com branding and remove any freechat.com references.",
       "acceptanceCriteria": [
-        "Backend supports inviting/adding a friend to a room and listing room members for a room.",
-        "Frontend exposes an “Add to room” / invite control that only targets users who are already friends.",
-        "Invited/added friends can see the room in their room list and can fetch/post messages to that room.",
-        "Non-members cannot fetch/post messages to member-only rooms (backend enforces authorization).",
-        "Existing behavior for any pre-existing/general rooms is preserved or clearly handled without breaking the current UI (e.g., treat them as public rooms)."
+        "frontend/index.html does not contain any references to freechat.com.",
+        "The HTML <title> is updated to reflect Tchat branding (contains “Tchat” and no longer reads as a generic scaffold title)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/backend.d.ts",
+          "path": "frontend/index.html",
           "operation": "modify",
-          "description": "Extend typings to include the room-members listing capability and any invite/add-to-room capability return/error shapes required by the UI."
-        },
-        {
-          "path": "frontend/src/hooks/useRoomMembers.ts",
-          "operation": "create",
-          "description": "Create React Query hooks to (1) fetch room members (when supported by the backend) and (2) invite/add a friend to a room. Ensure mutations invalidate room list/members queries so invited users can see rooms after reload/polling."
-        },
-        {
-          "path": "frontend/src/components/chat/InviteToRoomDialog.tsx",
-          "operation": "create",
-          "description": "Create a dialog that lists the caller’s friends (from REQ-13 hooks) and provides an 'Add to room' action for the currently selected room only. Disable/guard actions when no room is selected; show English loading/error states. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/chat/RoomList.tsx",
-          "operation": "modify",
-          "description": "Optionally surface room member count or a lightweight affordance to open the invite dialog from the room sidebar (without introducing new top-level routes). Keep existing create/select behavior unchanged."
-        },
-        {
-          "path": "frontend/src/components/chat/MessageThread.tsx",
-          "operation": "modify",
-          "description": "Add an 'Invite/Add to room' control in the room conversation view for the selected room and wire it to open InviteToRoomDialog; ensure only friends are selectable targets via the friends list from REQ-13."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "If needed for clean wiring/state, lift selectedRoomId handling to pass into InviteToRoomDialog (or host dialog state near MessageThread) so the invite UI always targets the currently selected room."
-        }
-      ]
-    },
-    {
-      "id": "REQ-15",
-      "summary": "Support attaching and sending image messages, store/render them inline, and keep polling-based updates with English error handling.",
-      "acceptanceCriteria": [
-        "Backend message model supports image-bearing messages (e.g., content text plus optional image payload/metadata), and fetchMessages returns enough data for the frontend to render the image.",
-        "Frontend MessageComposer supports selecting an image file, shows an attachment preview, and allows sending with appropriate validation (e.g., cannot send an empty message with no text and no image).",
-        "MessageThread renders image messages inline (with sensible sizing) and continues to render text-only messages unchanged.",
-        "The app shows clear English error messages when an image upload/send fails.",
-        "No WebSockets are introduced; message polling continues to work with the new message format."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/backend.d.ts",
-          "operation": "modify",
-          "description": "Ensure frontend message typings support optional image payloads (ExternalBlob) on both NewChatMessage and ChatMessage, matching backend behavior."
-        },
-        {
-          "path": "frontend/src/hooks/useRoomMessages.ts",
-          "operation": "modify",
-          "description": "Update post-message mutation to send NewChatMessage (content + optional image + roomId) and keep invalidation/polling behavior unchanged (React Query polling, no real-time infra)."
-        },
-        {
-          "path": "frontend/src/components/chat/MessageComposer.tsx",
-          "operation": "modify",
-          "description": "Add image attachment UI: file picker, preview (using ExternalBlob.getDirectURL), remove attachment, and validation to allow text-only, image-only, or both (but not empty). Use blob-storage ExternalBlob (fromBytes/withUploadProgress) to upload and show progress if feasible. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/chat/MessageThread.tsx",
-          "operation": "modify",
-          "description": "Render image-bearing messages inline using the ExternalBlob direct URL with sensible sizing/constraints, while preserving existing rendering for text-only messages. Include clear English error fallback if the image URL cannot be rendered. Use blob-storage ExternalBlob.getDirectURL for display. Verify the component's usage instructions before implementing."
+          "description": "Update the document <title> to a Tchat-branded title (must include “Tchat” and remove the generic scaffold wording). Verify no freechat.com references exist in this static entrypoint."
         }
       ]
     }
