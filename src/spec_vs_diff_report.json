@@ -1,78 +1,50 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T16:28:17.387Z",
-  "summary": "Frontend adds admin-status hooks, Settings/Admin UI scaffolding, and chat-thread search UI changes, but the diff does not show the required backend admin-claim/query implementation or admin authorization bypasses. The admin-claim button path appears not to call a backend claim method. Several additional unrelated UX/features appear to have been added (e.g., GIF/media support, theme redesign, rename dialogs), which were not requested and some conflict with stated non-goals.",
+  "generatedAt": "2026-02-12T16:38:54.461Z",
+  "summary": "Diff adds a new curated Unicode flag list utility and wires EmojiPicker to import flag-filter helpers, but the provided truncated snippets do not show the EmojiPicker UI actually adding a visible “Flags” category or the full enforcement logic that prevents inserting disallowed symbols via the Flags category. Diff also includes unrelated project metadata/summaries not requested.",
   "missing_requirements": [
     {
-      "id": "REQ-111",
-      "requirement": "Backend admin capability: first authenticated user can claim superuser/admin; expose a query to check admin; update authorization checks so admins bypass normal ownership/member-only restrictions; return clear English errors (including for failed claim when admin already exists).",
-      "reason": "backend/main.mo diff snippet shows many authorization checks using AccessControl.hasPermission(#user) and Runtime.trap, but does not show any new admin state, a claim-admin update method, an is-admin query, or any admin-bypass logic in authorization checks. The added backend/migration.mo is a dummy that does not introduce stable admin state.",
+      "id": "REQ-114",
+      "requirement": "Emoji picker UI includes a visible dedicated “Flags” category header alongside existing categories.",
+      "reason": "In the truncated EmojiPicker.tsx snippet, EMOJI_CATEGORIES shows categories like “Smileys”, “Gestures”, etc., but no visible “Flags” category/header is shown, and the UI rendering portion that would show the header is not included in the diff summary.",
       "evidence": [
-        "backend/main.mo",
-        "backend/migration.mo"
+        "frontend/src/components/chat/EmojiPicker.tsx"
       ]
     },
     {
-      "id": "REQ-112",
-      "requirement": "Settings UI 'Claim admin access' must call the backend claim endpoint and show English success/error toasts.",
-      "reason": "The new useClaimAdmin hook does not call any backend 'claim admin' method; it only calls actor.isCallerAdmin() and even comments that 'backend automatically initializes the first admin in useActor.ts' (not shown/modified in the diff). This does not satisfy the requirement of a user-initiated claim call with proper success/failure behavior.",
+      "id": "REQ-114",
+      "requirement": "Selecting a flag emoji inserts it into the message composer at the current cursor position everywhere EmojiPicker is used (room chat and server chat composers).",
+      "reason": "The diff summary does not show how selection/insertion is handled (e.g., cursor-position insertion logic). EmojiPicker only shows the onSelect callback signature, but not how it is used for the new Flags category nor confirmation it works across all composer contexts.",
       "evidence": [
-        "frontend/src/hooks/useAdmin.ts",
-        "frontend/src/components/settings/SettingsDialog.tsx"
+        "frontend/src/components/chat/EmojiPicker.tsx"
+      ]
+    },
+    {
+      "id": "REQ-115",
+      "requirement": "Enforce a safety filter so the Flags category cannot be used to insert disallowed extremist/terrorist/violent/hate-symbol flags or equivalents.",
+      "reason": "EmojiPicker imports getAllowedFlags/isAllowedFlag, but the diff summary does not include the implementations of these functions (the new file is truncated and only clearly shows a large allowlist array). Without the helper implementations and the picker rendering code, it is not verifiable that disallowed symbols cannot be inserted via the Flags category.",
+      "evidence": [
+        "frontend/src/utils/emojiFlags.ts",
+        "frontend/src/components/chat/EmojiPicker.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added/mentioned GIF and rich media attachment support (image/GIF/video) in the message composer.",
-      "reason": "Not requested; also conflicts with non-goals prohibiting third-party GIF/search or external integrations (the summary explicitly calls out GIF support).",
+      "description": "Added/updated project metadata and frontend file summary documentation unrelated to adding a Flags category to the emoji picker.",
+      "reason": "The BuildRequest only asks for emoji picker flag support and a safety filter; it does not request updating project_state.json or adding/updating repository-wide file summaries.",
       "evidence": [
-        "frontend-file-summaries.txt (frontend/src/components/chat/MessageComposer.tsx)"
-      ]
-    },
-    {
-      "description": "Large visual/theme redesign with new global color tokens and Tailwind config changes.",
-      "reason": "Not requested in REQ-111..REQ-113 (scope was admin access UI + message search).",
-      "evidence": [
-        "frontend-file-summaries.txt (frontend/src/index.css)",
-        "frontend-file-summaries.txt (frontend/tailwind.config.js)"
-      ]
-    },
-    {
-      "description": "Chat room rename dialogs and related UI work (not part of admin access or message search).",
-      "reason": "Not requested; file summary indicates rename dialogs with backend support pending.",
-      "evidence": [
-        "frontend-file-summaries.txt (frontend/src/components/chat/RoomList.tsx)"
-      ]
-    },
-    {
-      "description": "Alternate account switching/linking UX with switch-intent logic and additional toasts.",
-      "reason": "Not requested by REQ-111..REQ-113.",
-      "evidence": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/settings/SettingsDialog.tsx"
-      ]
-    },
-    {
-      "description": "Added backend stable-state upgrade hook and migration file despite no shown stable-state changes.",
-      "reason": "BuildRequest constraint says to add backend/migration.mo only if a stable-state upgrade is required; the added migration is a dummy no-op and the diff does not show stable state changes necessitating it.",
-      "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo"
+        "frontend-file-summaries.txt",
+        "project_state.json"
       ]
     }
   ],
-  "confidence": 0.68,
+  "confidence": 0.55,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
-    "frontend/src/components/chat/MessageThread.tsx",
-    "frontend/src/components/servers/ServerAnnouncementThread.tsx",
-    "frontend/src/components/settings/SettingsDialog.tsx",
-    "frontend/src/hooks/useAdmin.ts",
+    "frontend/src/components/chat/EmojiPicker.tsx",
+    "frontend/src/utils/emojiFlags.ts",
     "project_state.json"
   ]
 }

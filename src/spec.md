@@ -1,14 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Add an application-level superuser/admin capability for the requesting account and introduce basic chat message search to improve usability.
+**Goal:** Add a safe, Unicode-only Flags category to the existing emoji picker so users can insert supported flag emojis into chat messages.
 
 **Planned changes:**
-- Backend: Add a “claim first admin” mechanism for the first authenticated user, plus an admin-status query endpoint.
-- Backend: Update authorization checks so admins can bypass applicable ownership/member-only restrictions while preserving existing behavior for non-admin users.
-- Backend: Ensure all new/updated authorization and claim-admin errors surfaced to the UI are clear English messages.
-- Frontend: Add an “Admin access” section in Settings showing current admin status and a “Claim admin access” action with English success/error toasts.
-- Frontend: Show a subtle “Admin” indicator in the authenticated header when the signed-in user is an admin.
-- Frontend: Add a client-side “Search messages…” input to room chat and server announcements views to filter currently loaded messages, with an English empty-state when no matches are found.
+- Add a dedicated "Flags" category/header to `frontend/src/components/chat/EmojiPicker.tsx` alongside existing emoji categories.
+- Populate the Flags category with standard Unicode flag emoji characters, including non-recognized/partially-recognized territories only when a standard Unicode flag emoji exists.
+- Ensure selecting a flag inserts the emoji into the message composer at the current cursor position anywhere the EmojiPicker is used (e.g., room chat and server chat composers).
+- Curate/filter the Flags list to exclude extremist/terrorist/violent/hate-symbol flags and prevent insertion of disallowed symbols via the Flags category.
 
-**User-visible outcome:** A signed-in user can view and (if no admin exists yet) claim admin access from Settings, see an “Admin” indicator when applicable, and search within the currently loaded messages in both room chat and server announcement threads.
+**User-visible outcome:** Users can open the emoji picker, switch to a new Flags category, and insert supported (and safety-filtered) Unicode flag emojis into their messages.

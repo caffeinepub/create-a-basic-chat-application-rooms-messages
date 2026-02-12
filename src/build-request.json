@@ -1,90 +1,57 @@
 {
   "kind": "build_request",
-  "title": "Add superuser (admin) access for the requesting account and a small set of basic usability features",
+  "title": "Add flag emojis (including non-recognized/partially-recognized territories where Unicode supports them) to the emoji picker",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-111",
-      "text": "Implement an application-level superuser/admin capability in the backend so the requesting user can obtain full permissions and access across the chat app.\n\n- Add a backend mechanism to let the first authenticated user to claim it become the app superuser (admin), and expose a query to check whether the caller is currently an admin.\n- Update backend authorization checks so admins can perform privileged operations across the app (i.e., admins are not blocked by normal ownership/member-only restrictions where applicable), while non-admin behavior remains unchanged.\n- All backend error messages surfaced to the UI must be in English (no traps with unclear text).",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "give my account all of the permissions and all the access to my chat app"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend exposes a clear way for the caller to claim admin status if no admin exists yet, and a way to query whether the caller is an admin.",
-        "After claiming admin, the same principal can successfully perform actions that are normally restricted by ownership or role checks (as implemented in this codebase), without breaking existing permissions for non-admin users.",
-        "If a non-admin attempts to claim admin after an admin already exists, the backend returns a clear English error.",
-        "All new/updated authorization failures return clear English errors (avoid cryptic traps)."
-      ]
-    },
-    {
-      "id": "REQ-112",
-      "text": "Add a frontend UI in Settings to let the signed-in user view and obtain admin access, and clearly communicate the current admin status.\n\n- Add an “Admin access” section to the existing Settings dialog.\n- Show the current status (e.g., “You are an admin” / “You are not an admin”).\n- Provide a button to claim admin access (only succeeds if no admin exists yet), with English success/error toasts.\n- If the user is an admin, show a subtle “Admin” indicator in the authenticated header area (English label).",
+      "id": "REQ-114",
+      "text": "Add a dedicated \"Flags\" category to the existing emoji picker (frontend/src/components/chat/EmojiPicker.tsx) so users can insert flag emojis into messages, including flags for non-recognized/partially-recognized territories when they are available as standard Unicode emoji.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "recent-messages-1"
         ],
         "quotes": [
-          "give my account all of the permissions and all the access to my chat app"
+          "add flag emojis too including the flags of non recognized states"
         ]
       },
       "acceptanceCriteria": [
-        "Settings dialog displays an “Admin access” section with current admin status for the signed-in principal.",
-        "Clicking “Claim admin access” triggers the backend claim call and shows an English toast on success or a clear English error toast on failure.",
-        "When the caller is an admin, the app header displays an “Admin” indicator; when not an admin, it does not.",
-        "No changes are made to immutable frontend paths listed in SYSTEM_CONTEXT."
+        "The emoji picker UI includes a visible \"Flags\" category header alongside existing categories.",
+        "Selecting a flag emoji inserts it into the message composer text input at the current cursor position (works anywhere EmojiPicker is used, including room chat and server chat composers).",
+        "The flags provided are standard Unicode emoji characters (no backend calls, no third-party APIs, no image assets required).",
+        "If a requested/non-recognized entity has no standard Unicode flag emoji, it is not included (do not fabricate custom flag emojis)."
       ]
     },
     {
-      "id": "REQ-113",
-      "text": "Add a basic “Search in chat” feature for both room chat and server chat views.\n\n- Provide a search input that filters the currently loaded messages in the active thread (room messages and server announcements) by text content.\n- The filtering must be client-side (no new backend indexing requirement).\n- Use English placeholder/labels (e.g., “Search messages…”), and show an English empty-state when no matches are found.",
+      "id": "REQ-115",
+      "text": "Enforce a safety filter for the new flag-emoji list used by the emoji picker: do not include any extremist/terrorist/violent/hate-symbol flags or equivalents, and ensure the picker cannot be used to insert disallowed symbols via the Flags category.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "recent-messages-1"
         ],
         "quotes": [
-          "aswell as adding other basic features to the app"
+          "add flag emojis too including the flags of non recognized states"
         ]
       },
       "acceptanceCriteria": [
-        "In a room chat thread, entering a search term filters the displayed messages to those whose text content matches (case-insensitive match is acceptable).",
-        "In a server chat thread, entering a search term filters the displayed announcements similarly.",
-        "When a search yields no results, the UI shows a clear English message indicating no matches.",
-        "Clearing the search term restores the full currently loaded message list."
+        "The Flags category list is curated/filtered so it does not include extremist/terrorist/violent/hate-symbol flags.",
+        "No user-facing text is added that promotes or endorses extremist/terrorist/violent/hate symbols; any added labels remain in English."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor (all logic in backend/main.mo); add backend/migration.mo only if a stable-state upgrade is required.",
-    "Do not edit frontend files under frontend/src/components/ui or any paths listed in frontend.immutablePaths in SYSTEM_CONTEXT.",
-    "Do not add WebSockets or real-time technologies beyond the existing polling approach.",
-    "Use English for all new user-facing text."
+    "Frontend immutable paths must not be modified: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
+    "Do not add WebSockets or real-time infrastructure; keep the existing polling-based approach unchanged.",
+    "Keep all user-facing text in English."
   ],
   "nonGoals": [
-    "Implementing unspecified “basic features” beyond the admin access and message search described above.",
-    "Adding third-party authentication providers (only Internet Identity is supported).",
-    "Adding third-party APIs for GIF/search or any external database/service integration.",
-    "Changing branding/domain/footer text unless explicitly requested in a future message."
+    "Do not reintroduce profile flag-badge functionality (profile editor flag selection and profile name flag rendering remain out of scope).",
+    "Do not add or change any backend APIs or backend data models for flags.",
+    "Do not add custom flag image assets to represent entities that do not have Unicode flag emojis."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

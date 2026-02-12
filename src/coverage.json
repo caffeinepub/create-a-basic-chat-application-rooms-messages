@@ -1,65 +1,50 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T16:28:17.392Z",
+  "generatedAt": "2026-02-12T16:38:54.466Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
+    "total": 2,
     "implemented": 2,
     "items": [
       {
-        "id": "REQ-111",
-        "summary": "Implement an application-level superuser/admin capability in the backend so the requesting user can obtain full permissions and access across the chat app.\n\n- Add a backend mechanism to let the first authenticated user to claim it become the app superuser (admin), and expose a query to check whether the caller is currently an admin.\n- Update backend authorization checks so admins can perform privileged operations across the app (i.e., admins are not blocked by normal ownership/member-only restrictions where applicable), while non-admin behavior remains unchanged.\n- All backend error messages surfaced to the UI must be in English (no traps with unclear text).",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-112",
-        "summary": "Add a frontend UI in Settings to let the signed-in user view and obtain admin access, and clearly communicate the current admin status.\n\n- Add an “Admin access” section to the existing Settings dialog.\n- Show the current status (e.g., “You are an admin” / “You are not an admin”).\n- Provide a button to claim admin access (only succeeds if no admin exists yet), with English success/error toasts.\n- If the user is an admin, show a subtle “Admin” indicator in the authenticated header area (English label).",
+        "id": "REQ-114",
+        "summary": "Add a dedicated \"Flags\" category to the existing emoji picker (frontend/src/components/chat/EmojiPicker.tsx) so users can insert flag emojis into messages, including flags for non-recognized/partially-recognized territories when they are available as standard Unicode emoji.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useAdmin.ts",
-          "frontend/src/backend.d.ts",
-          "frontend/src/components/settings/SettingsDialog.tsx",
-          "frontend/src/App.tsx"
+          "frontend/src/utils/emojiFlags.ts",
+          "frontend/src/components/chat/EmojiPicker.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useAdmin.ts",
-          "frontend/src/components/settings/SettingsDialog.tsx",
-          "frontend/src/App.tsx"
+          "frontend/src/utils/emojiFlags.ts",
+          "frontend/src/components/chat/EmojiPicker.tsx"
         ]
       },
       {
-        "id": "REQ-113",
-        "summary": "Add a basic “Search in chat” feature for both room chat and server chat views.\n\n- Provide a search input that filters the currently loaded messages in the active thread (room messages and server announcements) by text content.\n- The filtering must be client-side (no new backend indexing requirement).\n- Use English placeholder/labels (e.g., “Search messages…”), and show an English empty-state when no matches are found.",
+        "id": "REQ-115",
+        "summary": "Enforce a safety filter for the new flag-emoji list used by the emoji picker: do not include any extremist/terrorist/violent/hate-symbol flags or equivalents, and ensure the picker cannot be used to insert disallowed symbols via the Flags category.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/chat/MessageThread.tsx",
-          "frontend/src/components/servers/ServerAnnouncementThread.tsx"
+          "frontend/src/utils/emojiFlags.ts",
+          "frontend/src/components/chat/EmojiPicker.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/chat/MessageThread.tsx",
-          "frontend/src/components/servers/ServerAnnouncementThread.tsx"
+          "frontend/src/utils/emojiFlags.ts",
+          "frontend/src/components/chat/EmojiPicker.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
-    "frontend/src/components/chat/MessageThread.tsx",
-    "frontend/src/components/servers/ServerAnnouncementThread.tsx",
-    "frontend/src/components/settings/SettingsDialog.tsx",
-    "frontend/src/hooks/useAdmin.ts",
+    "frontend/src/components/chat/EmojiPicker.tsx",
+    "frontend/src/utils/emojiFlags.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

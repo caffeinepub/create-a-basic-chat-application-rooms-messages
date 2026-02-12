@@ -2,12 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-frontend-ui-in-settings-to-let-the-signed-in-user-view-and-obtain-admin-access-and-clearly-communicate-the-current-admin-status-add-an-admin-access-section-to-the-existing-settings-dialog-show-the-current-status-e-g-you-are-an-admin-you-are-not-an-admin-provide-a-button-to-claim-admin-access-only-succeeds-if-no-admin-exists-yet-with-english-success-error-toasts-if-the-user-is-an-admin-show-a-subtle-admin-indicator-in-the-authenticated-header-area-english-label",
-      "featureTitle": "Add a frontend UI in Settings to let the signed-in user view and obtain admin access, and clearly communicate the current admin status.\n\n- Add an “Admin access” section to the existing Settings dialog.\n- Show the current status (e.g., “You are an admin” / “You are not an admin”).\n- Provide a button to claim admin access (only succeeds if no admin exists yet), with English success/error toasts.\n- If the user is an admin, show a subtle “Admin” indicator in the authenticated header area (English label).",
+      "featureId": "feature-add-a-dedicated-flags-category-to-the-existing-emoji-picker-frontend-src-components-chat-emojipicker-tsx-so-users-can-insert-flag-emojis-into-messages-including-flags-for-non-recognized-partially-recognized-territories-when-they-are-available-as-standard-unicode-emoji",
+      "featureTitle": "Add a dedicated \"Flags\" category to the existing emoji picker (frontend/src/components/chat/EmojiPicker.tsx) so users can insert flag emojis into messages, including flags for non-recognized/partially-recognized territories when they are available as standard Unicode emoji.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/settings/SettingsDialog.tsx",
-        "frontend/src/hooks/useAdmin.ts"
+        "frontend/src/components/chat/EmojiPicker.tsx",
+        "frontend/src/utils/emojiFlags.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -19,16 +18,16 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-112"
+        "REQ-114"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-basic-search-in-chat-feature-for-both-room-chat-and-server-chat-views-provide-a-search-input-that-filters-the-currently-loaded-messages-in-the-active-thread-room-messages-and-server-announcements-by-text-content-the-filtering-must-be-client-side-no-new-backend-indexing-requirement-use-english-placeholder-labels-e-g-search-messages-and-show-an-english-empty-state-when-no-matches-are-found",
-      "featureTitle": "Add a basic “Search in chat” feature for both room chat and server chat views.\n\n- Provide a search input that filters the currently loaded messages in the active thread (room messages and server announcements) by text content.\n- The filtering must be client-side (no new backend indexing requirement).\n- Use English placeholder/labels (e.g., “Search messages…”), and show an English empty-state when no matches are found.",
+      "featureId": "feature-enforce-a-safety-filter-for-the-new-flag-emoji-list-used-by-the-emoji-picker-do-not-include-any-extremist-terrorist-violent-hate-symbol-flags-or-equivalents-and-ensure-the-picker-cannot-be-used-to-insert-disallowed-symbols-via-the-flags-category",
+      "featureTitle": "Enforce a safety filter for the new flag-emoji list used by the emoji picker: do not include any extremist/terrorist/violent/hate-symbol flags or equivalents, and ensure the picker cannot be used to insert disallowed symbols via the Flags category.",
       "files": [
-        "frontend/src/components/chat/MessageThread.tsx",
-        "frontend/src/components/servers/ServerAnnouncementThread.tsx"
+        "frontend/src/components/chat/EmojiPicker.tsx",
+        "frontend/src/utils/emojiFlags.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -40,7 +39,7 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-113"
+        "REQ-115"
       ],
       "confidence": "high"
     }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 69,
+  "projectStateVersion": 71,
   "summary": "Build a chat application branded as TerrorChat for terrorchat.org (replacing freechat.com, tchat.org, and any other prior domains/references).",
   "architectural_notes": [
     "Branding/domain should be configurable or centralized (e.g., constants/env) to avoid hardcoded .com references; update to .org.",
@@ -637,6 +637,22 @@
         "REQ-113"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-add-a-dedicated-flags-category-to-the-existing-emoji-picker-frontend-src-components-chat-emojipicker-tsx-so-users-can-insert-flag-emojis-into-messages-including-flags-for-non-recognized-partially-recognized-territories-when-they-are-available-as-standard-unicode-emoji",
+      "title": "Add a dedicated \"Flags\" category to the existing emoji picker (frontend/src/components/chat/EmojiPicker.tsx) so users can insert flag emojis into messages, including flags for non-recognized/partially-recognized territories when they are available as standard Unicode emoji.",
+      "reqIds": [
+        "REQ-114"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-enforce-a-safety-filter-for-the-new-flag-emoji-list-used-by-the-emoji-picker-do-not-include-any-extremist-terrorist-violent-hate-symbol-flags-or-equivalents-and-ensure-the-picker-cannot-be-used-to-insert-disallowed-symbols-via-the-flags-category",
+      "title": "Enforce a safety filter for the new flag-emoji list used by the emoji picker: do not include any extremist/terrorist/violent/hate-symbol flags or equivalents, and ensure the picker cannot be used to insert disallowed symbols via the Flags category.",
+      "reqIds": [
+        "REQ-115"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -1090,6 +1106,12 @@
       "reqIds": [
         "REQ-111"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-79",
+      "summary": "Add flag emojis support, including flags of non-recognized states (expand available flag/emoji set beyond current allowlist).",
+      "reqIds": [],
       "status": "pending"
     }
   ],

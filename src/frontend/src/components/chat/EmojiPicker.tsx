@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Smile } from 'lucide-react';
+import { getAllowedFlags, isAllowedFlag } from '@/utils/emojiFlags';
 
 interface EmojiPickerProps {
   onSelect: (emoji: string) => void;
@@ -23,10 +24,19 @@ const EMOJI_CATEGORIES = {
 
 export default function EmojiPicker({ onSelect, disabled }: EmojiPickerProps) {
   const [open, setOpen] = useState(false);
+  const flagEmojis = getAllowedFlags();
 
   const handleEmojiClick = (emoji: string) => {
     onSelect(emoji);
     setOpen(false);
+  };
+
+  // Defensive guard: only allow flags from the allowlist
+  const handleFlagClick = (emoji: string) => {
+    if (isAllowedFlag(emoji)) {
+      onSelect(emoji);
+      setOpen(false);
+    }
   };
 
   return (
@@ -63,6 +73,24 @@ export default function EmojiPicker({ onSelect, disabled }: EmojiPickerProps) {
                 </div>
               </div>
             ))}
+            
+            {/* Flags category */}
+            <div>
+              <h4 className="text-xs font-semibold text-muted-foreground mb-2">Flags</h4>
+              <div className="grid grid-cols-8 gap-1">
+                {flagEmojis.map((flag) => (
+                  <button
+                    key={flag.emoji}
+                    type="button"
+                    onClick={() => handleFlagClick(flag.emoji)}
+                    className="text-2xl hover:bg-accent rounded p-1 transition-colors"
+                    title={flag.label}
+                  >
+                    {flag.emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </ScrollArea>
       </PopoverContent>

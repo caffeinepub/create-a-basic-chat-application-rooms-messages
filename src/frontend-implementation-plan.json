@@ -1,59 +1,47 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Admin access UI and client-side message search",
+  "title": "Add a Flags category with curated Unicode flag emojis to the emoji picker",
   "requirements": [
     {
-      "id": "REQ-112",
-      "summary": "Add Settings UI to view/claim admin access and show an Admin indicator in the authenticated header.",
+      "id": "REQ-114",
+      "summary": "Add a dedicated \"Flags\" category to EmojiPicker so users can insert standard Unicode flag emojis (including Unicode-supported non/partially-recognized territories) into any message composer at the cursor position.",
       "acceptanceCriteria": [
-        "Settings dialog displays an “Admin access” section with current admin status for the signed-in principal.",
-        "Clicking “Claim admin access” triggers the backend claim call and shows an English toast on success or a clear English error toast on failure.",
-        "When the caller is an admin, the app header displays an “Admin” indicator; when not an admin, it does not.",
-        "No changes are made to immutable frontend paths listed in SYSTEM_CONTEXT."
+        "The emoji picker UI includes a visible \"Flags\" category header alongside existing categories.",
+        "Selecting a flag emoji inserts it into the message composer text input at the current cursor position (works anywhere EmojiPicker is used, including room chat and server chat composers).",
+        "The flags provided are standard Unicode emoji characters (no backend calls, no third-party APIs, no image assets required).",
+        "If a requested/non-recognized entity has no standard Unicode flag emoji, it is not included (do not fabricate custom flag emojis)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useAdmin.ts",
+          "path": "frontend/src/utils/emojiFlags.ts",
           "operation": "create",
-          "description": "Create react-query hooks for admin status and admin-claiming (query: isCallerAdmin; mutation: claim admin). Use the authorization component’s frontend guidance for handling authorization errors gracefully; verify the component's usage instructions before implementing."
+          "description": "Add a curated, static list of allowed standard Unicode flag emojis for use in the emoji picker (including widely-supported extra Unicode flags such as UN/EU and Unicode-supported territories), with no network calls or assets involved."
         },
         {
-          "path": "frontend/src/backend.d.ts",
+          "path": "frontend/src/components/chat/EmojiPicker.tsx",
           "operation": "modify",
-          "description": "Update the typed backend interface to include the new backend capability used by the Settings UI for claiming admin access (and ensure isCallerAdmin is used consistently). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/settings/SettingsDialog.tsx",
-          "operation": "modify",
-          "description": "Add an “Admin access” section to the existing Settings dialog: show current status (“You are an admin” / “You are not an admin”) using the admin-status hook, and add a “Claim admin access” button wired to the claim mutation with English success/error toasts. Use existing shadcn-ui primitives already imported in this file; verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wire admin status into the authenticated header area: when admin, show a subtle English “Admin” indicator (e.g., small label/badge near the identity display). Ensure it is hidden for non-admins. Verify the component's usage instructions before implementing."
+          "description": "Add a visible \"Flags\" category header and render the curated Unicode flag emoji list from frontend/src/utils/emojiFlags.ts as a new category in the existing emoji picker UI. Ensure selection continues to call onSelect(emoji) so insertion works anywhere EmojiPicker is used (e.g., MessageComposer and ServerAnnouncementThread)."
         }
       ]
     },
     {
-      "id": "REQ-113",
-      "summary": "Add client-side “Search in chat” filtering for room messages and server announcements.",
+      "id": "REQ-115",
+      "summary": "Enforce a safety filter/allowlist so the Flags category cannot display or insert extremist/terrorist/violent/hate-symbol flags or equivalents.",
       "acceptanceCriteria": [
-        "In a room chat thread, entering a search term filters the displayed messages to those whose text content matches (case-insensitive match is acceptable).",
-        "In a server chat thread, entering a search term filters the displayed announcements similarly.",
-        "When a search yields no results, the UI shows a clear English message indicating no matches.",
-        "Clearing the search term restores the full currently loaded message list."
+        "The Flags category list is curated/filtered so it does not include extremist/terrorist/violent/hate-symbol flags.",
+        "No user-facing text is added that promotes or endorses extremist/terrorist/violent/hate symbols; any added labels remain in English."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/chat/MessageThread.tsx",
+          "path": "frontend/src/utils/emojiFlags.ts",
           "operation": "modify",
-          "description": "Add a “Search messages…” input that filters the currently loaded room messages client-side (case-insensitive match against message.content), applied to both pinned and unpinned lists. Add an English empty-state message when no matches are found, and ensure clearing restores the full list. Verify the component's usage instructions before implementing."
+          "description": "Implement an explicit allowlist-based safety filter for the Flags category (and any minimal supporting helpers) so only the curated set of Unicode flag emojis is exposed to the picker, excluding extremist/terrorist/violent/hate-symbol flags or equivalents."
         },
         {
-          "path": "frontend/src/components/servers/ServerAnnouncementThread.tsx",
+          "path": "frontend/src/components/chat/EmojiPicker.tsx",
           "operation": "modify",
-          "description": "Add a “Search messages…” input that filters the currently loaded server announcements client-side (case-insensitive match against announcement.content), applied to both pinned and unpinned lists. Add an English empty-state message when no matches are found, and ensure clearing restores the full list. Verify the component's usage instructions before implementing."
+          "description": "Ensure the Flags category uses only the allowlisted values from frontend/src/utils/emojiFlags.ts and add a defensive guard so the picker cannot insert any emoji through the Flags category unless it is in the allowlist."
         }
       ]
     }
