@@ -4,7 +4,6 @@ import List "mo:core/List";
 import Map "mo:core/Map";
 import Set "mo:core/Set";
 import Nat "mo:core/Nat";
-import Iter "mo:core/Iter";
 import Order "mo:core/Order";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
@@ -13,7 +12,9 @@ import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -22,7 +23,7 @@ actor {
   include MixinAuthorization(accessControlState);
 
   type User = Principal;
-  // Persistent User Profile with Avatar and Picture Storage
+
   public type UserProfile = {
     name : Text;
     bio : Text;
@@ -31,84 +32,30 @@ actor {
     backgroundColor : Text;
     textOverlays : Text;
     profilePicture : ?Storage.ExternalBlob;
-    profileFlag : ?Text;
   };
 
   // Persistent Map for Storing User Profiles
   let userProfiles = Map.empty<Principal, UserProfile>();
 
-  // Updated flag allowlist (front+backend validated)
-  let allowedFlags = Set.fromArray([
-    "rainbow",
-    "transgender",
-    "non-binary",
-    "germany",
-    "france",
-    "japan",
-    "usa",
-    "uk",
-    // International organizations
-    "eu",
-    "african-union",
-    "asean",
-  ]);
-
-  func validateFlagId(selectedFlag : ?Text) : ?Text {
-    switch (selectedFlag) {
-      case (null) { null };
-      case (?flagId) {
-        if (allowedFlags.contains(flagId)) { ?flagId } else { null };
-      };
-    };
-  };
-
-  // Sanitize profile flags returned from APIs (return null if no longer allowed)
-  func sanitizeProfileFlag(profile : UserProfile) : UserProfile {
-    let sanitizedFlag = switch (profile.profileFlag) {
-      case (null) { null };
-      case (?flagId) {
-        if (allowedFlags.contains(flagId)) { ?flagId } else { null };
-      };
-    };
-    {
-      profile with
-      profileFlag = sanitizedFlag;
-    };
-  };
-
-  // Authentication and Authorization Functions
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can access profiles");
     };
-    switch (userProfiles.get(caller)) {
-      case (null) { null };
-      case (?profile) { ?sanitizeProfileFlag(profile) };
-    };
+    userProfiles.get(caller);
   };
 
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
-    // Allow any authenticated user to fetch other users' profiles
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can view profiles");
     };
-    switch (userProfiles.get(user)) {
-      case (null) { null };
-      case (?profile) { ?sanitizeProfileFlag(profile) };
-    };
+    userProfiles.get(user);
   };
 
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
-
-    let validatedProfile = {
-      profile with
-      profileFlag = validateFlagId(profile.profileFlag);
-    };
-
-    userProfiles.add(caller, validatedProfile);
+    userProfiles.add(caller, profile);
   };
 
   // Social Features

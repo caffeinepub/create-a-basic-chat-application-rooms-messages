@@ -10,7 +10,7 @@
   "frontend/src/hooks/useRoomMessages.ts": "React Query hooks for fetching messages with configurable polling interval and posting new messages with image support and cache updates.",
   "frontend/src/index.css": "Global styles with warm terracotta/amber OKLCH color palette for both light and dark modes, avoiding blue/purple tones.",
   "frontend/tailwind.config.js": "Tailwind configuration with custom warm color tokens, Inter font family, and extended design system utilities.",
-  "frontend/src/components/profile/ProfileEditorDialog.tsx": "Dialog component for editing user profiles with support for both create and edit modes, profile picture upload, image-based flag badge selector with \"None\" option, and safe handling of invalid flag values.",
+  "frontend/src/components/profile/ProfileEditorDialog.tsx": "Dialog component for editing user profiles with support for both create and edit modes, profile picture upload, and avatar color selection without any flag badge functionality.",
   "frontend/src/components/profile/UserAvatar.tsx": "Reusable avatar component that renders user profile pictures when available, otherwise falls back to initials with customizable colors and sizes.",
   "frontend/src/components/settings/SettingsDialog.tsx": "Settings dialog for users to configure theme preference and message polling interval using local state with immediate application.",
   "frontend/src/hooks/useUserPreferences.ts": "React Query hooks for fetching and saving user preferences using ThemePreference enum from backend with default fallbacks.",
@@ -21,5 +21,5 @@
   "frontend/index.html": "HTML entry point with updated document title reflecting Tchat branding.",
   "frontend/src/utils/flags.ts": "Single source of truth for allowed flag badges with curated safe list containing non-state flags, union/international organization flags, and safe historical/defunct country flags, now using assetPath instead of emoji for image-based rendering.",
   "frontend/src/components/profile/FlagBadge.tsx": "Presentational component that renders image-based flag badges inline with accessible labeling using static assets, returns null for unknown/disallowed flags.",
-  "frontend/src/components/profile/ProfileName.tsx": "Reusable component that renders a user's display name with an optional image-based flag badge inline, maintaining existing truncation/fallback behavior."
+  "frontend/src/components/profile/ProfileName.tsx": "Simple component that renders a user's display name without any additional badges or decorations."
 }

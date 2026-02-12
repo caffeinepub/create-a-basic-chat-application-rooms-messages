@@ -1,17 +1,14 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 23,
+  "projectStateVersion": 25,
   "summary": "Build a chat application branded for Tchat.org (replacing freechat.com and any .com references and web domain).",
   "architectural_notes": [
-    "Branding/domain should be configurable or centralized (e.g., constants/env) to avoid hardcoded .com references; update to .org.",
-    "Flag badge options must continue to follow the strict safety allowlist; requests to add extremist/terrorist/violent/hate symbols (e.g., ISIS, Taliban, Hamas, Hezbollah, Nazi Germany, Azov, Wagner) are not permitted even if requested by the user.",
-    "Flag badges should be rendered using historical flag badge assets (static frontend assets) rather than emoji-style rendering, while keeping display consistent across the app."
+    "Branding/domain should be configurable or centralized (e.g., constants/env) to avoid hardcoded .com references; update to .org."
   ],
   "known_issues": [
     "Profile feature has an unspecified issue reported by user (\"Chat app Profile issue\") that needs investigation and fix."
   ],
   "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Rainbow flag illustration, flat flag icon (flag-rainbow.dim_96x64.png)\n- Transgender flag illustration, flat flag icon (flag-transgender.dim_96x64.png)\n- Non-binary flag illustration, flat flag icon (flag-non-binary.dim_96x64.png)\n- European Union flag illustration, flat flag icon (flag-eu.dim_96x64.png)\n- African Union flag illustration, flat flag icon (flag-african-union.dim_96x64.png)\n- ASEAN flag illustration, flat flag icon (flag-asean.dim_96x64.png)\n- USSR historical flag illustration, flat flag icon (flag-ussr.dim_96x64.png)\n- Rhodesia historical flag illustration, flat flag icon (flag-rhodesia.dim_96x64.png)\n- Imperial Japan historical flag illustration, flat flag icon (flag-imperial-japan.dim_96x64.png)\n- Fascist Italy historical flag illustration, flat flag icon (flag-fascist-italy.dim_96x64.png)",
   "existing_features": [
     {
       "id": "feature-add-frontend-chat-ui-with-authentication-via-internet-identity-a-room-list-create-select-room-a-message-thread-view-for-the-selected-room-and-a-message-composer-to-send-new-messages",
@@ -268,6 +265,22 @@
         "REQ-41"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-remove-all-flag-badge-ui-from-the-profile-editor-and-profile-display-components-including-the-flag-selector-and-any-inline-flag-rendering-next-to-names",
+      "title": "Remove all flag-badge UI from the profile editor and profile display components, including the flag selector and any inline flag rendering next to names.",
+      "reqIds": [
+        "REQ-44"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-frontend-flag-allowlist-utilities-and-flag-badge-renderer-usage-so-the-app-has-no-runtime-dependency-on-flag-assets-or-flag-metadata",
+      "title": "Remove frontend flag allowlist utilities and flag badge renderer usage so the app has no runtime dependency on flag assets or flag metadata.",
+      "reqIds": [
+        "REQ-45"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -339,67 +352,17 @@
     },
     {
       "id": "AR-14",
-      "summary": "Add a profile setting to select a flag badge and display it next to the user’s username throughout the app.",
-      "reqIds": [],
+      "summary": "Remove the flag-badge field and all flag-badge validation/sanitization logic from the backend user profile model and APIs.",
+      "reqIds": [
+        "REQ-42"
+      ],
       "status": "pending"
     },
     {
       "id": "AR-15",
-      "summary": "Extend the backend user profile model to store an optional profile \"flag badge\" selection (e.g., a stable flagId string), and expose it through the existing getCallerUserProfile/getUserProfile/saveCallerUserProfile APIs so the selected flag can be persisted and read anywhere user profiles are rendered.",
+      "summary": "Add a conditional state migration to safely upgrade existing deployed state that may contain `UserProfile.profileFlag`, ensuring upgrade does not trap and existing profile data (name, bio, avatar colors, profile picture) is preserved.",
       "reqIds": [
-        "REQ-25"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-16",
-      "summary": "Add a conditional state migration so existing deployed user profiles are upgraded to include the new optional flag badge field with a safe default (no flag selected), without data loss for existing profile fields.",
-      "reqIds": [
-        "REQ-26"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-21",
-      "summary": "Ensure the backend-side flag validation allowlist contains (at minimum) all flag IDs that the frontend offers in its allowed flag selection list, so emoji badge selections offered by the UI persist when saving a profile.",
-      "reqIds": [
-        "REQ-33"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-22",
-      "summary": "Change the flag badge allowed list to remove current flags and instead offer non-state flags, historical/defunct country flags, and union flags (user-provided list includes extremist/terror/hate symbols and would be disallowed by the existing safety allowlist policy).",
-      "reqIds": [],
-      "status": "blocked"
-    },
-    {
-      "id": "AR-24",
-      "summary": "Update backend flag/badge validation to match the updated frontend allowlist and ensure safety enforcement: saving a profile must only persist badge IDs that exist in the backend allowlist; all other IDs must be stored as null. Ensure the backend allowlist includes the union/international organization IDs used by the frontend (EU, African Union, ASEAN) and excludes all extremist/terror/hate-symbol entries from the user-provided list.",
-      "reqIds": [
-        "REQ-35"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-25",
-      "summary": "Ensure profile read APIs do not leak removed/disallowed badge IDs by sanitizing the stored `profileFlag` on reads: when returning a `UserProfile` from `getCallerUserProfile` and `getUserProfile`, return `profileFlag` as null if the stored value is not in the current backend allowlist.",
-      "reqIds": [
-        "REQ-36"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-26",
-      "summary": "Remove emoji-style profile flag badges and instead use historical flag badges (rendered via static frontend assets) throughout the app (selection UI and wherever the badge is displayed).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-30",
-      "summary": "Align backend flag allowlist validation with the frontend allowed flag IDs used for historical-flag image selection so saving and reading profiles consistently preserves only the frontend-allowed IDs.",
-      "reqIds": [
-        "REQ-40"
+        "REQ-43"
       ],
       "status": "pending"
     }

@@ -42,7 +42,6 @@ export interface UserProfile {
   'color' : string,
   'textOverlays' : string,
   'profilePicture' : [] | [ExternalBlob],
-  'profileFlag' : [] | [string],
 }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |

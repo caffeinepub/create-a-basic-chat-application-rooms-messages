@@ -1,132 +1,95 @@
 {
   "kind": "build_request",
-  "title": "Replace emoji-style profile flag badges with historical flag images",
+  "title": "Remove profile flag badge feature from backend and UI",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-37",
-      "text": "Replace the emoji-based flag badge metadata with image-based metadata by updating the frontend flag allowlist so each allowed flag option provides a static image asset path (served from the frontend) instead of an emoji value.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Remove the emoji style and replace it with the historial flag instead"
-        ]
-      },
-      "acceptanceCriteria": [
-        "`frontend/src/utils/flags.ts` no longer exposes an `emoji` field in `FlagOption`; it exposes an image path field (e.g., `assetPath`) for each allowed flag option.",
-        "The allowlist lookup helpers (`getAllowedFlags`, `getFlagById`, `validateFlagId`) continue to function and return the correct metadata for a valid flag id.",
-        "All user-facing labels for the flag options remain in English."
-      ]
-    },
-    {
-      "id": "REQ-38",
-      "text": "Update the shared flag badge renderer to display the historical flag as a static image (not emoji) everywhere the badge appears, while keeping the existing behavior of returning null for unknown/disallowed flags.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Remove the emoji style and replace it with the historial flag instead"
-        ]
-      },
-      "acceptanceCriteria": [
-        "`frontend/src/components/profile/FlagBadge.tsx` renders an `<img>` (or equivalent) using the allowed flag option's static asset path and uses an English `alt`/`title` based on the flag label.",
-        "Flag badges render correctly anywhere `FlagBadge` is used (e.g., `ProfileName` in message threads, invite UI, friends UI).",
-        "If `profileFlag` is missing or not in the allowlist, no badge is rendered (null output), matching prior safety behavior."
-      ]
-    },
-    {
-      "id": "REQ-39",
-      "text": "Update the Profile Editor flag selection UI to preview and select historical flag images instead of emoji, including the selected value display and the dropdown option list, while preserving the 'None' option to clear the selection.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Remove the emoji style and replace it with the historial flag instead"
-        ]
-      },
-      "acceptanceCriteria": [
-        "`frontend/src/components/profile/ProfileEditorDialog.tsx` shows image-based badges in the Select trigger value when a flag is selected, and in each Select option row.",
-        "Selecting 'None' clears the flag selection and saving the profile persists no flag (`profileFlag` unset/undefined).",
-        "All user-facing strings in the flag selection area are in English (e.g., 'Flag Badge', 'None')."
-      ]
-    },
-    {
-      "id": "REQ-40",
-      "text": "Align backend flag allowlist validation with the frontend allowed flag IDs used for historical-flag image selection so saving and reading profiles consistently preserves only the frontend-allowed IDs.",
+      "id": "REQ-42",
+      "text": "Remove the flag-badge field and all flag-badge validation/sanitization logic from the backend user profile model and APIs.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "Remove the emoji style and replace it with the historial flag instead"
+          "Remove the flag badge feature"
         ]
       },
       "acceptanceCriteria": [
-        "`allowedFlags` in `backend/main.mo` includes all flag IDs offered by the updated frontend allowlist and does not include IDs that the frontend no longer offers.",
-        "When `saveCallerUserProfile` is called with a disallowed `profileFlag`, it is persisted as null (current behavior preserved).",
-        "`getCallerUserProfile` and `getUserProfile` continue to sanitize `profileFlag` on reads (returning null if not currently allowed)."
+        "`backend/main.mo` no longer defines `profileFlag` in `UserProfile`.",
+        "All backend methods that read/save user profiles compile and function without any flag-related allowlist/validation/sanitization.",
+        "Saved profiles returned by `getCallerUserProfile` / `getUserProfile` no longer contain any flag-related data.",
+        "Backend builds successfully with the single-actor architecture preserved."
       ]
     },
     {
-      "id": "REQ-41",
-      "text": "Add static historical-flag image assets for each allowed flag option and ensure they are loaded directly by the frontend (not routed through the backend).",
-      "target": "frontend",
+      "id": "REQ-43",
+      "text": "Add a conditional state migration to safely upgrade existing deployed state that may contain `UserProfile.profileFlag`, ensuring upgrade does not trap and existing profile data (name, bio, avatar colors, profile picture) is preserved.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "Remove the emoji style and replace it with the historial flag instead"
+          "Remove the flag badge feature"
         ]
       },
       "acceptanceCriteria": [
-        "All flag badge images referenced by the frontend allowlist exist under `frontend/public/assets/generated/` and load successfully in the browser without backend calls.",
-        "Flag images render crisply at small badge sizes (e.g., inline next to a user name) without layout shifts.",
-        "No broken image icons appear in the Profile Editor flag selector or next to user names when a valid flag is selected."
+        "If existing canister state contains user profiles with the legacy `profileFlag` field, upgrading to the new version completes without trapping.",
+        "After upgrade, profiles still load correctly and all non-flag fields remain unchanged.",
+        "No new persistent flag-related state remains after migration."
+      ]
+    },
+    {
+      "id": "REQ-44",
+      "text": "Remove all flag-badge UI from the profile editor and profile display components, including the flag selector and any inline flag rendering next to names.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Remove the flag badge feature"
+        ]
+      },
+      "acceptanceCriteria": [
+        "`frontend/src/components/profile/ProfileEditorDialog.tsx` no longer shows a \"Flag Badge\" field and does not send any flag value when saving a profile.",
+        "`frontend/src/components/profile/ProfileName.tsx` renders only the display name (no flag badge).",
+        "The app header greeting, message thread sender names, friends UI, and invite UI no longer render any flag badge next to a user’s name.",
+        "All user-facing text remains in English."
+      ]
+    },
+    {
+      "id": "REQ-45",
+      "text": "Remove frontend flag allowlist utilities and flag badge renderer usage so the app has no runtime dependency on flag assets or flag metadata.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Remove the flag badge feature"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The app no longer imports/uses `frontend/src/utils/flags.ts` and no longer imports/uses `frontend/src/components/profile/FlagBadge.tsx`.",
+        "The frontend builds successfully with no references to `/assets/generated/flag-*.png` in TypeScript/TSX source.",
+        "Profile save/load flows continue working end-to-end (create/edit profile still works; avatars and profile pictures still work)."
       ]
     }
   ],
   "constraints": [
-    "Use English for all user-facing text.",
-    "Do not edit any frontend files under the immutable paths listed in SYSTEM_CONTEXT (e.g., `frontend/src/hooks/useInternetIdentity.ts(x)`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`, and anything in `frontend/src/components/ui`).",
-    "Backend must remain a single Motoko actor; keep all backend logic in `backend/main.mo` and only add `backend/migration.mo` if a state upgrade is strictly required."
+    "Do not edit any files under `frontend/src/components/ui` (compose them instead).",
+    "Do not modify any files listed as immutable in SYSTEM_CONTEXT (e.g., `frontend/src/hooks/useInternetIdentity.ts(x)`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`).",
+    "Keep all backend logic in the single Motoko main actor (`backend/main.mo`); only add `backend/migration.mo` if needed for upgrade safety."
   ],
   "nonGoals": [
-    "Do not introduce new flag categories or add new flags beyond what is needed to replace emoji rendering with static historical-flag images.",
-    "Do not change the user profile schema shape beyond what is necessary for rendering (the stored value remains the existing `profileFlag` id string).",
-    "Do not add third-party integrations or external asset hosting/CDNs for flags."
+    "Do not add replacement badge features (no new emoji badges, icons, or alternative label systems).",
+    "Do not change other profile fields or behavior beyond removing the flag badge feature.",
+    "Do not redesign unrelated UI areas (chat rooms, messages, friends, settings) beyond removing flag badge rendering."
   ],
   "imageRequirements": {
-    "required": [
-      "Rainbow flag illustration, flat flag icon (flag-rainbow.dim_96x64.png)",
-      "Transgender flag illustration, flat flag icon (flag-transgender.dim_96x64.png)",
-      "Non-binary flag illustration, flat flag icon (flag-non-binary.dim_96x64.png)",
-      "European Union flag illustration, flat flag icon (flag-eu.dim_96x64.png)",
-      "African Union flag illustration, flat flag icon (flag-african-union.dim_96x64.png)",
-      "ASEAN flag illustration, flat flag icon (flag-asean.dim_96x64.png)",
-      "USSR historical flag illustration, flat flag icon (flag-ussr.dim_96x64.png)",
-      "Rhodesia historical flag illustration, flat flag icon (flag-rhodesia.dim_96x64.png)",
-      "Imperial Japan historical flag illustration, flat flag icon (flag-imperial-japan.dim_96x64.png)",
-      "Fascist Italy historical flag illustration, flat flag icon (flag-fascist-italy.dim_96x64.png)"
-    ],
+    "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

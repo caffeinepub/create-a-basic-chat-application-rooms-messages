@@ -1,119 +1,58 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Replace emoji profile flag badges with historical flag images",
+  "title": "Remove profile flag badge feature from backend and UI",
   "requirements": [
     {
-      "id": "REQ-37",
-      "summary": "Replace emoji-based flag allowlist metadata with static frontend image asset paths.",
+      "id": "REQ-44",
+      "summary": "Remove all flag-badge UI from profile editor and name display surfaces so no flag is shown or saved.",
       "acceptanceCriteria": [
-        "`frontend/src/utils/flags.ts` no longer exposes an `emoji` field in `FlagOption`; it exposes an image path field (e.g., `assetPath`) for each allowed flag option.",
-        "The allowlist lookup helpers (`getAllowedFlags`, `getFlagById`, `validateFlagId`) continue to function and return the correct metadata for a valid flag id.",
-        "All user-facing labels for the flag options remain in English."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/utils/flags.ts",
-          "operation": "modify",
-          "description": "Update FlagOption to remove `emoji` and add an image path field (e.g., `assetPath`) pointing to static files under frontend/public; update ALLOWED_FLAGS entries (rainbow, transgender, non-binary, eu, african-union, asean, ussr, rhodesia, imperial-japan, fascist-italy) to use the required generated asset paths, and keep helper functions working with the updated metadata."
-        }
-      ]
-    },
-    {
-      "id": "REQ-38",
-      "summary": "Render flag badges as static images everywhere FlagBadge is used, preserving null for unknown flags.",
-      "acceptanceCriteria": [
-        "`frontend/src/components/profile/FlagBadge.tsx` renders an `<img>` (or equivalent) using the allowed flag option's static asset path and uses an English `alt`/`title` based on the flag label.",
-        "Flag badges render correctly anywhere `FlagBadge` is used (e.g., `ProfileName` in message threads, invite UI, friends UI).",
-        "If `profileFlag` is missing or not in the allowlist, no badge is rendered (null output), matching prior safety behavior."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/profile/FlagBadge.tsx",
-          "operation": "modify",
-          "description": "Replace emoji span rendering with an image-based badge that uses the allowlist option's static asset path; keep returning null for missing/unknown/disallowed flags; set fixed dimensions and object-fit styling to avoid layout shifts, and provide English alt/title text from the flag label."
-        },
-        {
-          "path": "frontend/src/components/profile/ProfileName.tsx",
-          "operation": "modify",
-          "description": "Ensure inline name+badge layout remains stable with the new image-based FlagBadge (e.g., alignment and spacing), without changing user-facing text."
-        }
-      ]
-    },
-    {
-      "id": "REQ-39",
-      "summary": "Update Profile Editor flag selection UI to preview/select historical flag images and preserve the None option.",
-      "acceptanceCriteria": [
-        "`frontend/src/components/profile/ProfileEditorDialog.tsx` shows image-based badges in the Select trigger value when a flag is selected, and in each Select option row.",
-        "Selecting 'None' clears the flag selection and saving the profile persists no flag (`profileFlag` unset/undefined).",
-        "All user-facing strings in the flag selection area are in English (e.g., 'Flag Badge', 'None')."
+        "`frontend/src/components/profile/ProfileEditorDialog.tsx` no longer shows a \"Flag Badge\" field and does not send any flag value when saving a profile.",
+        "`frontend/src/components/profile/ProfileName.tsx` renders only the display name (no flag badge).",
+        "The app header greeting, message thread sender names, friends UI, and invite UI no longer render any flag badge next to a user’s name.",
+        "All user-facing text remains in English."
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/profile/ProfileEditorDialog.tsx",
           "operation": "modify",
-          "description": "Update the flag Select trigger and option rows to preview image-based badges via the updated FlagBadge/allowlist metadata; keep 'Flag Badge' and 'None' labels in English; ensure selecting 'None' clears the selection and saving persists `profileFlag` as undefined."
+          "description": "Remove the flag selector UI and related state; remove any reads of a legacy profile flag from loaded profiles; ensure the saved UserProfile object does not include any flag-related field; update dialog description copy to remove mention of flags while keeping all other profile fields/behavior unchanged."
+        },
+        {
+          "path": "frontend/src/components/profile/ProfileName.tsx",
+          "operation": "modify",
+          "description": "Remove FlagBadge usage and any reliance on a profile flag field so the component renders only the user's display name; keep inline layout/truncation behavior intact for all call sites (header, message thread, friends, invite)."
         }
       ]
     },
     {
-      "id": "REQ-41",
-      "summary": "Add required static historical flag image assets under frontend/public and ensure the allowlist references them.",
+      "id": "REQ-45",
+      "summary": "Eliminate frontend flag allowlist and renderer dependencies so the app has no runtime dependency on flag assets/metadata.",
       "acceptanceCriteria": [
-        "All flag badge images referenced by the frontend allowlist exist under `frontend/public/assets/generated/` and load successfully in the browser without backend calls.",
-        "Flag images render crisply at small badge sizes (e.g., inline next to a user name) without layout shifts.",
-        "No broken image icons appear in the Profile Editor flag selector or next to user names when a valid flag is selected."
+        "The app no longer imports/uses `frontend/src/utils/flags.ts` and no longer imports/uses `frontend/src/components/profile/FlagBadge.tsx`.",
+        "The frontend builds successfully with no references to `/assets/generated/flag-*.png` in TypeScript/TSX source.",
+        "Profile save/load flows continue working end-to-end (create/edit profile still works; avatars and profile pictures still work)."
       ],
       "file_operations": [
         {
-          "path": "frontend/public/assets/generated/flag-rainbow.dim_96x64.png",
-          "operation": "create",
-          "description": "Add the generated static asset: frontend/public/assets/generated/flag-rainbow.dim_96x64.png."
+          "path": "frontend/src/components/profile/FlagBadge.tsx",
+          "operation": "delete",
+          "description": "Delete the flag badge renderer component since the UI no longer renders flags anywhere."
         },
         {
-          "path": "frontend/public/assets/generated/flag-transgender.dim_96x64.png",
-          "operation": "create",
-          "description": "Add the generated static asset: frontend/public/assets/generated/flag-transgender.dim_96x64.png."
+          "path": "frontend/src/utils/flags.ts",
+          "operation": "delete",
+          "description": "Delete flag allowlist/validation utilities so the frontend no longer contains flag metadata or any references to generated flag assets."
         },
         {
-          "path": "frontend/public/assets/generated/flag-non-binary.dim_96x64.png",
-          "operation": "create",
-          "description": "Add the generated static asset: frontend/public/assets/generated/flag-non-binary.dim_96x64.png."
+          "path": "frontend/src/components/profile/ProfileEditorDialog.tsx",
+          "operation": "modify",
+          "description": "Remove all imports and logic that depended on `utils/flags` and `FlagBadge` to ensure there are no remaining TypeScript/TSX references to flag assets or flag metadata."
         },
         {
-          "path": "frontend/public/assets/generated/flag-eu.dim_96x64.png",
-          "operation": "create",
-          "description": "Add the generated static asset: frontend/public/assets/generated/flag-eu.dim_96x64.png."
-        },
-        {
-          "path": "frontend/public/assets/generated/flag-african-union.dim_96x64.png",
-          "operation": "create",
-          "description": "Add the generated static asset: frontend/public/assets/generated/flag-african-union.dim_96x64.png."
-        },
-        {
-          "path": "frontend/public/assets/generated/flag-asean.dim_96x64.png",
-          "operation": "create",
-          "description": "Add the generated static asset: frontend/public/assets/generated/flag-asean.dim_96x64.png."
-        },
-        {
-          "path": "frontend/public/assets/generated/flag-ussr.dim_96x64.png",
-          "operation": "create",
-          "description": "Add the generated static asset: frontend/public/assets/generated/flag-ussr.dim_96x64.png."
-        },
-        {
-          "path": "frontend/public/assets/generated/flag-rhodesia.dim_96x64.png",
-          "operation": "create",
-          "description": "Add the generated static asset: frontend/public/assets/generated/flag-rhodesia.dim_96x64.png."
-        },
-        {
-          "path": "frontend/public/assets/generated/flag-imperial-japan.dim_96x64.png",
-          "operation": "create",
-          "description": "Add the generated static asset: frontend/public/assets/generated/flag-imperial-japan.dim_96x64.png."
-        },
-        {
-          "path": "frontend/public/assets/generated/flag-fascist-italy.dim_96x64.png",
-          "operation": "create",
-          "description": "Add the generated static asset: frontend/public/assets/generated/flag-fascist-italy.dim_96x64.png."
+          "path": "frontend/src/components/profile/ProfileName.tsx",
+          "operation": "modify",
+          "description": "Remove the `FlagBadge` import and any `profileFlag` access so there are no remaining references to the deleted flag components/utilities."
         }
       ]
     }

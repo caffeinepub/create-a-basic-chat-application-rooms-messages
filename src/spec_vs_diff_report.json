@@ -1,52 +1,53 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T03:29:59.712Z",
-  "summary": "Frontend flags metadata was updated to use image asset paths and FlagBadge now renders an <img>. However, the backend allowlist is not aligned with the frontend IDs, and the diff does not show the required static image assets being added under frontend/public/assets/generated/. Profile editor UI changes for image previews/selection are only partially evidenced due to truncation.",
+  "generatedAt": "2026-02-12T03:38:53.191Z",
+  "summary": "Backend flag-badge field appears removed from `UserProfile` and a migration module was added, but the frontend still contains and (per file summaries) actively renders flag badges in multiple UI areas and still includes flag utility/badge files, which conflicts with the request to remove the feature end-to-end.",
   "missing_requirements": [
     {
-      "id": "REQ-39",
-      "requirement": "Update the Profile Editor flag selection UI to preview and select historical flag images (trigger value + dropdown options) and preserve a 'None' option that clears the selection and persists no flag.",
-      "reason": "ProfileEditorDialog.tsx is truncated before the Select UI rendering and save logic; the diff summary does not provide evidence that the Select trigger and option rows render image-based badges, nor that selecting 'None' persists profileFlag as unset/undefined on save.",
+      "id": "REQ-44",
+      "requirement": "Remove all flag-badge UI from the profile editor and profile display components, including the flag selector and any inline flag rendering next to names (header greeting, message thread sender names, friends UI, invite UI).",
+      "reason": "The diff summary indicates several UI areas now display flag badges next to usernames, which is the opposite of removing flag-badge rendering.",
       "evidence": [
-        "frontend/src/components/profile/ProfileEditorDialog.tsx (truncated)"
+        "frontend-file-summaries.txt (summaries for `frontend/src/App.tsx`, `frontend/src/components/chat/MessageThread.tsx`, `frontend/src/components/friends/FriendsDialog.tsx`, `frontend/src/components/chat/InviteToRoomDialog.tsx` mention displaying flag badges)"
       ]
     },
     {
-      "id": "REQ-40",
-      "requirement": "Align backend allowedFlags validation with the updated frontend allowed flag IDs (include all offered IDs; exclude IDs no longer offered) and keep sanitization/persist-null behavior for disallowed flags.",
-      "reason": "backend/main.mo allowedFlags includes ids that are not present in the updated frontend allowlist (germany, france, japan, usa, uk) and is missing several frontend-offered historical ids (ussr, rhodesia, imperial-japan, fascist-italy). This breaks the 'includes all' and 'does not include removed IDs' acceptance criteria.",
+      "id": "REQ-45",
+      "requirement": "Remove frontend flag allowlist utilities and flag badge renderer usage so the app has no runtime dependency on flag assets or flag metadata (no imports/uses of `frontend/src/utils/flags.ts` or `frontend/src/components/profile/FlagBadge.tsx`; no references to `/assets/generated/flag-*.png`).",
+      "reason": "The diff shows `frontend/src/utils/flags.ts` and `frontend/src/components/profile/FlagBadge.tsx` still exist and were modified, and the summaries indicate flag badges are being rendered/used across the app.",
       "evidence": [
-        "backend/main.mo",
-        "frontend/src/utils/flags.ts"
-      ]
-    },
-    {
-      "id": "REQ-41",
-      "requirement": "Add static historical-flag image assets under frontend/public/assets/generated/ for each allowed option and ensure they load directly from the frontend.",
-      "reason": "No files were added in the diff, and there is no evidence that the required PNG assets exist under frontend/public/assets/generated/ (the allowlist references them, but the assets themselves are not shown as added/modified).",
-      "evidence": [
-        "frontend/src/utils/flags.ts",
-        "file-diff summary: Added files = none"
+        "frontend/src/utils/flags.ts (modified, still present)",
+        "frontend/src/components/profile/FlagBadge.tsx (modified, still present)",
+        "frontend-file-summaries.txt (mentions flag badge usage in multiple components)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Backend allowlist expanded/changed to include additional country flag IDs (germany, france, japan, usa, uk) that are not offered by the updated frontend allowlist.",
-      "reason": "BuildRequest explicitly focuses on replacing emoji rendering with static historical-flag images and aligning backend validation to the frontend-offered IDs. Adding backend-allowed IDs not present in the frontend violates that alignment and is not requested.",
+      "description": "Rendering flag badges next to usernames in the header greeting, message thread sender names, friends UI, and invite UI via `ProfileName` usage.",
+      "reason": "The BuildRequest explicitly requires removing the flag badge feature and forbids replacement/continued badge rendering; file summaries indicate flag badges were added/are displayed in these areas.",
       "evidence": [
-        "backend/main.mo",
-        "frontend/src/utils/flags.ts"
+        "frontend-file-summaries.txt (`frontend/src/App.tsx`, `frontend/src/components/chat/MessageThread.tsx`, `frontend/src/components/friends/FriendsDialog.tsx`, `frontend/src/components/chat/InviteToRoomDialog.tsx` summaries)"
+      ]
+    },
+    {
+      "description": "Continuing to maintain/update a frontend flag allowlist/flag metadata utility and a FlagBadge component.",
+      "reason": "REQ-45 requires removing usage/imports of these modules and eliminating runtime dependency on flag metadata/assets; the diff shows these files were modified rather than removed/decommissioned.",
+      "evidence": [
+        "frontend/src/utils/flags.ts",
+        "frontend/src/components/profile/FlagBadge.tsx"
       ]
     }
   ],
   "confidence": 0.78,
   "changed_files": [
     "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
     "frontend/src/components/profile/FlagBadge.tsx",
     "frontend/src/components/profile/ProfileEditorDialog.tsx",
+    "frontend/src/components/profile/ProfileName.tsx",
     "frontend/src/utils/flags.ts",
     "project_state.json"
   ]

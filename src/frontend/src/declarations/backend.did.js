@@ -45,7 +45,6 @@ export const UserProfile = IDL.Record({
   'color' : IDL.Text,
   'textOverlays' : IDL.Text,
   'profilePicture' : IDL.Opt(ExternalBlob),
-  'profileFlag' : IDL.Opt(IDL.Text),
 });
 export const Room = IDL.Record({
   'id' : RoomId,
@@ -154,7 +153,6 @@ export const idlFactory = ({ IDL }) => {
     'color' : IDL.Text,
     'textOverlays' : IDL.Text,
     'profilePicture' : IDL.Opt(ExternalBlob),
-    'profileFlag' : IDL.Opt(IDL.Text),
   });
   const Room = IDL.Record({
     'id' : RoomId,

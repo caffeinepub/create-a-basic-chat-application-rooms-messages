@@ -5,12 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import UserAvatar from './UserAvatar';
-import FlagBadge from './FlagBadge';
 import { Upload, X } from 'lucide-react';
-import { getAllowedFlags, validateFlagId } from '../../utils/flags';
 import type { UserProfile } from '../../backend';
 import { ExternalBlob } from '../../backend';
 
@@ -40,9 +37,6 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
   const [profilePicture, setProfilePicture] = useState<ExternalBlob | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [selectedFlag, setSelectedFlag] = useState<string>('none');
-
-  const allowedFlags = getAllowedFlags();
 
   useEffect(() => {
     if (currentProfile) {
@@ -58,9 +52,6 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
         setProfilePicture(currentProfile.profilePicture);
         setPreviewUrl(currentProfile.profilePicture.getDirectURL());
       }
-      // Validate the flag from backend - if invalid/disallowed, treat as 'none'
-      const validatedFlag = validateFlagId(currentProfile.profileFlag);
-      setSelectedFlag(validatedFlag ? currentProfile.profileFlag! : 'none');
     } else {
       // Reset to defaults when no profile exists (create mode)
       setName('');
@@ -68,7 +59,6 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
       setSelectedColor(AVATAR_COLORS[0]);
       setProfilePicture(null);
       setPreviewUrl(null);
-      setSelectedFlag('none');
     }
   }, [currentProfile, open]);
 
@@ -147,7 +137,6 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
       backgroundColor: selectedColor.bg,
       textOverlays: trimmedName.charAt(0).toUpperCase(),
       profilePicture: profilePicture || undefined,
-      profileFlag: selectedFlag === 'none' ? undefined : selectedFlag,
     };
 
     try {
@@ -168,11 +157,7 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
     backgroundColor: selectedColor.bg,
     textOverlays: (name || 'P').charAt(0).toUpperCase(),
     profilePicture: profilePicture || undefined,
-    profileFlag: selectedFlag === 'none' ? undefined : selectedFlag,
   };
-
-  // Get the validated flag for display
-  const validatedSelectedFlag = validateFlagId(selectedFlag);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -181,7 +166,7 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
           <DialogTitle>{currentProfile ? 'Edit Profile' : 'Create Profile'}</DialogTitle>
           <DialogDescription>
             {currentProfile 
-              ? 'Update your display name, bio, flag, and avatar appearance.'
+              ? 'Update your display name, bio, and avatar appearance.'
               : 'Set up your profile to get started.'}
           </DialogDescription>
         </DialogHeader>
@@ -256,35 +241,6 @@ export default function ProfileEditorDialog({ open, onOpenChange }: ProfileEdito
                 disabled={saveProfile.isPending}
                 rows={3}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="flag">Flag Badge</Label>
-              <Select value={selectedFlag} onValueChange={setSelectedFlag} disabled={saveProfile.isPending}>
-                <SelectTrigger id="flag">
-                  <SelectValue>
-                    {selectedFlag === 'none' || !validatedSelectedFlag ? (
-                      'None'
-                    ) : (
-                      <span className="inline-flex items-center gap-2">
-                        <FlagBadge profileFlag={selectedFlag} />
-                        <span>{validatedSelectedFlag.label}</span>
-                      </span>
-                    )}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {allowedFlags.map((flag) => (
-                    <SelectItem key={flag.id} value={flag.id}>
-                      <span className="inline-flex items-center gap-2">
-                        <FlagBadge profileFlag={flag.id} />
-                        <span>{flag.label}</span>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             <div className="space-y-2">

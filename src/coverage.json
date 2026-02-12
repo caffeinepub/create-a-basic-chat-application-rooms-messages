@@ -1,105 +1,75 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T03:29:59.717Z",
+  "generatedAt": "2026-02-12T03:38:53.194Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 4,
+    "total": 4,
+    "implemented": 2,
     "items": [
       {
-        "id": "REQ-37",
-        "summary": "Replace the emoji-based flag badge metadata with image-based metadata by updating the frontend flag allowlist so each allowed flag option provides a static image asset path (served from the frontend) instead of an emoji value.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/utils/flags.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/utils/flags.ts"
-        ]
-      },
-      {
-        "id": "REQ-38",
-        "summary": "Update the shared flag badge renderer to display the historical flag as a static image (not emoji) everywhere the badge appears, while keeping the existing behavior of returning null for unknown/disallowed flags.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/profile/FlagBadge.tsx",
-          "frontend/src/components/profile/ProfileName.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/profile/FlagBadge.tsx"
-        ]
-      },
-      {
-        "id": "REQ-39",
-        "summary": "Update the Profile Editor flag selection UI to preview and select historical flag images instead of emoji, including the selected value display and the dropdown option list, while preserving the 'None' option to clear the selection.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/profile/ProfileEditorDialog.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/profile/ProfileEditorDialog.tsx"
-        ]
-      },
-      {
-        "id": "REQ-40",
-        "summary": "Align backend flag allowlist validation with the frontend allowed flag IDs used for historical-flag image selection so saving and reading profiles consistently preserves only the frontend-allowed IDs.",
+        "id": "REQ-42",
+        "summary": "Remove the flag-badge field and all flag-badge validation/sanitization logic from the backend user profile model and APIs.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
-        "id": "REQ-41",
-        "summary": "Add static historical-flag image assets for each allowed flag option and ensure they are loaded directly by the frontend (not routed through the backend).",
+        "id": "REQ-43",
+        "summary": "Add a conditional state migration to safely upgrade existing deployed state that may contain `UserProfile.profileFlag`, ensuring upgrade does not trap and existing profile data (name, bio, avatar colors, profile picture) is preserved.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-44",
+        "summary": "Remove all flag-badge UI from the profile editor and profile display components, including the flag selector and any inline flag rendering next to names.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/public/assets/generated/flag-rainbow.dim_96x64.png",
-          "frontend/public/assets/generated/flag-transgender.dim_96x64.png",
-          "frontend/public/assets/generated/flag-non-binary.dim_96x64.png",
-          "frontend/public/assets/generated/flag-eu.dim_96x64.png",
-          "frontend/public/assets/generated/flag-african-union.dim_96x64.png",
-          "frontend/public/assets/generated/flag-asean.dim_96x64.png",
-          "frontend/public/assets/generated/flag-ussr.dim_96x64.png",
-          "frontend/public/assets/generated/flag-rhodesia.dim_96x64.png",
-          "frontend/public/assets/generated/flag-imperial-japan.dim_96x64.png",
-          "frontend/public/assets/generated/flag-fascist-italy.dim_96x64.png"
+          "frontend/src/components/profile/ProfileEditorDialog.tsx",
+          "frontend/src/components/profile/ProfileName.tsx"
         ],
         "matchedFiles": [
-          "frontend/public/assets/generated/flag-rainbow.dim_96x64.png",
-          "frontend/public/assets/generated/flag-transgender.dim_96x64.png",
-          "frontend/public/assets/generated/flag-non-binary.dim_96x64.png",
-          "frontend/public/assets/generated/flag-eu.dim_96x64.png",
-          "frontend/public/assets/generated/flag-african-union.dim_96x64.png",
-          "frontend/public/assets/generated/flag-asean.dim_96x64.png",
-          "frontend/public/assets/generated/flag-ussr.dim_96x64.png",
-          "frontend/public/assets/generated/flag-rhodesia.dim_96x64.png",
-          "frontend/public/assets/generated/flag-imperial-japan.dim_96x64.png",
-          "frontend/public/assets/generated/flag-fascist-italy.dim_96x64.png"
+          "frontend/src/components/profile/ProfileEditorDialog.tsx",
+          "frontend/src/components/profile/ProfileName.tsx"
+        ]
+      },
+      {
+        "id": "REQ-45",
+        "summary": "Remove frontend flag allowlist utilities and flag badge renderer usage so the app has no runtime dependency on flag assets or flag metadata.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/profile/FlagBadge.tsx",
+          "frontend/src/utils/flags.ts",
+          "frontend/src/components/profile/ProfileEditorDialog.tsx",
+          "frontend/src/components/profile/ProfileName.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/profile/FlagBadge.tsx",
+          "frontend/src/utils/flags.ts",
+          "frontend/src/components/profile/ProfileEditorDialog.tsx",
+          "frontend/src/components/profile/ProfileName.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/public/assets/generated/flag-african-union.dim_96x64.png",
-    "frontend/public/assets/generated/flag-asean.dim_96x64.png",
-    "frontend/public/assets/generated/flag-eu.dim_96x64.png",
-    "frontend/public/assets/generated/flag-fascist-italy.dim_96x64.png",
-    "frontend/public/assets/generated/flag-imperial-japan.dim_96x64.png",
-    "frontend/public/assets/generated/flag-non-binary.dim_96x64.png",
-    "frontend/public/assets/generated/flag-rainbow.dim_96x64.png",
-    "frontend/public/assets/generated/flag-rhodesia.dim_96x64.png",
-    "frontend/public/assets/generated/flag-transgender.dim_96x64.png",
-    "frontend/public/assets/generated/flag-ussr.dim_96x64.png",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
     "frontend/src/components/profile/FlagBadge.tsx",
     "frontend/src/components/profile/ProfileEditorDialog.tsx",
+    "frontend/src/components/profile/ProfileName.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
     "frontend/src/utils/flags.ts",
     "project_state.json",
     "scratch/component-selection.json",

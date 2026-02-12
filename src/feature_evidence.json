@@ -2,9 +2,33 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-replace-the-emoji-based-flag-badge-metadata-with-image-based-metadata-by-updating-the-frontend-flag-allowlist-so-each-allowed-flag-option-provides-a-static-image-asset-path-served-from-the-frontend-instead-of-an-emoji-value",
-      "featureTitle": "Replace the emoji-based flag badge metadata with image-based metadata by updating the frontend flag allowlist so each allowed flag option provides a static image asset path (served from the frontend) instead of an emoji value.",
+      "featureId": "feature-remove-all-flag-badge-ui-from-the-profile-editor-and-profile-display-components-including-the-flag-selector-and-any-inline-flag-rendering-next-to-names",
+      "featureTitle": "Remove all flag-badge UI from the profile editor and profile display components, including the flag selector and any inline flag rendering next to names.",
       "files": [
+        "frontend/src/components/profile/ProfileEditorDialog.tsx",
+        "frontend/src/components/profile/ProfileName.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-44"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-remove-frontend-flag-allowlist-utilities-and-flag-badge-renderer-usage-so-the-app-has-no-runtime-dependency-on-flag-assets-or-flag-metadata",
+      "featureTitle": "Remove frontend flag allowlist utilities and flag badge renderer usage so the app has no runtime dependency on flag assets or flag metadata.",
+      "files": [
+        "frontend/src/components/profile/FlagBadge.tsx",
+        "frontend/src/components/profile/ProfileEditorDialog.tsx",
+        "frontend/src/components/profile/ProfileName.tsx",
         "frontend/src/utils/flags.ts"
       ],
       "components": [
@@ -17,65 +41,7 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-37"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-shared-flag-badge-renderer-to-display-the-historical-flag-as-a-static-image-not-emoji-everywhere-the-badge-appears-while-keeping-the-existing-behavior-of-returning-null-for-unknown-disallowed-flags",
-      "featureTitle": "Update the shared flag badge renderer to display the historical flag as a static image (not emoji) everywhere the badge appears, while keeping the existing behavior of returning null for unknown/disallowed flags.",
-      "files": [
-        "frontend/src/components/profile/FlagBadge.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-38"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-profile-editor-flag-selection-ui-to-preview-and-select-historical-flag-images-instead-of-emoji-including-the-selected-value-display-and-the-dropdown-option-list-while-preserving-the-none-option-to-clear-the-selection",
-      "featureTitle": "Update the Profile Editor flag selection UI to preview and select historical flag images instead of emoji, including the selected value display and the dropdown option list, while preserving the 'None' option to clear the selection.",
-      "files": [
-        "frontend/src/components/profile/ProfileEditorDialog.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-39"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-static-historical-flag-image-assets-for-each-allowed-flag-option-and-ensure-they-are-loaded-directly-by-the-frontend-not-routed-through-the-backend",
-      "featureTitle": "Add static historical-flag image assets for each allowed flag option and ensure they are loaded directly by the frontend (not routed through the backend).",
-      "files": [],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-41"
+        "REQ-45"
       ],
       "confidence": "high"
     }
